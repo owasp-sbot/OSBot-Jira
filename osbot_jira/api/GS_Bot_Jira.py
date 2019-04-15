@@ -1,7 +1,7 @@
 import json
 import pprint
 import requests
-from osbot_aws.apis.Secrets import Secrets
+from   osbot_aws.apis.Secrets import Secrets
 
 from pbx_gs_python_utils.gs_elk.Elk_To_Slack                import ELK_to_Slack
 from pbx_gs_python_utils.gs_elk.GS_Graph                    import GS_Graph
