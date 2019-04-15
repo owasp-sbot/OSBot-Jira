@@ -14,7 +14,6 @@ from osbot_jira.api.graph.Graph_Commands.Commands_Helper import Commands_Helper
 from osbot_jira.api.graph.Graph_Commands.Graph_Filters import Graph_Filters
 from osbot_jira.api.graph.Graph_Commands.Nodes import Nodes
 from osbot_jira.api.graph.Graph_Commands.Vis_JS import Vis_JS
-from osbot_jira.api.graph.Lambda_Graph import Lambda_Graph
 
 Lambda_Graph_Commands_version = "v0.24"
 
