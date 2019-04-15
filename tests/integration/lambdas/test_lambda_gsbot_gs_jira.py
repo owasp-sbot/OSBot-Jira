@@ -4,8 +4,6 @@ from osbot_aws.apis.Lambda import Lambda
 
 from osbot_jira.lambdas.jira import run
 
-
-@unittest.skip('lambda not deployed (yet)')
 class test_lambda_gsbot_gs_jira(unittest.TestCase):
 
     def setUp(self):
@@ -26,7 +24,6 @@ class test_lambda_gsbot_gs_jira(unittest.TestCase):
 
     def test_invoke(self):
         response = self._send_command_message('help')
-
         assert response == [ ':red_circle: command not found `help`\n'
                               '\n'
                               '*Here are the `GS_Bot_Jira_Commands` commands available:*',

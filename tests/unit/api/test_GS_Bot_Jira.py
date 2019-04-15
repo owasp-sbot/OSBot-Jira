@@ -125,7 +125,7 @@ class test_GS_Bot_Jira(unittest.TestCase):
 
     # test via lambda
 
-
+    @unittest.skip('fix lambda target location')
     def test__cmd_links__via_lambda(self):
         elastic_jira = Lambda('pbx_gs_python_utils.lambdas.gs.elastic_jira')
         payload = {"params": ["links","FACT-47", "up", "3"], "channel": "GDL2EC3EE"}

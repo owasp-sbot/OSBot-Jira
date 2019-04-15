@@ -17,6 +17,9 @@ from osbot_jira.api.API_Issues                              import API_Issues
 
 class GS_Bot_Jira:
 
+    def __init__(self):
+        self.version = "v0.30"
+
     def cmd_created_in_last(self, params, team_id=None, channel=None):
         elk_to_slack = ELK_to_Slack()
         if len(params) < 2:
@@ -168,7 +171,7 @@ class GS_Bot_Jira:
                         view = 'default'
 
                     if channel:  # if the channel value is provided return a user friendly message, if not, return the data
-                        text = ':point_right: Rendering graph for `{0}` in the direction `{1}`, with depth `{2}`, with plantuml size: `{3}`, with name `{4}`, with view `{5}`, with `{6}` nodes and `{7}` edges'\
+                        text = ':point_right: Created graph with name `{4}`, based on _{0}_ in the direction `{1}`, with depth `{2}`, with plantuml size: `{3}`, with view `{5}`, with `{6}` nodes and `{7}` edges'\
                                         .format(target, direction, depth, len(puml), graph_name, view, len(graph.nodes), len(graph.edges))
                         Lambda('utils.puml_to_slack').invoke_async({"puml": puml,"channel": channel, 'team_id' : team_id})
                     else:
@@ -306,7 +309,10 @@ class GS_Bot_Jira:
 
 
     def cmd_version(self, params, team_id=None, channel=None):
-        slack_message("v0.20", [], channel, team_id)
+        if team_id:
+            slack_message(self.version, [], channel, team_id)
+        else:
+            return self.version
 
 
     # helpers
