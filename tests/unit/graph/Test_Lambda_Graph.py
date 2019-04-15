@@ -1,8 +1,9 @@
 from unittest import TestCase
 
-from pbx_gs_python_utils.gs_elk.GS_Graph import GS_Graph
-from pbx_gs_python_utils.gs_elk.Lambda_Graph import Lambda_Graph
 from pbx_gs_python_utils.utils.Dev import Dev
+
+from osbot_jira.api.graph.GS_Graph import GS_Graph
+from osbot_jira.api.graph.Lambda_Graph import Lambda_Graph
 
 
 class Test_Lambda_Graph(TestCase):
@@ -15,7 +16,8 @@ class Test_Lambda_Graph(TestCase):
 
     def test_get_gs_graph_by_name(self):
         graph = self.lambda_graph.get_gs_graph___by_name("test_save_gs_graph_____org_chart")
-        assert graph.stats() == {'count_edges': 42, 'count_nodes': 59, 'size_puml': 5204}
+        Dev.pprint( graph.stats() )
+        assert graph.stats() == {'count_edges': 94, 'count_nodes': 124, 'size_puml': 14110}
 
     # def test_get_gs_graph_by_name__reload(self):
     #     graph = self.lambda_graph.get_gs_graph___by_name('sec-9696-up' )
@@ -25,14 +27,14 @@ class Test_Lambda_Graph(TestCase):
 
     def test_get_gs_graph_by_type(self):
         graph = self.lambda_graph.get_gs_graph___by_type("keys___['FACT-47']__up___depth_3")
-        assert graph.stats() == {'count_edges': 24, 'count_nodes': 20, 'size_puml': 2509}
+        assert graph.stats() == {'count_edges': 23, 'count_nodes': 19, 'size_puml': 2398}
 
     def test_get_gs_graph___from_user(self):
         user = 'test-user'
         graph = GS_Graph().add_node("aaa").add_edge("aaa", "->", "bbb")
         self.lambda_graph.save_gs_graph(graph, user = user)
         graph = self.lambda_graph.get_gs_graph___from_user(user)
-        assert graph.stats() == {'count_edges': 1, 'count_nodes': 1, 'size_puml': 88}
+        assert graph.stats() == {'count_edges': 1, 'count_nodes': 1, 'size_puml': 90}
 
     def test_get_graph_png___by_name(self):
         name  = "test_save_gs_graph_____org_chart"

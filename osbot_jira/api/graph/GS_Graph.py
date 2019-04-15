@@ -1,9 +1,10 @@
 import textwrap
 
-from pbx_gs_python_utils.gs.API_Issues import API_Issues
 from pbx_gs_python_utils.plantuml.Puml  import Puml
 from pbx_gs_python_utils.utils.Files    import Files
 from pbx_gs_python_utils.utils.Json     import Json
+
+from osbot_jira.api.API_Issues import API_Issues
 
 
 class GS_Graph:

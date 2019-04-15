@@ -1,9 +1,10 @@
-from pbx_gs_python_utils.gs.API_Issues                    import API_Issues
-from pbx_gs_python_utils.gs_elk.GS_Graph                  import GS_Graph
-from pbx_gs_python_utils.gs_elk.Lambda_Graph              import Lambda_Graph
 from pbx_gs_python_utils.utils.slack.API_Slack_Attachment import API_Slack_Attachment
 from pbx_gs_python_utils.utils.Lambdas_Helpers            import slack_message, log_to_elk
 from pbx_gs_python_utils.utils.Lists                      import Lists
+
+from osbot_jira.api.API_Issues import API_Issues
+from osbot_jira.api.graph.GS_Graph import GS_Graph
+from osbot_jira.api.graph.Lambda_Graph import Lambda_Graph
 
 
 class ELK_to_Slack:

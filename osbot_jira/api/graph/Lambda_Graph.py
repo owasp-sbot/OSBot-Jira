@@ -2,11 +2,12 @@ import pprint
 
 from osbot_aws.apis.Lambda import Lambda
 
-from pbx_gs_python_utils.gs_elk.GS_Graph import GS_Graph
 #from gs_elk.Lambda_Graph_Commands   import Lambda_Graph_Commands
 from pbx_gs_python_utils.utils.Lambdas_Helpers          import log_to_elk, slack_message
 from pbx_gs_python_utils.utils.Misc                     import Misc
 from pbx_gs_python_utils.utils.Save_To_ELK              import Save_To_ELK
+
+from osbot_jira.api.graph.GS_Graph import GS_Graph
 
 
 class Lambda_Graph():
@@ -55,10 +56,9 @@ class Lambda_Graph():
         if params is None or len(params) == 0:
             params = ['help']
 
-        from gs_elk.Lambda_Graph_Commands import Lambda_Graph_Commands  # can only do this here to avoid circular dependencies
+        from osbot_jira.api.graph import Lambda_Graph_Commands # can only do this here to avoid circular dependencies
         try:
             method_name  = params.pop(0)
-
             method       = getattr(Lambda_Graph_Commands, method_name)
         except Exception:
             method = Lambda_Graph_Commands.help

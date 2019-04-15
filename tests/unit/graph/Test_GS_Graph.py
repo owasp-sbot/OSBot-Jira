@@ -1,8 +1,10 @@
 import textwrap
 from unittest        import TestCase
-from pbx_gs_python_utils.gs_elk.GS_Graph import GS_Graph
+
+from pbx_gs_python_utils.utils.Dev import Dev
 from pbx_gs_python_utils.utils.slack.API_Slack import API_Slack
-from utils.Dev import Dev
+
+from osbot_jira.api.graph.GS_Graph import GS_Graph
 
 
 class Test_GS_Graph(TestCase):
@@ -35,20 +37,20 @@ class Test_GS_Graph(TestCase):
         # self.graph.puml.add_line("\tscale 2024 height   \n")
         #self.graph.puml.add_line('skinparam handwritten true')
 
-    def test_add_all_linked_issues(self):
-        keys = ['RISK-1494']
-        (self.graph.set_links_path_mode_to_down()
-                   .set_puml_show_key_in_text  (True)
-                   #.set_puml_only_from_projects(['RISK', 'VULN'])
-                   .set_puml_width             (4000)
-                   #.set_puml_height            (6000)
-                   .add_all_linked_issues      (keys, 5)
-                   #.add_link_types_as_nodes(self.graph.risk_links_paths_down)
-                   .render_puml_and_save_tmp   ()
-         )
-
-        Dev.pprint(len(self.graph.nodes))
-        Dev.pprint(len(self.graph.edges))
+    # def test_add_all_linked_issues(self):
+    #     keys = ['RISK-1494']
+    #     (self.graph.set_links_path_mode_to_down()
+    #                .set_puml_show_key_in_text  (True)
+    #                #.set_puml_only_from_projects(['RISK', 'VULN'])
+    #                .set_puml_width             (4000)
+    #                #.set_puml_height            (6000)
+    #                .add_all_linked_issues      (keys, 5)
+    #                #.add_link_types_as_nodes(self.graph.risk_links_paths_down)
+    #                .render_puml_and_save_tmp   ()
+    #      )
+    #
+    #     Dev.pprint(len(self.graph.nodes))
+    #     Dev.pprint(len(self.graph.edges))
 
     def test_add_all_linked_issues____with_color_coding_on_rating(self):
 
@@ -199,13 +201,6 @@ class Test_GS_Graph(TestCase):
         #loaded_graph.puml.save_tmp()
 
     #### use cases
-    def test____create_org_chart_from_jody(self):
-        self.graph.puml_options['left-to-right'] = False
-        self.graph.add_node('GSP-24')
-        self.graph.add_linked_issues_of_types(['is manager of'] * 10)
-        self.graph.render_puml()
-        self.graph.puml.save_tmp() # open tmp pic to see it
-        Dev.pprint(self.graph.save())
 
     def test____create_org_chart_everybody(self):
         is_a_manager_nodes = self.graph.api_issues.link_types('it_assets')['is manager of'].keys()
@@ -245,71 +240,6 @@ class Test_GS_Graph(TestCase):
         self.graph.create_sub_graph_from_start_node(graph.nodes, start_node, issue_types_path)
         self.graph.add_link_types_as_nodes()
         self.graph.puml.save_tmp()
-
-    # def test____create_stakeholder_graph_from_security_story_class_diagram(self):
-    #
-    #     from gs_elk.API_Jira_Diagrams import API_Jira_Diagrams
-    #     graph_2 = API_Jira_Diagrams().risks_story_mixed_orders_v2__puml()
-    #
-    #     #file = '/tmp/graph-sec-9195.json'
-    #     #graph_2 = GS_Graph().load(file)
-    #
-    #     issue_types_path = ['is Stakeholder',
-    #                         'is created by R2',
-    #                         #'is created by R3',
-    #                         #'is created by R4',
-    #                         #'RISK supported by',
-    #
-    #
-    #                         # 'is created by VULN',
-    #                         # 'is Vulnerability of',
-    #                         #'risk reduced by',
-    #                         #'is child of',
-    #                         #'is fixed by'
-    #                         ]# ]
-    #     graph = GS_Graph()
-    #     start_node = 'SEC-8858'  # Richard
-    #
-    #     graph.create_sub_graph_from_start_node(graph_2.nodes, start_node, issue_types_path)
-    #
-    #     from plantuml.API_Class_Diagram import API_Class_Diagram
-    #     issues = self.graph.api_issues.issues(graph.nodes)
-    #
-    #     class_diagram = API_Class_Diagram()
-    #
-    #     def add_node(node_key):
-    #         node = issues.get(node_key)
-    #         if node:
-    #             key     = node['Key'].replace('-','_')
-    #             summary = node['Summary']
-    #             letter  = node['Issue Type'][0]
-    #             color   = 'LightBlue'
-    #             rating  = "Risk Rating: " + node['Rating']
-    #             labels  = node['Labels']
-    #             size    = 20
-    #             if letter == 'R' : color = 'LightPink'
-    #             if letter == 'F': color = 'White'
-    #             class_diagram.add_node(key, summary, 'status: ' + node['Status'], letter, color, '--{0}--'.format(key), rating, '-{0}'.format(labels), size, '#Brown ')
-    #
-    #     def add_edge(triplet):
-    #         class_diagram.add_edge(triplet[0].replace('-','_'), triplet[2].replace('-','_'),triplet[1])
-    #     Dev.pprint(graph.nodes)
-    #     Dev.pprint(graph.edges)
-    #
-    #     for node in graph.nodes:
-    #         if node == 'SEC-9195': continue
-    #         if 'RISK' in node or node =='SEC-8858':
-    #             add_node(node)
-    #     for edge in graph.edges:
-    #         if edge[2] == 'SEC-9195': continue
-    #         if 'RISK' in edge[2]:
-    #             add_edge(edge)
-    #     #add_node(graph.nodes.pop(0))
-    #     #add_node(graph.nodes.pop(0))
-    #     #add_edge(graph.edges.pop(0))
-    #
-    #     class_diagram.plantuml.tmp_png_file = '/tmp/plant-uml-class-diagram.png'
-    #     class_diagram.plantuml.puml_to_png(class_diagram.puml())
 
     def test__create_graph_with_epic_data__top_level_okrs_up(self):
         graph = self.graph
@@ -375,58 +305,6 @@ class Test_GS_Graph(TestCase):
         API_Slack('DDKUZTK6X').puml_to_slack(graph.puml.puml)
 
 
-    def test__create_class_diagram_for_epic_data(self):
-        graph = self.graph
-        keys = ['SEC-9696']
-
-        (
-            graph.set_links_path_mode_to_down()
-                 .add_all_linked_issues(keys, 1)
-                 .add_nodes_from_epics()
-        )
-
-        from plantuml.API_Class_Diagram import API_Class_Diagram
-        issues = self.graph.api_issues.issues(graph.nodes)
-
-        class_diagram = API_Class_Diagram()
-
-        def add_node(node_key):
-            node = issues.get(node_key)
-            if node:
-                key         = node['Key'].replace('-', '_')
-                summary     = node['Summary']
-                letter      = node['Issue Type'][0]
-                color       = 'LightBlue'
-                #rating = "Risk Rating: " + node['Rating']
-                latest_info = node.get('Latest_Information')
-                labels = node['Labels']
-                size = 20
-                if latest_info : latest_info = '\n'.join(textwrap.wrap(latest_info,100))
-                if letter == 'E': color = 'White'
-                if letter == 'I' and node['Issue Type'] == 'Indent': color = 'LightPink'
-                class_diagram.add_node(key, summary, 'status: ' + node['Status'], letter, color, '--{0}--'.format(key),
-                                       latest_info, '-{0}'.format(labels), size, '#Brown ')
-
-        def add_edge(triplet):
-            class_diagram.add_edge(triplet[0].replace('-', '_'), triplet[2].replace('-', '_'), triplet[1])
-
-        for node in graph.nodes:
-            add_node(node)
-
-        for edge in graph.edges:
-            add_edge(edge)
-
-        #Dev.pprint(graph.nodes)
-        #Dev.pprint(graph.edges)
-        class_diagram.plantuml.tmp_png_file = '/tmp/plant-uml-class-diagram.png'
-        class_diagram.plantuml.puml_to_png(class_diagram.puml())
-        #class_diagram = API_Class_Diagram()
-        #graph.render_puml_and_save_tmp()
-
-
-
-
-
     def test__create_graph_with_up_down_data(self):
         keys = ['SEC-9696']
 
@@ -439,9 +317,6 @@ class Test_GS_Graph(TestCase):
 
     def test__create_graph_with_up_down_data(self):
         keys = ['IA-386']
-        #keys = ['IA-387'] # Photobizz
-        #keys = ['IA-390'] # Photobox Brand
-
         graph = self.graph
         (graph
                 .set_puml_link_types_to_add(["is parent of"])
