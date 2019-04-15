@@ -10,10 +10,6 @@ class Test_Lambda_Graph(TestCase):
     def setUp(self):
         self.lambda_graph = Lambda_Graph()
 
-    def test___init__(self):
-        results = self.lambda_graph.save_to_elk.find_documents_of_type('unit-test')
-        Dev.pprint(results)
-
     def test_get_gs_graph_by_name(self):
         graph = self.lambda_graph.get_gs_graph___by_name("test_save_gs_graph_____org_chart")
         Dev.pprint( graph.stats() )

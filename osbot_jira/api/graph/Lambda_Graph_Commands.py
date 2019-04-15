@@ -1,20 +1,20 @@
 import json
 import pprint
 
-from pbx_gs_python_utils.gs_elk.GS_Graph import GS_Graph
-from gs_elk.Graph_Commands.Commands_Helper import Commands_Helper
-from gs_elk.Graph_Commands.Graph_Filters import Graph_Filters
-from gs_elk.Graph_Commands.Nodes import Nodes
-from gs_elk.Graph_Commands.Vis_JS import Vis_JS
-from pbx_gs_python_utils.gs_elk.Lambda_Graph import Lambda_Graph
+from osbot_aws.apis.S3 import S3
 from pbx_gs_python_utils.utils.slack.API_Slack_Attachment import API_Slack_Attachment
 from pbx_gs_python_utils.utils.Lambdas_Helpers       import slack_message
 from pbx_gs_python_utils.utils.Misc                  import Misc
 from pbx_gs_python_utils.utils.Save_To_ELK           import Save_To_ELK
 from pbx_gs_python_utils.utils.slack.Slack_Commands_Helper import Slack_Commands_Helper
 from osbot_aws.apis.Lambda           import Lambda
-from pbx_gs_python_utils.utils.aws.s3                import S3
 
+from osbot_jira.api.graph.GS_Graph import GS_Graph
+from osbot_jira.api.graph.Graph_Commands.Commands_Helper import Commands_Helper
+from osbot_jira.api.graph.Graph_Commands.Graph_Filters import Graph_Filters
+from osbot_jira.api.graph.Graph_Commands.Nodes import Nodes
+from osbot_jira.api.graph.Graph_Commands.Vis_JS import Vis_JS
+from osbot_jira.api.graph.Lambda_Graph import Lambda_Graph
 
 Lambda_Graph_Commands_version = "v0.24"
 
