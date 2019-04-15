@@ -1,13 +1,9 @@
-import sys
-
-from osbot_aws.apis.Lambda import load_dependency
-
-sys.path.append('..')
+import sys; sys.path.append('..')
 
 import unittest
-load_dependency('elastic')
 
-
+#from osbot_aws.apis.Lambda import load_dependency
+#load_dependency('elastic')
 from pbx_gs_python_utils.gs.GS_Bot_Jira         import GS_Bot_Jira
 from pbx_gs_python_utils.utils.Dev              import Dev
 from pbx_gs_python_utils.utils.Lambdas_Helpers  import slack_message

@@ -3,15 +3,16 @@ import pprint
 import requests
 from osbot_aws.apis.Secrets import Secrets
 
-from pbx_gs_python_utils.gs.API_Issues                      import API_Issues
 from pbx_gs_python_utils.gs_elk.Elk_To_Slack                import ELK_to_Slack
 from pbx_gs_python_utils.gs_elk.GS_Graph                    import GS_Graph
 from pbx_gs_python_utils.gs_elk.Lambda_Graph                import Lambda_Graph
 from pbx_gs_python_utils.gs_elk.Graph_View                  import Graph_View
 from pbx_gs_python_utils.utils.Lambdas_Helpers              import slack_message
 from pbx_gs_python_utils.utils.Misc                         import Misc
-from osbot_aws.apis.Lambda import Lambda
 from pbx_gs_python_utils.utils.slack.API_Slack_Attachment   import API_Slack_Attachment
+
+from osbot_aws.apis.Lambda                                  import Lambda
+from osbot_jira.api.API_Issues                              import API_Issues
 
 
 class GS_Bot_Jira:
