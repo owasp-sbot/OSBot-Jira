@@ -31,7 +31,7 @@ class GS_Bot_Jira:
 
 
         issues_text = elk_to_slack.get_text_with_issues_key_and_summary(issues)
-        graph_name = elk_to_slack.save_issues_as_new_graph(issues)
+        graph_name  = elk_to_slack.save_issues_as_new_graph(issues)
         text        = elk_to_slack.get_slack_message(issues, graph_name)
 
         max_table = 100
