@@ -14,6 +14,7 @@ from osbot_jira.api.graph.Graph_Commands.Commands_Helper import Commands_Helper
 from osbot_jira.api.graph.Graph_Commands.Graph_Filters import Graph_Filters
 from osbot_jira.api.graph.Graph_Commands.Nodes import Nodes
 from osbot_jira.api.graph.Graph_Commands.Vis_JS import Vis_JS
+from osbot_jira.api.graph.Lambda_Graph import Lambda_Graph
 
 Lambda_Graph_Commands_version = "v0.24"
 
@@ -78,7 +79,7 @@ class Lambda_Graph_Commands:
 #        Lambda_Graph_Commands.show(team_id, channel,["1"],None)      # show last graph created (this helps with the UX)
 
     @staticmethod
-    def expand(team_id, channel, params, data, only_create=False):
+    def expand(team_id=None, channel=None, params=None, data=None, only_create=False, save_graph=True):
 
         if len(params) < 3:
             text            = ':red_circle: Hi, for the `expand` command, you need to provide the following parameters: '
@@ -100,8 +101,11 @@ class Lambda_Graph_Commands:
         (graph.set_puml_link_types_to_add(link_types_to_add)
               .add_all_linked_issues([],depth)
               .set_create_params(create_params))
+        if save_graph:
+            new_graph_name = graph.reset_puml().render_and_save_to_elk()
+        else:
+            return graph
 
-        new_graph_name = graph.reset_puml().render_and_save_to_elk()
         if only_create:
             return graph, new_graph_name, graph_or_key, depth, link_types_to_add
 
@@ -126,7 +130,7 @@ class Lambda_Graph_Commands:
 
 
     @staticmethod
-    def last(team_id, channel, params, data):
+    def last(team_id, channel, params, data=None):
         n = 10
         if len(params) == 1:
             n =  int(params.pop())
@@ -351,7 +355,7 @@ class Lambda_Graph_Commands:
     #     slack_message(text, [], channel, team_id)
 
     @staticmethod
-    def gs_okrs(team_id, channel, params, data):
+    def gs_okrs(team_id, channel, params, data=None):
         graph = GS_Graph()
         (graph.add_all_linked_issues(['GSOKR-924'])
              .add_nodes_from_epics()

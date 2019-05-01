@@ -7,6 +7,7 @@ from pbx_gs_python_utils.utils.Json     import Json
 from osbot_jira.api.API_Issues import API_Issues
 
 
+
 class GS_Graph:
     def __init__(self):
         self.api_issues            = API_Issues()
@@ -282,7 +283,8 @@ class GS_Graph:
         return Json.save_json_pretty(path, data)
 
     def render_and_save_to_elk(self, graph_name=None, graph_type=None, channel= None, user = None):                                    # might need to move this to a Lambda function
-        from pbx_gs_python_utils.gs_elk.Lambda_Graph import Lambda_Graph                        # needs to be here of it fail to load the dependency (could be caused by a cyclic dependency)
+        #from pbx_gs_python_utils.gs_elk.Lambda_Graph import Lambda_Graph
+        from osbot_jira.api.graph.Lambda_Graph import Lambda_Graph                                                                      # needs to be here of it fail to load the dependency (could be caused by a cyclic dependency)
         return Lambda_Graph().save_gs_graph(self, graph_name, graph_type, channel, user)
 
 
@@ -407,42 +409,41 @@ class GS_Graph:
         # graph_2.add_link_types_as_nodes(issue_types_to_ignore)
 
 
-    def create_epic_graph_with_details(self, keys):
-        (
-            self.set_links_path_mode_to_down()
-                .add_all_linked_issues(keys, 1)
-                .add_nodes_from_epics()
-        )
-
-        from plantuml.API_Class_Diagram import API_Class_Diagram
-        issues = self.api_issues.issues(self.nodes)
-
-        class_diagram = API_Class_Diagram()
-
-        def add_node(node_key):
-            node = issues.get(node_key)
-            if node:
-                key = node['Key'].replace('-', '_')
-                summary = node['Summary']
-                letter = node['Issue Type'][0]
-                color = 'LightBlue'
-                # rating = "Risk Rating: " + node['Rating']
-                latest_info = node.get('Latest_Information')
-                labels = node['Labels']
-                size = 20
-                if latest_info: latest_info = '\n'.join(textwrap.wrap(latest_info, 100))
-                if letter == 'E': color = 'White'
-                if letter == 'I' and node['Issue Type'] == 'Indent': color = 'LightPink'
-                class_diagram.add_node(key, summary, 'status: ' + node['Status'], letter, color, '--{0}--'.format(key),
-                                       latest_info, '-{0}'.format(labels), size, '#Brown ')
-
-        def add_edge(triplet):
-            class_diagram.add_edge(triplet[0].replace('-', '_'), triplet[2].replace('-', '_'), triplet[1])
-
-        for node in self.nodes:
-            add_node(node)
-
-        for edge in self.edges:
-            add_edge(edge)
-
-        self.puml.puml = class_diagram.puml()
+    # def create_epic_graph_with_details(self, keys):
+    #     (
+    #         self.set_links_path_mode_to_down()
+    #             .add_all_linked_issues(keys, 1)
+    #             .add_nodes_from_epics()
+    #     )
+    #
+    #     issues = self.api_issues.issues(self.nodes)
+    #
+    #     class_diagram = API_Class_Diagram()
+    #
+    #     def add_node(node_key):
+    #         node = issues.get(node_key)
+    #         if node:
+    #             key = node['Key'].replace('-', '_')
+    #             summary = node['Summary']
+    #             letter = node['Issue Type'][0]
+    #             color = 'LightBlue'
+    #             # rating = "Risk Rating: " + node['Rating']
+    #             latest_info = node.get('Latest_Information')
+    #             labels = node['Labels']
+    #             size = 20
+    #             if latest_info: latest_info = '\n'.join(textwrap.wrap(latest_info, 100))
+    #             if letter == 'E': color = 'White'
+    #             if letter == 'I' and node['Issue Type'] == 'Indent': color = 'LightPink'
+    #             class_diagram.add_node(key, summary, 'status: ' + node['Status'], letter, color, '--{0}--'.format(key),
+    #                                    latest_info, '-{0}'.format(labels), size, '#Brown ')
+    #
+    #     def add_edge(triplet):
+    #         class_diagram.add_edge(triplet[0].replace('-', '_'), triplet[2].replace('-', '_'), triplet[1])
+    #
+    #     for node in self.nodes:
+    #         add_node(node)
+    #
+    #     for edge in self.edges:
+    #         add_edge(edge)
+    #
+    #     self.puml.puml = class_diagram.puml()
