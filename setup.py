@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    version                       = "0.1.10"               , # change this on every release
+    version                       = "0.3.20"               , # change this on every release
     name                          = "osbot_jira"  ,
 
     author                        = "Dinis Cruz",

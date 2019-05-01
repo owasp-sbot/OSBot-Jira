@@ -3,16 +3,15 @@ import pprint
 import requests
 from   osbot_aws.apis.Secrets import Secrets
 
-from pbx_gs_python_utils.gs_elk.GS_Graph                    import GS_Graph
-from pbx_gs_python_utils.gs_elk.Lambda_Graph                import Lambda_Graph
-from pbx_gs_python_utils.gs_elk.Graph_View                  import Graph_View
 from pbx_gs_python_utils.utils.Lambdas_Helpers              import slack_message
 from pbx_gs_python_utils.utils.Misc                         import Misc
 from pbx_gs_python_utils.utils.slack.API_Slack_Attachment   import API_Slack_Attachment
 
 from osbot_aws.apis.Lambda                                  import Lambda
 from osbot_jira.api.API_Issues                              import API_Issues
-from osbot_jira.api.elk.Elk_To_Slack import ELK_to_Slack
+from osbot_jira.api.elk.Elk_To_Slack                        import ELK_to_Slack
+from osbot_jira.api.graph.GS_Graph                          import GS_Graph
+from osbot_jira.api.graph.Lambda_Graph                      import Lambda_Graph
 
 
 class GS_Bot_Jira:
@@ -111,7 +110,7 @@ class GS_Bot_Jira:
                 text = ":exclamation: could not find index for issue "
         return {"text": text, "attachments": attachments}
 
-    def cmd_links(self, params, team_id=None, channel=None, user=None, only_create=False):
+    def cmd_links(self, params, team_id=None, channel=None, user=None, only_create=False,save_graph=True):
         attachments = []
         if len(params) == 5: view = params.pop()
         else               : view = None
@@ -150,6 +149,8 @@ class GS_Bot_Jira:
 
                 graph.add_all_linked_issues(keys, depth)
                 graph_type = "{0}__{1}___depth_{2}".format(keys, direction, depth)
+                if save_graph is False:
+                    return graph
                 graph_name = graph.render_and_save_to_elk(None, graph_type, channel, user)
                 if only_create:
                     return graph, graph_name, depth, direction, target

@@ -1,13 +1,11 @@
 import sys;
-
-from osbot_jira.api.GS_Bot_Jira import GS_Bot_Jira
-
 sys.path.append('..')
-
 import unittest
+
+from osbot_jira.api.GS_Bot_Jira                 import GS_Bot_Jira
 from pbx_gs_python_utils.utils.Dev              import Dev
 from pbx_gs_python_utils.utils.Lambdas_Helpers  import slack_message
-from osbot_aws.apis.Lambda           import Lambda
+from osbot_aws.apis.Lambda                      import Lambda
 
 
 
@@ -38,18 +36,6 @@ class test_GS_Bot_Jira(unittest.TestCase):
                             'text': '....._fetching data for '
                             '*<https://jira.photobox.com/browse/AAAA|AAAA>* _from index:_ *jira*'}
 
-    # def test_handle_request___org_chart(self):
-    #     result = self.api.handle_request( { "params" : ["graph", "org-chart"] } )
-    #     print(result)
-    #     #assert result == {'attachments': [], 'text': ':fireworks: ...generating org chart from ELK data...'}
-
-
-    # def test_resolve_es_index(self):
-    #     assert self.api.resolve_es_index('AAAA'    ) == 'jira'
-    #     assert self.api.resolve_es_index('SEC-1'   ) == 'sec_project'
-    #     assert self.api.resolve_es_index('SEC-'    ) == 'sec_project'
-    #     assert self.api.resolve_es_index('SEC-1000') == 'sec_project'
-
 
     def test_cmd_created_in_last(self):
         params = ['', "20h"]
@@ -63,15 +49,12 @@ class test_GS_Bot_Jira(unittest.TestCase):
 
 
     def test_cmd_links(self):
-        #result = self.api.cmd_links(['links', 'risk-1496','down','1']    , self.channel, None)
-        #result = self.api.cmd_links(['links', 'graph_1G0', 'down', '2'  ], self.channel, None)
-        #result = self.api.cmd_links(['links', 'IA-386', 'children', '2' ], self.channel, None)
-        #result = self.api.cmd_links(['links', 'IA-386', 'children', '5', 'it_assets'], self.channel, None)
-        #result = self.api.cmd_links(['links', 'IA-386', 'children', '5', 'by_labels'], self.channel, None)
-
-        #result = self.api.cmd_links(['links', 'graph_1G3', 'all', '2'], self.channel, None)
         result = self.api.cmd_links(['links', 'SEC-10965', 'all', '1'])
         assert ' "target": "SEC-10965",\n' in result.get('text')
+
+    def test_cmd_links_Save_Graph_False(self):
+        graph = self.api.cmd_links(['links', 'SEC-10965', 'all', '1'],save_graph=False)
+        assert len(graph.nodes) > 5
 
     def test_cmd_links__no_channel(self):
         result = self.api.cmd_links(['links', 'IA-403', 'down', '0'], None, None)
@@ -153,11 +136,6 @@ class test_GS_Bot_Jira(unittest.TestCase):
         assert result == { 'attachments': [],
                            'text': ':red_circle: error: invalid value provided for depth `all`. It must '
                                    'be an number'}
-
-    # update lambda
-
-    #def test__lambda_update(self):
-    #    Lambda('gs.elastic_jira').update_with_src()
 
 
 
