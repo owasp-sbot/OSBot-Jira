@@ -174,7 +174,7 @@ class GS_Graph:
             extra_links = self.link_paths_mappings.get(link)
             if extra_links:
                 extra_link_types.extend(extra_links)
-                print('\n\nFOUND ONE:', link)
+                #print('\n\nFOUND ONE:', link)
         link_types_to_add.extend(extra_link_types)
         self.puml_options['link-types-to-add'] = link_types_to_add
         return self

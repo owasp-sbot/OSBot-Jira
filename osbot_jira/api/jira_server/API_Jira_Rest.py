@@ -11,7 +11,7 @@ class API_Jira_Rest:
         self.secrets_id = 'GS_BOT_GS_JIRA'
         self._config      = None
         self._fields      = None               # cache this value per request (since it is expensive and data doesn't change that much)
-        self.log_requests = True
+        self.log_requests = False
 
     def config(self):
         if self._config is None:

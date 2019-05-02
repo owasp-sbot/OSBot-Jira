@@ -33,11 +33,6 @@ class Test_ELK_to_Slack(TestCase):
         response = self.elk_to_slack.cmd_search(params)
         #Dev.print(response)
 
-    def test_cmd_search__no_params(self):
-        params  = []
-        response = self.elk_to_slack.cmd_search(params)
-        #Dev.print(response)
-
     def test_cmd_search__view_handle_lambda_event(self):
         params = {'params': ['search', '"GSOKR-924"'], 'user': 'U7ESE1XS7', 'channel': 'DDKUZTK6X'}
         #Dev.pprint(self.elk_to_slack.handle_lambda_event(params))
