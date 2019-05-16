@@ -42,15 +42,15 @@ class Graph_Filters:
 
     @staticmethod
     def _save_graph_and_send_slack_message(team_id, channel, graph, graph_name):
-        new_graph_name = Graph_Filters._save_graph(graph)
         if channel and team_id:
+            new_graph_name = Graph_Filters._save_graph(graph)
             text = ':point_right: Created new graph called `{0}` with `{1}` nodes and `{2}` edges (based on data from graph `{3}`) ' \
                         .format(new_graph_name, len(graph.nodes), len(graph.edges), graph_name)
 
             slack_message(text, [], channel, team_id)
             sleep(1)
             Lambda('lambdas.gsbot.gsbot_graph').invoke_async({"params": ["show", new_graph_name, "plantuml"], "data": {"channel": channel, "team_id": team_id}})
-        return new_graph_name
+        return graph
 
     @staticmethod
     def only_with_issue_types(team_id, channel, params):
@@ -73,7 +73,7 @@ class Graph_Filters:
 
         graph.set_nodes(new_nodes).set_edges(new_edges)
 
-        Graph_Filters._save_graph_and_send_slack_message(team_id, channel, graph, graph_name)
+        return Graph_Filters._save_graph_and_send_slack_message(team_id, channel, graph, graph_name)
 
     @staticmethod
     def only_show_issue_types(team_id, channel, params):
@@ -89,7 +89,7 @@ class Graph_Filters:
 
         graph.set_nodes(new_nodes)  # this version as an interesting side effect since we are not removing the edges with no nodes
 
-        Graph_Filters._save_graph_and_send_slack_message(team_id, channel, graph, graph_name)
+        return Graph_Filters._save_graph_and_send_slack_message(team_id, channel, graph, graph_name)
 
     @staticmethod
     def only_with_link_types(team_id, channel, params):
@@ -104,7 +104,7 @@ class Graph_Filters:
 
         graph.set_edges(new_edges).remove_no_links()
 
-        Graph_Filters._save_graph_and_send_slack_message(team_id, channel, graph, graph_name)
+        return Graph_Filters._save_graph_and_send_slack_message(team_id, channel, graph, graph_name)
 
     @staticmethod
     def only_with_ratings(team_id, channel, params):
@@ -119,7 +119,7 @@ class Graph_Filters:
 
         graph.set_nodes(new_nodes)  # this version as an interesting side effect since we are not removing the edges with no nodes
 
-        Graph_Filters._save_graph_and_send_slack_message(team_id, channel, graph, graph_name)
+        return Graph_Filters._save_graph_and_send_slack_message(team_id, channel, graph, graph_name)
 
     # this filter will replace all edges with all links between the current nodes
     @staticmethod
@@ -161,7 +161,7 @@ class Graph_Filters:
 
         graph.set_nodes(new_nodes).set_edges(new_edges)
 
-        Graph_Filters._save_graph_and_send_slack_message(team_id, channel, graph, graph_name)
+        return Graph_Filters._save_graph_and_send_slack_message(team_id, channel, graph, graph_name)
 
     @staticmethod
     def remove_link_types(team_id, channel, params):
@@ -176,7 +176,7 @@ class Graph_Filters:
 
         graph.set_edges(new_edges).remove_no_links()                                                # update original graph with new edges and remove nodes with no links
 
-        Graph_Filters._save_graph_and_send_slack_message(team_id, channel, graph, graph_name)       # save graph in ELK and send updates via Slack
+        return Graph_Filters._save_graph_and_send_slack_message(team_id, channel, graph, graph_name)       # save graph in ELK and send updates via Slack
 
     @staticmethod
     def remove_nodes_with_no_links(team_id, channel, params):
@@ -186,7 +186,7 @@ class Graph_Filters:
         graph = Graph_Filters._get_graph(graph_name)
         if graph:
             graph.remove_no_links()
-            Graph_Filters._save_graph_and_send_slack_message(team_id, channel, graph, graph_name)
+            return Graph_Filters._save_graph_and_send_slack_message(team_id, channel, graph, graph_name)
         else:
             text = ':red_circle: Graph not found : {0}'.format(graph_name)
             slack_message(text,[], channel, team_id)
@@ -203,7 +203,7 @@ class Graph_Filters:
 
             graph.remove_with_links()               # main action (the rest is the same for most filters)
 
-            Graph_Filters._save_graph_and_send_slack_message(team_id, channel, graph, graph_name)
+            return Graph_Filters._save_graph_and_send_slack_message(team_id, channel, graph, graph_name)
         else:
             text = ':red_circle: Graph not found : {0}'.format(graph_name)
             slack_message(text, [], channel, team_id)
