@@ -1,22 +1,16 @@
 from unittest import TestCase
 
-from browser.Browser_Lamdba_Helper import Browser_Lamdba_Helper
-from gs_elk.Graph_Commands.Graph_Filters import Graph_Filters
-from utils.Dev import Dev
+from osbot_aws.apis.Lambda import Lambda
+from osbot_browser.browser.Browser_Lamdba_Helper import Browser_Lamdba_Helper
+from pbx_gs_python_utils.utils.Dev import Dev
+
+from osbot_jira.api.graph.Graph_Commands.Graph_Filters import Graph_Filters
 
 
 class Test_Nodes(TestCase):
 
     def setUp(self):
-        self.filters = Graph_Filters
-
-    def test___update_lambda_function(self):
-        Lambda('lambdas.gsbot.gsbot_graph').update()
-
-    def test_current_link_types(self):
-        graph_name = 'graph_XTK'
-        (text, attachments) = self.filters.current_link_types([graph_name])
-        Dev.pprint(text)
+        self.filters = Graph_Filters()
 
     def test_remove_link_types(self):
         graph_name = 'graph_XTK'
@@ -104,11 +98,3 @@ class Test_Nodes(TestCase):
         field_name = 'Status'
         result = self.filters.group_by_field(None, None, [graph_name, field_name])
         Dev.pprint(result)
-
-    def test_just_update(self):
-        Lambda('lambdas.gsbot.gsbot_graph').update_with_src()
-
-
-#let’s say that we have a graph that looks like this
-
-#@gsbot browser viva_graph graph_9G8 by_field Issue Type

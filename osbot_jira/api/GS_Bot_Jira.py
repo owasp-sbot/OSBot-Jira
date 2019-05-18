@@ -11,13 +11,14 @@ from osbot_aws.apis.Lambda                                  import Lambda
 from osbot_jira.api.API_Issues                              import API_Issues
 from osbot_jira.api.elk.Elk_To_Slack                        import ELK_to_Slack
 from osbot_jira.api.graph.GS_Graph                          import GS_Graph
+from osbot_jira.api.graph.Graph_View import Graph_View
 from osbot_jira.api.graph.Lambda_Graph                      import Lambda_Graph
 
 
 class GS_Bot_Jira:
 
     def __init__(self):
-        self.version = "v0.30"
+        self.version = "v0.31"
 
     def cmd_created_in_last(self, params, team_id=None, channel=None):
         elk_to_slack = ELK_to_Slack()
@@ -128,46 +129,33 @@ class GS_Bot_Jira:
                 direction = params.pop()
                 target    = params.pop()
 
-                graph = Lambda_Graph().get_gs_graph___by_name(target)       # check if the value provided is a saved graph
-                if graph is not None:                                       # if it exists
-                    keys = graph.nodes                                      # set keys to graph nodes
-                else:                                                       # if not
-                    keys      = target.upper().split(",")                   #    use value as keys
-
-
-                graph = GS_Graph()
-
-                if   direction == 'up'      : graph.set_links_path_mode_to_up()
-                elif direction == 'down'    : graph.set_links_path_mode_to_down()
-                elif direction == 'children': graph.set_puml_link_types_to_add(['is parent of'])
-                elif direction == 'parents' : graph.set_puml_link_types_to_add(['is child of'])
-                elif direction != 'all'     :
-                    text = ':red_circle: Unsupported direction `{0}` for `jira links` command. Current supported values are: `all`, `up`, `down`, `children` and `parents`'.format(direction)
+                if direction not in ['up', 'down','children','parents', 'all']:
+                    text = ':red_circle: Unsupported direction `{0}` for `jira links` command. Current supported values are: `all`, `up`, `down`, `children` and `parents`'.format(
+                        direction)
                     return {"text": text, "attachments": attachments}
 
-                #if direction == 'risks'   : graph.set_puml_link_types_to_add(['has RISK','creates RISK','creates R4','creates R3','creates R2','creates R1'])
+                graph = Lambda_Graph().graph_links(target, direction, depth)
 
-                graph.add_all_linked_issues(keys, depth)
-                graph_type = "{0}__{1}___depth_{2}".format(keys, direction, depth)
+                graph_type = "{0}__{1}___depth_{2}".format(target, direction, depth)
+
                 if save_graph is False:
                     return graph
                 graph_name = graph.render_and_save_to_elk(None, graph_type, channel, user)
                 if only_create:
                     return graph, graph_name, depth, direction, target
-                #slack_message("Created Graph with name: '{0}'".format(graph_name), [], channel)
+
                 puml = graph.puml.puml
                 max_size = 60000
                 if channel and (not view) and len(puml) > max_size:            # only do this check when there is a channel and no view (meaning that the graph will be generated)
                     text = ':red_circle: for the graph `{0}` with `{1}` nodes and `{2}` edges, the PlantUML code generated from your query was too big `{3}` and rendering this type of large graphs doesn\'t work well in PlantUML (max allowed is `{4}`)'\
                                     .format(graph_name, len(graph.nodes), len(graph.edges), len(puml),max_size)
                 else:
-                    if view:            # if we have defined a view, render it here
+                    if view:                                        # if we have defined a view, render it here
                         graph_view          = Graph_View()
                         graph_view.graph    = graph
                         graph_view.graph.reset_puml()
                         graph_view.render_view(view,channel,team_id,graph_name)
                         puml = graph_view.graph.puml.puml
-                        #slack_message('',[{'text':'```{0}```'.format(puml)}], channel)
                     else:
                         view = 'default'
 

@@ -4,6 +4,7 @@ from pbx_gs_python_utils.utils.Lambdas_Helpers  import slack_message
 from pbx_gs_python_utils.utils.Misc             import Misc
 from osbot_aws.apis.Lambda           import Lambda
 
+from osbot_jira.api.graph.Filters import Filters
 from osbot_jira.api.graph.GS_Graph import GS_Graph
 from osbot_jira.api.graph.Lambda_Graph import Lambda_Graph
 
@@ -56,22 +57,23 @@ class Graph_Filters:
     def only_with_issue_types(team_id, channel, params):
         (graph_name, graph, params) = Graph_Filters._get_graph_from_params(team_id, channel, params)
 
-        new_nodes = []
-        new_edges = []
-        issues = graph.get_nodes_issues()
-        for key, issue in issues.items():
-            if issue:
-                issue_type = issue.get('Issue Type')
-                if issue_type in params:
-                    new_nodes.append(key)
-
-        for edge in graph.edges:
-            from_key = edge[0]
-            to_key  = edge[2]
-            if from_key in new_nodes and to_key in new_nodes:
-                new_edges.append(edge)
-
-        graph.set_nodes(new_nodes).set_edges(new_edges)
+        Filters().only_with_issue_types(graph,params)
+        # new_nodes = []
+        # new_edges = []
+        # issues = graph.get_nodes_issues()
+        # for key, issue in issues.items():
+        #     if issue:
+        #         issue_type = issue.get('Issue Type')
+        #         if issue_type in params:
+        #             new_nodes.append(key)
+        #
+        # for edge in graph.edges:
+        #     from_key = edge[0]
+        #     to_key  = edge[2]
+        #     if from_key in new_nodes and to_key in new_nodes:
+        #         new_edges.append(edge)
+        #
+        # graph.set_nodes(new_nodes).set_edges(new_edges)
 
         return Graph_Filters._save_graph_and_send_slack_message(team_id, channel, graph, graph_name)
 
@@ -133,11 +135,12 @@ class Graph_Filters:
         if graph:
             issues = graph.get_nodes_issues().items()
             for key,issue in issues:
-                issue_links = issue.get('Issue Links')
-                for issue_link, targets in issue_links.items():
-                    for target in targets:
-                        if key in graph.nodes and target in graph.nodes:
-                            graph.add_edge(key,issue_link,target)
+                if issue:
+                    issue_links = issue.get('Issue Links')
+                    for issue_link, targets in issue_links.items():
+                        for target in targets:
+                            if key in graph.nodes and target in graph.nodes:
+                                graph.add_edge(key,issue_link,target)
 
         return Graph_Filters._save_graph_and_send_slack_message(team_id, channel, graph, graph_name)
 
