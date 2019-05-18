@@ -252,6 +252,7 @@ class GS_Graph:
                 new_edges.append(edge)                    # keep the edge
         self.edges = new_edges
         return self
+
     def remove_node(self,key):
         if key in self.nodes:
             self.nodes.remove(key)
@@ -395,55 +396,3 @@ class GS_Graph:
         self.add_linked_issues_of_types(issue_types_paths)
 
         self.render_puml()
-
-
-        # issue_types_to_ignore = ['_all',
-        #                          'has Stakeholder',
-        #                          'is managed by',
-        #                          'is manager of',
-        #                          'creates R1',
-        #                          'creates R2',
-        #                          'creates R3',
-        #                          'is Vulnerable to',
-        #                          'Requires', ] + issue_types_path
-        # graph_2.add_link_types_as_nodes(issue_types_to_ignore)
-
-
-    # def create_epic_graph_with_details(self, keys):
-    #     (
-    #         self.set_links_path_mode_to_down()
-    #             .add_all_linked_issues(keys, 1)
-    #             .add_nodes_from_epics()
-    #     )
-    #
-    #     issues = self.api_issues.issues(self.nodes)
-    #
-    #     class_diagram = API_Class_Diagram()
-    #
-    #     def add_node(node_key):
-    #         node = issues.get(node_key)
-    #         if node:
-    #             key = node['Key'].replace('-', '_')
-    #             summary = node['Summary']
-    #             letter = node['Issue Type'][0]
-    #             color = 'LightBlue'
-    #             # rating = "Risk Rating: " + node['Rating']
-    #             latest_info = node.get('Latest_Information')
-    #             labels = node['Labels']
-    #             size = 20
-    #             if latest_info: latest_info = '\n'.join(textwrap.wrap(latest_info, 100))
-    #             if letter == 'E': color = 'White'
-    #             if letter == 'I' and node['Issue Type'] == 'Indent': color = 'LightPink'
-    #             class_diagram.add_node(key, summary, 'status: ' + node['Status'], letter, color, '--{0}--'.format(key),
-    #                                    latest_info, '-{0}'.format(labels), size, '#Brown ')
-    #
-    #     def add_edge(triplet):
-    #         class_diagram.add_edge(triplet[0].replace('-', '_'), triplet[2].replace('-', '_'), triplet[1])
-    #
-    #     for node in self.nodes:
-    #         add_node(node)
-    #
-    #     for edge in self.edges:
-    #         add_edge(edge)
-    #
-    #     self.puml.puml = class_diagram.puml()

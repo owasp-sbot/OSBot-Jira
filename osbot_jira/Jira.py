@@ -20,6 +20,7 @@ class Jira:
     def elk_to_slack  (self): return set_up_ctor_cache(self, ELK_to_Slack)
     def gs_bot_jira   (self): return set_up_ctor_cache(self, GS_Bot_Jira)
     def graph_commands(self): return set_up_ctor_cache(self, Lambda_Graph_Commands)
+    def lambda_graph  (self): return set_up_ctor_cache(self, Lambda_Graph)
 
 
 
@@ -46,4 +47,4 @@ class Jira:
 
     def graph_expand(self, source, depth, link_types):
         params = [source, depth, link_types]
-        return self.graph_commands.expand(params=params, save_graph=False)
+        return self.graph_commands().expand(params=params, save_graph=False)
