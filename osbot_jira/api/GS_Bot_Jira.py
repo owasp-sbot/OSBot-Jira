@@ -18,7 +18,7 @@ from osbot_jira.api.graph.Lambda_Graph                      import Lambda_Graph
 class GS_Bot_Jira:
 
     def __init__(self):
-        self.version = "v0.31"
+        self.version = "v0.32"
 
     def cmd_created_in_last(self, params, team_id=None, channel=None):
         elk_to_slack = ELK_to_Slack()

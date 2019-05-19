@@ -60,17 +60,19 @@ class Lambda_Graph():
         if params is None or len(params) == 0:
             params = ['help']
 
-        from osbot_jira.api.graph import Lambda_Graph_Commands # can only do this here to avoid circular dependencies
+        from osbot_jira.api.graph.Lambda_Graph_Commands import Lambda_Graph_Commands # can only do this here to avoid circular dependencies
         try:
             method_name  = params.pop(0)
             method       = getattr(Lambda_Graph_Commands, method_name)
         except Exception:
-            pass #method = Lambda_Graph_Commands.help
+            method = Lambda_Graph_Commands.help
         try:
             return method(team_id, channel, params, data)
         except Exception as error:
-            slack_message(':red_circle: Error processing params `{0}`: _{1}_'.format(params, pprint.pformat(error)), [], channel)
+            message = ':red_circle: Error processing params `{0}`: _{1}_'.format(params, pprint.pformat(error))
+            slack_message(message, [], channel)
             log_to_elk("Error in Lambda_Graph.handle_lambda_event :{0}".format(error), level = 'error')
+            return message
 
 
         ##Lambda_Graph_Commands().help(channel, data)

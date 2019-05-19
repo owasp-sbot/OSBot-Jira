@@ -16,6 +16,7 @@ class test_Deploy_Lambda_Functions(TestCase):
         targets = [
                     'osbot_jira.lambdas.elastic_jira'    ,   #   elastic_jira.py    GS_Bot_Jira
                     'osbot_jira.lambdas.jira'            ,   #   jira.py            GS_Bot_Jira_Commands
+                    'osbot_jira.lambdas.graph'           ,   #   graph.py
 
                    ]
         result = ""

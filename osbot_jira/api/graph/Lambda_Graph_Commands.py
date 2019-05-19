@@ -16,7 +16,7 @@ from osbot_jira.api.graph.Graph_Commands.Nodes import Nodes
 from osbot_jira.api.graph.Graph_Commands.Vis_JS import Vis_JS
 from osbot_jira.api.graph.Lambda_Graph import Lambda_Graph
 
-Lambda_Graph_Commands_version = "v0.24"
+Lambda_Graph_Commands_version = "v0.32"
 
 class Lambda_Graph_Commands:
 
@@ -62,9 +62,12 @@ class Lambda_Graph_Commands:
         help_text = ""
         for command in commands:
             help_text += " • {0}\n".format(command)
-        attachments = API_Slack_Attachment(help_text, 'good')
+        attachments = API_Slack_Attachment(help_text, 'good').render()
         text = "*Here are the `graph` commands available:*"
-        slack_message(text, attachments.render(), channel,team_id)
+        if channel:
+            slack_message(text, attachments, channel,team_id)
+        else:
+            return text,attachments
 
     @staticmethod
     def filter(team_id, channel, params, data):
@@ -156,8 +159,11 @@ class Lambda_Graph_Commands:
             graphs_text += row_format.format(count, user, nodes, edges, graph_type[0:24], graph_name[0:10])
             count       += 1
         graphs_text += '```'
-        attachments = API_Slack_Attachment(graphs_text, 'good')
-        slack_message('*Here are the last {0} graphs generated* (use `graph last n` to see more results)'.format(n), attachments.render(), channel, team_id)
+        attachments = API_Slack_Attachment(graphs_text, 'good').render()
+        if channel:
+            slack_message('*Here are the last {0} graphs generated* (use `graph last n` to see more results)'.format(n), attachments, channel, team_id)
+        else:
+            return attachments
 
 
     @staticmethod
@@ -406,7 +412,7 @@ class Lambda_Graph_Commands:
 
                 attachments = [{"color": "good", "text": "{0}".format(pprint.pformat(data))}]
             else:
-                from pbx_gs_python_utils.gs.API_Issues import API_Issues            # if a graph wasn't found try to get the issue with that name
+                from osbot_jira.api.API_Issues import API_Issues        # if a graph wasn't found try to get the issue with that name
                 issue = API_Issues().issue(graph_name)
                 if issue:
                     data = {
@@ -467,7 +473,10 @@ class Lambda_Graph_Commands:
 
     @staticmethod
     def version(team_id, channel, params, data):
-        slack_message(Lambda_Graph_Commands_version, [], channel, team_id)
+        if channel:
+            slack_message(Lambda_Graph_Commands_version, [], channel, team_id)
+        else:
+            return Lambda_Graph_Commands_version
 
 
 
