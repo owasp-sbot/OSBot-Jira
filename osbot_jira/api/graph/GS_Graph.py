@@ -293,6 +293,7 @@ class GS_Graph:
 
 
     def render_puml(self):
+        self.reset_puml()
         return GS_Graph_Puml(self).render_puml()
 
         # node_text_value = self.puml_options['node-text-value' ]

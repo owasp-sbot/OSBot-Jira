@@ -2,6 +2,7 @@ from unittest import TestCase
 
 from osbot_aws.apis.Lambda import Lambda
 from osbot_browser.browser.Browser_Lamdba_Helper import Browser_Lamdba_Helper
+from osbot_jira.api.graph.GS_Graph import GS_Graph
 from pbx_gs_python_utils.utils.Dev import Dev
 
 from osbot_jira.api.graph.Graph_Commands.Graph_Filters import Graph_Filters
@@ -11,6 +12,11 @@ class Test_Nodes(TestCase):
 
     def setUp(self):
         self.filters = Graph_Filters()
+        self.result = None
+
+    def tearDown(self):
+        if self.result is not None:
+            Dev.pprint(self.result)
 
     def test_remove_link_types(self):
         graph_name = 'graph_XTK'
@@ -19,14 +25,16 @@ class Test_Nodes(TestCase):
 
     def test_only_with_issue_types(self):
         graph_name = 'graph_9G8'
-        issue_type = 'Risk'
+        issue_type = 'People'
         self.filters.only_with_issue_types('T7F3AUXGV', 'DDKUZTK6X', [graph_name,issue_type])
 
     def test_only_show_issue_types(self):
         graph_name = 'graph_9G8'
-        graph_name = 'graph_0XM'
-        issue_type = 'Risk,Vulnerability'
-        self.filters.only_show_issue_types('T7F3AUXGV', 'DDKUZTK6X', [graph_name,issue_type])
+        #graph_name = 'graph_0XM'
+        issue_type = 'Risk,People'
+        graph : GS_Graph = self.filters.only_show_issue_types(params=[graph_name,issue_type])
+        graph.render_puml_and_save_tmp()
+
 
     def test_only_link_types(self):
         graph_name = 'graph_XTK'

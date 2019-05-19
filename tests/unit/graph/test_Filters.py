@@ -46,3 +46,10 @@ class test_Filters(TestCase):
         assert graph.issues__issue_types() == ['Risk']
 
         #self.result = graph.render_puml_and_save_tmp()
+
+    def test_only_show_issue_types(self):
+        graph_name = 'graph_9G8'
+        issue_types = ['People']
+        graph = self.get_graph(graph_name)
+        self.filters.setup(graph=graph).only_show_issue_types(issue_types)
+        graph.render_puml_and_save_tmp()

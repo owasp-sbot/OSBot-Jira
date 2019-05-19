@@ -56,42 +56,16 @@ class Graph_Filters:
     @staticmethod
     def only_with_issue_types(team_id, channel, params):
         (graph_name, graph, params) = Graph_Filters._get_graph_from_params(team_id, channel, params)
-
-        Filters().only_with_issue_types(graph,params)
-        # new_nodes = []
-        # new_edges = []
-        # issues = graph.get_nodes_issues()
-        # for key, issue in issues.items():
-        #     if issue:
-        #         issue_type = issue.get('Issue Type')
-        #         if issue_type in params:
-        #             new_nodes.append(key)
-        #
-        # for edge in graph.edges:
-        #     from_key = edge[0]
-        #     to_key  = edge[2]
-        #     if from_key in new_nodes and to_key in new_nodes:
-        #         new_edges.append(edge)
-        #
-        # graph.set_nodes(new_nodes).set_edges(new_edges)
-
-        return Graph_Filters._save_graph_and_send_slack_message(team_id, channel, graph, graph_name)
+        if graph:
+            Filters().setup(graph=graph).only_with_issue_types(params)
+            return Graph_Filters._save_graph_and_send_slack_message(team_id, channel, graph, graph_name)
 
     @staticmethod
-    def only_show_issue_types(team_id, channel, params):
+    def only_show_issue_types(team_id=None, channel=None, params=None):
         (graph_name, graph, params) = Graph_Filters._get_graph_from_params(team_id, channel, params)
-
-        new_nodes = []
-        issues = graph.get_nodes_issues()
-        for key, issue in issues.items():
-            if issue:
-                issue_type = issue.get('Issue Type')
-                if issue_type in params:
-                    new_nodes.append(key)
-
-        graph.set_nodes(new_nodes)  # this version as an interesting side effect since we are not removing the edges with no nodes
-
-        return Graph_Filters._save_graph_and_send_slack_message(team_id, channel, graph, graph_name)
+        if graph:
+            Filters().setup(graph).only_show_issue_types(params)
+            return Graph_Filters._save_graph_and_send_slack_message(team_id, channel, graph, graph_name)
 
     @staticmethod
     def only_with_link_types(team_id, channel, params):

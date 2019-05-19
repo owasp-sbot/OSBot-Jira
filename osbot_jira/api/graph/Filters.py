@@ -36,5 +36,19 @@ class Filters:
                 new_edges.append(edge)
 
         self.graph.set_nodes(new_nodes).set_edges(new_edges)
+        return self
+
+    def only_show_issue_types(self,issue_types):
+        new_nodes = []
+        issues = self.graph.get_nodes_issues()
+        for key, issue in issues.items():
+            if issue:
+                issue_type = issue.get('Issue Type')
+                if issue_type in issue_types:
+                    new_nodes.append(key)
+
+        self.graph.set_nodes(new_nodes)             # this version as an interesting side effect since we are not removing the edges with no nodes
+        return self
+
 
 
