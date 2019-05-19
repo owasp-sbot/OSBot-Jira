@@ -1,6 +1,4 @@
 import json
-import textwrap
-
 from pbx_gs_python_utils.plantuml.Puml  import Puml
 from pbx_gs_python_utils.utils.Files    import Files
 from pbx_gs_python_utils.utils.Json     import Json
@@ -74,6 +72,8 @@ class GS_Graph:
         for edge in edges:
             self.add_edge(edge[0], edge[1], edge[2])
 
+    # this needs to be refactored and improved (since there are now more than 10k issues)
+    # and this is called by the .add_all_linked_issues method
     def link_types_per_key(self):
         link_types = self.link_types()
 
@@ -83,15 +83,13 @@ class GS_Graph:
                 if result.get(key)            is None : result[key] = {}
                 if result[key].get(link_type) is None : result[key][link_type] = []
                 result[key][link_type] += items
-            #Dev.pprint(link_type)
-            #Dev.pprint(data)
-            #break
-        #Dev.pprint(link_types['Creates RISK'])
         return result
 
-    def add_all_linked_issues(self, keys = [], depth = 1):
+    def add_all_linked_issues(self, keys=None, depth = 1):
+        if keys is None:
+            keys = []
         self.expand_link_types_to_add()
-        link_types_per_key   = self.link_types_per_key()
+        link_types_per_key   = self.link_types_per_key()        # this needs to be refactored and improved (since there are now more than 10k issues)
         only_from_projects   = self.puml_options['only-from-projects']
         link_types_to_add    = self.puml_options['link-types-to-add' ]
         link_types_to_ignore = self.puml_options['link-types-to-ignore']
@@ -128,19 +126,9 @@ class GS_Graph:
                             self.nodes.append(linked_issue)
         return self
 
-    # def add_link_types_as_nodes_1(self, issue_types_to_ignore =[]):
-    #     if self.issues is None:
-    #         self.issues = self.api_issues.issues(self.nodes)
-    #     issue_types_to_ignore.append('_all')
-    #     for key in self.nodes:
-    #         issue = self.issues.get(key)
-    #         if issue:
-    #             link_types = sorted(set(issue['Issue Links']))
-    #             for link_type in link_types:
-    #                 if link_type not in issue_types_to_ignore:
-    #                     self.add_edge(key, "",link_type)
-
-    def add_link_types_as_nodes(self, issue_types_to_ignore =[]):
+    def add_link_types_as_nodes(self, issue_types_to_ignore=None):
+        if issue_types_to_ignore is None:
+            issue_types_to_ignore = []
         if self.issues is None:
             self.issues = self.api_issues.issues(self.nodes)
         issue_types_to_ignore.append('_all')
@@ -153,12 +141,6 @@ class GS_Graph:
                         for item in items:
                             self.add_edge(key, "", link_type_node_key)
                             self.add_edge(link_type_node_key , "" , item)
-                # link_types = sorted(set(issue['Issue Links']))
-                # for link_type in link_types:
-                #     if link_type not in issue_types_to_ignore:
-                #         self.add_edge(key, "",link_type)
-
-
         return self
 
     def add_nodes_from_epics(self):
@@ -178,18 +160,35 @@ class GS_Graph:
             extra_links = self.link_paths_mappings.get(link)
             if extra_links:
                 extra_link_types.extend(extra_links)
-                #print('\n\nFOUND ONE:', link)
         link_types_to_add.extend(extra_link_types)
         self.puml_options['link-types-to-add'] = link_types_to_add
         return self
 
-    def get_nodes_issues     (self): return self.api_issues.issues(self.nodes)
-    def get_unique_link_types(self): return list(set([edge[1] for edge in self.edges]))
-    def get_puml             (self): return self.puml.puml
+    def get_nodes_issues     (self,reload=False):
+        if self.issues is None or reload is True:
+            self.issues = self.api_issues.issues(self.nodes)
+        return self.issues
+
+    def get_unique_link_types(self):
+        return list(set([edge[1] for edge in self.edges]))
+
+    def get_puml             (self):
+        return self.puml.puml
+
+    def issues__values_by_field(self, field_name):
+        results = []
+        issues = self.get_nodes_issues()
+        for node in self.nodes:
+            issue = issues.get(node)
+            if issue:
+                results.append(issue.get(field_name))
+        return list(set(results))
+
+    def issues__issue_types(self):
+        return self.issues__values_by_field('Issue Type')
 
 
-
-    #stakeholder = 'GSP-1'  # Renaud              # Comment when pushing to GG
+    # this needs to be refactored since it is quite an expensive call (invoked quite often)
     def link_types(self, index = "all"):
         if self._link_types is None:
             self._link_types = self.api_issues.link_types(index)
@@ -361,7 +360,7 @@ class GS_Graph:
         self.puml = Puml().startuml()
         return self
 
-    def to_json(self, puml_config=True):
+    def to_json(self, puml_config=True, store_issues=False):
         if puml_config:
             data = {
                         "nodes"        : self.nodes         ,
@@ -375,6 +374,8 @@ class GS_Graph:
         else:
             data = {    "nodes": self.nodes                 ,
                         "edges": self.edges                 }
+        if store_issues:
+            data['issues'] = self.get_nodes_issues()
 
         return json.dumps(data)
 
@@ -391,6 +392,8 @@ class GS_Graph:
         else:
             self.nodes = data.get("nodes")
             self.edges = data.get("edges")
+
+        self.issues = data.get('issues')
         return self
 
 

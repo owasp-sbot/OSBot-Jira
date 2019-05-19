@@ -12,9 +12,9 @@ class Filters:
             self._lambda_graph = Lambda_Graph()
         return  self._lambda_graph
 
-    def setup(self,graph=None, graph_name=None):
+    def setup(self, graph=None, graph_name=None):
         if graph_name:
-            self.graph = self.lambda_graph().load_gs_graph(graph)
+            self.graph = self.lambda_graph().load_gs_graph(graph_name)
         else:
             self.graph = graph
         return self

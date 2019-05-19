@@ -15,8 +15,9 @@ class API_Issues:
         self._elastic   = None
 
     def elastic(self):
-        if self._elastic is not None:
-            self._elastic    = self.setup(self.index).elastic
+        if self._elastic is None:
+            #current_host_online()
+            self._elastic = Elastic_Search(aws_secret_id=self.secrets_id)
         return self._elastic
 
     def epic_issues(self, epic_key):
@@ -212,19 +213,6 @@ class API_Issues:
             if 'GSBOT-' in key:  return 'it_assets'
             if 'GSED-'  in key:  return 'it_assets'
             return "jira"
-
-
-
-    def setup(self, index):
-        if self.elastic is None and current_host_online():
-            credentials = json.loads(Secrets(self.secrets_id).value())
-            host        = credentials['host'    ]
-            username    = credentials['username']
-            password    = credentials['password']
-            port        = credentials['port'    ]
-            self.elastic = Elastic_Search(index)._setup_Elastic_on_cloud(host, port, username, password)
-
-        return self
 
     def set_default_indexes(self):
         self.elastic().index = 'jira,it_assets,sec_project'

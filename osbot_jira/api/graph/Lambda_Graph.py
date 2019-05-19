@@ -15,7 +15,7 @@ class Lambda_Graph():
         self.doc_type     = 'lambda_graph'
 
     def save_to_elk(self):
-        if self._save_to_elk is not None:
+        if self._save_to_elk is None:
             self._save_to_elk    = Save_To_ELK()
         return self._save_to_elk
 

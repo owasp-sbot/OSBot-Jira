@@ -368,4 +368,20 @@ class Test_GS_Graph(TestCase):
         assert json.loads(graph.to_json(puml_config=False)) == { 'edges': [['abc', '', 'xyz'], ['abc', '', '123']],
                                                                  'nodes': ['abc', 'xyz', '123']}
 
-        new_graph = GS_Graph()
+        graph_json = graph.to_json()
+        new_graph = GS_Graph().from_json(graph_json)
+
+        new_graph_json = new_graph.to_json()
+        assert graph_json == new_graph_json
+        assert graph_json != GS_Graph().to_json()
+
+        assert GS_Graph().from_json(graph.to_json(puml_config=False)).nodes == ['abc', 'xyz', '123']
+
+    def test_to_json__from_json__store_issues(self):
+
+        graph = self.graph
+        graph.add_nodes(['RISK-12', 'RISK-24', 'RISK-1084']).add_edges([('RISK-12', '', 'RISK-24'), ('RISK-12', '', 'RISK-1084')])
+
+        graph_json = graph.to_json(store_issues=True)
+        assert set(json.loads(graph_json).get('issues')) == {'RISK-12', 'RISK-24', 'RISK-1084'}
+        assert set(GS_Graph().from_json(graph_json).issues) == {'RISK-12', 'RISK-24', 'RISK-1084'}
