@@ -28,7 +28,9 @@ class test_Jira(TestCase):
         assert len(self.jira.issues(['RISK-12','RISK-42'])) == 2
 
     def test_graph_links(self):
-        self.result = self.jira.graph_links('GSSP-111', 'up', 2).stats()
+        self.result = self.jira.graph_links('GSSP-111', 'up',1).to_json()
+
+
 
 
 

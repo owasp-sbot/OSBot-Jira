@@ -11,18 +11,23 @@ from pbx_gs_python_utils.utils.Http             import current_host_online
 class API_Issues:
     def __init__(self, index = 'jira,it_assets,sec_project'):
         self.secrets_id = 'elastic-jira-dev-2'
-        self.elastic    = None
-        self.elastic    = self.setup(index).elastic
+        self.index      = index
+        self._elastic   = None
+
+    def elastic(self):
+        if self._elastic is not None:
+            self._elastic    = self.setup(self.index).elastic
+        return self._elastic
 
     def epic_issues(self, epic_key):
         query = {"_source": ["Key"], "query": {"wildcard": {"Epic Link.keyword": epic_key}}}
-        return [result.get('Key') for result in self.elastic.search_using_query(query)]
+        return [result.get('Key') for result in self.elastic().search_using_query(query)]
 
     def issue(self,key):
         try:
-            self.elastic.index = self.resolve_es_index(key)
-            if self.elastic.index:
-                data = self.elastic.get_data(key.upper())
+            self.elastic().index = self.resolve_es_index(key)
+            if self.elastic().index:
+                data = self.elastic().get_data(key.upper())
                 if data:
                     return data['_source']
         except Exception as error:
@@ -38,7 +43,7 @@ class API_Issues:
                 if keys_by_index.get(index) is None: keys_by_index[index]=[]
                 keys_by_index[index].append(key)
         for index, keys in keys_by_index.items():
-            matches = self.elastic.set_index(index).get_many(keys)
+            matches = self.elastic().set_index(index).get_many(keys)
             issues.update(matches)
         return issues
         #return self.api.elastic.get_many(keys)              # need to add support for fetching multiple indexes
@@ -52,18 +57,18 @@ class API_Issues:
     def issues_created_in_last_years  (self, years  ): return self.issues_created_in_last("{0}y".format(years  ))
 
     def issues_created_in_last(self,period):        # can be 1h , 1d, 1w
-        return self.elastic.get_data_between_dates("Created","now-{0}".format(period),"now")
+        return self.elastic().get_data_between_dates("Created","now-{0}".format(period),"now")
 
 
     def issues_updated_in_last(self,period):        # can be 1h , 1d, 1w
-        return self.elastic.get_data_between_dates("Updated","now-{0}".format(period),"now")
+        return self.elastic().get_data_between_dates("Updated","now-{0}".format(period),"now")
 
     #@save_result_to_local_cache
     def issues_all(self, index = 'jira'):
-        self.elastic.index = index
+        self.elastic().index = index
         query = { "query": {"match_all": {}}}
         results = {}
-        for issue in self.elastic.search_using_query(query):
+        for issue in self.elastic().search_using_query(query):
             results[issue['Key']] = issue
         return results
 
@@ -92,7 +97,7 @@ class API_Issues:
     def labels(self):
         query = { "_source": ["Key","Labels"]}
         data  = {}
-        for item in self.elastic.search_using_query(query):
+        for item in self.elastic().search_using_query(query):
             key    = item.get('Key')
             labels = item.get('Labels')
             if labels:
@@ -105,16 +110,16 @@ class API_Issues:
     #@save_result_to_local_cache
     def link_types(self, index="all"):
         query   = {"_source": ["Key", "Issue Links"], }
-        original_index = self.elastic.get_index()
+        original_index = self.elastic().get_index()
         results = []
         if index == "all":
-            results += self.elastic.set_index('it_assets'  ).search_using_query(query)
-            results += self.elastic.set_index('sec_project').search_using_query(query)
-            results += self.elastic.set_index('jira'       ).search_using_query(query)
+            results += self.elastic().set_index('it_assets'  ).search_using_query(query)
+            results += self.elastic().set_index('sec_project').search_using_query(query)
+            results += self.elastic().set_index('jira'       ).search_using_query(query)
         else:
-            results += self.elastic.set_index(index).search_using_query(query)
+            results += self.elastic().set_index(index).search_using_query(query)
 
-        self.elastic.set_index(original_index)
+        self.elastic().set_index(original_index)
         return self.link_types_from_issues(results)
 
     def link_types_from_issues(self, issues, only_link_to = []):
@@ -138,7 +143,7 @@ class API_Issues:
 
     def keys(self):
         query = { "_source": ["Key"], "query": {"match_all": {}} }
-        return [ item['Key'] for item in self.elastic.search_using_query(query) ]
+        return [ item['Key'] for item in self.elastic().search_using_query(query) ]
 
 
     def search(self, raw_text = "", field=None, size=None):
@@ -157,12 +162,12 @@ class API_Issues:
                                       ] }},
             "sort"   : ["Summary.keyword"]
         }
-        results = self.elastic.search_using_query(query, size)
+        results = self.elastic().search_using_query(query, size)
         return list(results)
 
     def search_using_lucene(self, query, size=None):
         if size is None  : size = 10000
-        results = self.elastic.search_using_lucene(query, size)
+        results = self.elastic().search_using_lucene(query, size)
         return list(results)                                        # convert to list due since it seems easier for callers to have it already normalised (and not in a generator)
 
     #@use_local_cache_if_available
@@ -222,7 +227,7 @@ class API_Issues:
         return self
 
     def set_default_indexes(self):
-        self.elastic.index = 'jira,it_assets,sec_project'
+        self.elastic().index = 'jira,it_assets,sec_project'
 
     ### move these to separate analysis file
 

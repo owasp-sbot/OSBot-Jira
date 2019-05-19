@@ -1,3 +1,4 @@
+import json
 import textwrap
 from unittest        import TestCase
 
@@ -10,11 +11,16 @@ from osbot_jira.api.graph.GS_Graph import GS_Graph
 class Test_GS_Graph(TestCase):
 
     def setUp(self):
-        self.graph = GS_Graph()
+        self.graph  = GS_Graph()
+        self.result = None
+
+    def tearDown(self):
+        if self.result is not None:
+            Dev.pprint(self.result)
 
     def test_add_node(self):
-        self.graph.add_node("a","b",{"extra":"c"})
-        assert self.graph.nodes == [{'extra': 'd', 'key': 'a', 'text': 'b'}]
+        self.graph.add_node('a')
+        assert self.graph.nodes == ['a']
 
     def test_add_linked_issues_of_type(self):
         self.graph.add_node('SEC-9195')
@@ -138,23 +144,19 @@ class Test_GS_Graph(TestCase):
         Dev.pprint(len(graph.edges))
 
 
-
     def test_add_all_linked_issues____IT_Assets(self):
-        it_systems = self.graph.api_issues.elastic.search_using_lucene_index_by_id('Issue\ Type: "IT System"')
-        keys       = list(it_systems.keys())#[0:20]
+        it_systems = self.graph.api_issues.elastic().search_using_lucene_index_by_id('Issue\ Type: "IT Asset"')
+        keys       = list(it_systems.keys())[0:20]
         self.graph.set_puml_width(5000)
         self.graph.set_link_types_from_issues(it_systems)
-        #self.graph.set_puml_link_types_to_add(['is parent of'])
-        #self.graph.set_puml_link_types_to_add(['has to be done before'])
         self.graph.set_puml_link_types_to_add(['has to be done after'])
-        #self.graph.set_puml_link_types_to_add(['is parent of'])
 
-        self.graph.add_all_linked_issues(keys, 2)
+        self.graph.add_all_linked_issues(keys, 1)
         self.graph.render_puml_and_save_tmp()
 
         return
 
-    def test_add_all_linked_issues____GitHub(self):
+    def test_add_link_types_as_nodes____GitHub(self):
 
         self.graph.add_node('IA-333')
         self.graph.add_linked_issues_of_types(['is Vulnerable to', 'has Stakeholder'])
@@ -165,10 +167,11 @@ class Test_GS_Graph(TestCase):
 
 
     def test_get_unique_link_types(self):
-        self.graph.add_all_linked_issues( ['RISK-1610'], 3)
+        self.graph.add_all_linked_issues( ['RISK-1610'], 2)
         result = self.graph.get_unique_link_types()
         #Dev.pprint(result)
-        assert len(result) == 16
+        assert len(result) == 22
+
 
 
     def test_remove_with_links(self):
@@ -236,7 +239,7 @@ class Test_GS_Graph(TestCase):
                             'risk reduced by',
                             'is child of',
                             'is fixed by']
-        start_node ='SEC-8651' # Christian W
+        start_node ='SEC-8651'
         self.graph.create_sub_graph_from_start_node(graph.nodes, start_node, issue_types_path)
         self.graph.add_link_types_as_nodes()
         self.graph.puml.save_tmp()
@@ -337,5 +340,32 @@ class Test_GS_Graph(TestCase):
         (graph  # .set_puml_node_edge_value(None)
                 .set_puml_link_types_to_add(['risks_down'])
                 .add_all_linked_issues(keys, 5))
-        result = graph.render_puml_and_save_tmp()
-        Dev.pprint(result)
+        graph.render_puml_and_save_tmp()
+        #Dev.pprint(result)
+
+
+    def test_to_json__from_json(self):
+        graph = self.graph
+        graph.add_nodes(['abc','xyz','123']).add_edges([('abc','', 'xyz'),('abc','','123')])
+        graph.create_params = ['in','unit test']
+
+        assert json.loads(graph.to_json()) == {   'create_params': ['in','unit test'],
+                                                  'edges': [['abc', '', 'xyz'], ['abc', '', '123']],
+                                                  'node_type': {},
+                                                  'nodes': ['abc', 'xyz', '123'],
+                                                  'notes': [],
+                                                  'puml_config': True,
+                                                  'puml_options': { 'height': None,
+                                                                    'left-to-right': True,
+                                                                    'link-types-to-add': [],
+                                                                    'link-types-to-ignore': [],
+                                                                    'node-text-value': 'Summary',
+                                                                    'only-from-projects': [],
+                                                                    'show-edge-labels': True,
+                                                                    'show-key-in-text': True,
+                                                                    'width': None},
+                                                  'skin_params': []}
+        assert json.loads(graph.to_json(puml_config=False)) == { 'edges': [['abc', '', 'xyz'], ['abc', '', '123']],
+                                                                 'nodes': ['abc', 'xyz', '123']}
+
+        new_graph = GS_Graph()

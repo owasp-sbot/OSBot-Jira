@@ -27,7 +27,7 @@ class Test_API_Issues(unittest.TestCase):
         #result = self.api.elastic.es.mget(index='jira',
         #                                    doc_type='item',
         #                       body={'ids': keys})
-        results = self.api.elastic.get_many(keys)
+        results = self.api.elastic().get_many(keys)
         #Dev.pprint(results)
 
     def test_issues_all(self):

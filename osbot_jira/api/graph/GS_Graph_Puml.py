@@ -1,5 +1,4 @@
 class GS_Graph_Puml:
-
     edges    : list
     nodes    : list
     node_type: dict
@@ -12,12 +11,8 @@ class GS_Graph_Puml:
         self.edges        = graph.edges
         self.notes        = graph.notes
         self.node_type    = graph.node_type
-
-    def render_and_save_to_elk(self, graph_name=None, graph_type=None, channel= None, user = None):                                    # might need to move this to a Lambda function
-        #from pbx_gs_python_utils.gs_elk.Lambda_Graph import Lambda_Graph
-        from osbot_jira.api.graph.Lambda_Graph import Lambda_Graph                                                                      # needs to be here of it fail to load the dependency (could be caused by a cyclic dependency)
-        return Lambda_Graph().save_gs_graph(self.graph, graph_name, graph_type, channel, user)
-
+        self.puml         = graph.puml
+        self.skin_params  = graph.skin_params
 
     def render_puml(self):
         node_text_value = self.puml_options['node-text-value' ]
@@ -71,16 +66,5 @@ class GS_Graph_Puml:
             self.puml.add_line(line)
 
         self.puml.enduml()
+        self.graph.puml = self.puml
         return self.puml
-
-    def render_puml_and_save_tmp(self):
-        self.render_puml()
-        return self.puml.save_tmp()
-
-    def render_puml_save_to_elk_and_to_tmp(self, graph_name=None):
-        self.render_and_save_to_elk(graph_name)
-        return self.puml.save_tmp()
-
-    def reset_puml(self):
-        self.puml = Puml().startuml()
-        return self

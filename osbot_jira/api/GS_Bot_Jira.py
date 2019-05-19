@@ -49,7 +49,7 @@ class GS_Bot_Jira:
         to_date = params.pop()
         from_date = params.pop()
         try:
-            issues   = API_Issues().elastic.get_data_between_dates("Created",from_date, to_date)
+            issues   = API_Issues().elastic().get_data_between_dates("Created",from_date, to_date)
 
 
             issues_text = elk_to_slack.get_text_with_issues_key_and_summary(issues)

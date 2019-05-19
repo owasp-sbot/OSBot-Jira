@@ -11,11 +11,16 @@ from pbx_gs_python_utils.utils.Save_To_ELK              import Save_To_ELK
 
 class Lambda_Graph():
     def __init__(self):
-        self.save_to_elk = Save_To_ELK()
-        self.doc_type    = 'lambda_graph'
+        self._save_to_elk = None
+        self.doc_type     = 'lambda_graph'
+
+    def save_to_elk(self):
+        if self._save_to_elk is not None:
+            self._save_to_elk    = Save_To_ELK()
+        return self._save_to_elk
 
     def get_gs_graph_from_most_recent_version(self, lucene_query):
-        data = self.save_to_elk.get_most_recent_version_of_document(lucene_query)
+        data = self.save_to_elk().get_most_recent_version_of_document(lucene_query)
         if data is None: return None
         graph = GS_Graph()
         if data.get('nodes'):
@@ -39,7 +44,7 @@ class Lambda_Graph():
 
     def get_last_n_graphs_of_type(self, doc_type, count):
         lucene_query = 'doc_type."{0}"'.format(doc_type)
-        return self.save_to_elk.elastic.search_using_lucene_sort_by_date(lucene_query, count)
+        return self.save_to_elk().elastic.search_using_lucene_sort_by_date(lucene_query, count)
 
     def handle_lambda_event(self, event):
         log_to_elk("in Lambda_Graph.handle_lambda_event :{0}".format(event))
@@ -60,7 +65,7 @@ class Lambda_Graph():
             method_name  = params.pop(0)
             method       = getattr(Lambda_Graph_Commands, method_name)
         except Exception:
-            method = Lambda_Graph_Commands.help
+            pass #method = Lambda_Graph_Commands.help
         try:
             return method(team_id, channel, params, data)
         except Exception as error:
@@ -101,7 +106,7 @@ class Lambda_Graph():
                 "edges"     : edges
             }
 
-        self.save_to_elk.add_document_with_id(self.doc_type, graph_id, graph)
+        self.save_to_elk().add_document_with_id(self.doc_type, graph_id, graph)
         return graph_name
 
     def send_graph_to_slack___by_type(self, graph_name, channel):

@@ -1,11 +1,12 @@
+import json
 import textwrap
 
 from pbx_gs_python_utils.plantuml.Puml  import Puml
 from pbx_gs_python_utils.utils.Files    import Files
 from pbx_gs_python_utils.utils.Json     import Json
 
-from osbot_jira.api.API_Issues import API_Issues
-
+from osbot_jira.api.API_Issues          import API_Issues
+from osbot_jira.api.graph.GS_Graph_Puml import GS_Graph_Puml
 
 
 class GS_Graph:
@@ -64,11 +65,14 @@ class GS_Graph:
         return self
 
     def add_edge(self, from_key, link_type, to_key):
-
         edge = (from_key, link_type, to_key)
         if edge not in self.edges:
             self.edges.append(edge)                      # this operation is very expensive with 10k+ edges (I wonder how does pydot performance looks like
         return self
+
+    def add_edges(self, edges):
+        for edge in edges:
+            self.add_edge(edge[0], edge[1], edge[2])
 
     def link_types_per_key(self):
         link_types = self.link_types()
@@ -290,58 +294,60 @@ class GS_Graph:
 
 
     def render_puml(self):
-        node_text_value = self.puml_options['node-text-value' ]
+        return GS_Graph_Puml(self).render_puml()
 
-        if self.puml_options['left-to-right']: self.puml.add_line('left to right direction')
-        if self.puml_options['width'        ]: self.puml.add_line('scale {0} width '.format(self.puml_options['width' ]))
-        if self.puml_options['height'       ]: self.puml.add_line('scale {0} height'.format(self.puml_options['height']))
-
-        if self.issues is None:
-            self.issues =  self.get_nodes_issues()
-        for key in self.nodes:
-            if node_text_value is None:
-                self.puml.add_card(key, key)
-            else:
-                issue = self.issues.get(key)
-                if issue:
-                    key_text = issue.get(node_text_value)   #[0:30]
-                    if self.puml_options['show-key-in-text']:
-                        line = '{1} \\n<font:10><i>{0}</i></font>'.format(key,key_text)
-                        if self.node_type.get(key):
-                            self.puml.add_node(self.node_type.get(key),line, key)
-                        else:
-                            self.puml.add_card(line, key)
-                    else:
-                        line = '{0}'.format(key_text)
-                        if self.node_type.get(key):
-                            self.puml.add_node(self.node_type.get(key), line, key)
-                        else:
-                            self.puml.add_card(line, key)
-                else:
-                    self.puml.add_card(key, key)
-
-        for edge in self.edges:
-            from_key  = edge[0]
-            link_type = edge[1]
-            to_key    = edge[2]
-            if self.puml_options['show-edge-labels'] is False:
-                link_type = ""
-            self.puml.add_edge(from_key, to_key, 'down', link_type)
-
-        for note in self.notes:
-            position = note[0]
-            key      = note[1]
-            text     = note[2]
-            line     = "\n\n\t note {0} of {1} \n {2} \n end note".format(position, key, text)
-            self.puml.add_line(line)
-
-        self.puml.add_line('')
-        for skin_param in self.skin_params:
-            line = "skinparam {0} {1}".format(skin_param[0],skin_param[1])
-            self.puml.add_line(line)
-
-        self.puml.enduml()
-        return self.puml
+        # node_text_value = self.puml_options['node-text-value' ]
+        #
+        # if self.puml_options['left-to-right']: self.puml.add_line('left to right direction')
+        # if self.puml_options['width'        ]: self.puml.add_line('scale {0} width '.format(self.puml_options['width' ]))
+        # if self.puml_options['height'       ]: self.puml.add_line('scale {0} height'.format(self.puml_options['height']))
+        #
+        # if self.issues is None:
+        #     self.issues =  self.get_nodes_issues()
+        # for key in self.nodes:
+        #     if node_text_value is None:
+        #         self.puml.add_card(key, key)
+        #     else:
+        #         issue = self.issues.get(key)
+        #         if issue:
+        #             key_text = issue.get(node_text_value)   #[0:30]
+        #             if self.puml_options['show-key-in-text']:
+        #                 line = '{1} \\n<font:10><i>{0}</i></font>'.format(key,key_text)
+        #                 if self.node_type.get(key):
+        #                     self.puml.add_node(self.node_type.get(key),line, key)
+        #                 else:
+        #                     self.puml.add_card(line, key)
+        #             else:
+        #                 line = '{0}'.format(key_text)
+        #                 if self.node_type.get(key):
+        #                     self.puml.add_node(self.node_type.get(key), line, key)
+        #                 else:
+        #                     self.puml.add_card(line, key)
+        #         else:
+        #             self.puml.add_card(key, key)
+        #
+        # for edge in self.edges:
+        #     from_key  = edge[0]
+        #     link_type = edge[1]
+        #     to_key    = edge[2]
+        #     if self.puml_options['show-edge-labels'] is False:
+        #         link_type = ""
+        #     self.puml.add_edge(from_key, to_key, 'down', link_type)
+        #
+        # for note in self.notes:
+        #     position = note[0]
+        #     key      = note[1]
+        #     text     = note[2]
+        #     line     = "\n\n\t note {0} of {1} \n {2} \n end note".format(position, key, text)
+        #     self.puml.add_line(line)
+        #
+        # self.puml.add_line('')
+        # for skin_param in self.skin_params:
+        #     line = "skinparam {0} {1}".format(skin_param[0],skin_param[1])
+        #     self.puml.add_line(line)
+        #
+        # self.puml.enduml()
+        #return self.puml
 
     def render_puml_and_save_tmp(self):
         self.render_puml()
@@ -354,6 +360,39 @@ class GS_Graph:
     def reset_puml(self):
         self.puml = Puml().startuml()
         return self
+
+    def to_json(self, puml_config=True):
+        if puml_config:
+            data = {
+                        "nodes"        : self.nodes         ,
+                        "edges"        : self.edges         ,
+                        "notes"        : self.notes         ,
+                        "node_type"    : self.node_type     ,
+                        "skin_params"  : self.skin_params   ,
+                        "create_params": self.create_params ,
+                        "puml_options" : self.puml_options  ,
+                        "puml_config"  : True               }
+        else:
+            data = {    "nodes": self.nodes                 ,
+                        "edges": self.edges                 }
+
+        return json.dumps(data)
+
+    def from_json(self, json_data):
+        data = json.loads(json_data)
+        if data.get('puml_config') is True:
+            self.nodes          = data.get("nodes")
+            self.edges          = data.get("edges")
+            self.notes          = data.get("notes")
+            self.node_type      = data.get("node_type")
+            self.skin_params    = data.get("skin_params")
+            self.create_params  = data.get("create_params")
+            self.puml_options   = data.get("puml_options")
+        else:
+            self.nodes = data.get("nodes")
+            self.edges = data.get("edges")
+        return self
+
 
     def set_puml_node_text_value    (self,value        ): self.puml_options['node-text-value'     ] = value             ; return self
     def set_puml_only_from_projects (self,value        ): self.puml_options['only-from-projects'  ] = value             ; return self
@@ -381,8 +420,9 @@ class GS_Graph:
                  "size_puml"   : len(self.puml.puml)
                 }
 
-    # LEGACY (Check and delete)
 
+
+    # LEGACY (Check and delete)
 
     def create_sub_graph_from_start_node(self, graph_nodes, start_node, issue_types_paths):
         issues = self.api_issues.issues(graph_nodes)
