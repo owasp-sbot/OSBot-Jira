@@ -166,11 +166,11 @@ class Test_GS_Graph(TestCase):
         return
 
 
-    def test_get_unique_link_types(self):
-        self.graph.add_all_linked_issues( ['RISK-1610'], 2)
-        result = self.graph.get_unique_link_types()
-        #Dev.pprint(result)
-        assert len(result) == 22
+    # def test_edges__link_types(self):
+    #     self.graph.add_all_linked_issues( ['RISK-1610'], 2)
+    #     result = self.graph.get_unique_link_types()
+    #     #Dev.pprint(result)
+    #     assert len(result) == 22
 
 
 
@@ -206,7 +206,7 @@ class Test_GS_Graph(TestCase):
     #### use cases
 
     def test____create_org_chart_everybody(self):
-        is_a_manager_nodes = self.graph.api_issues.link_types('it_assets')['is manager of'].keys()
+        is_a_manager_nodes = self.graph.api_issues.all_link_types('it_assets')['is manager of'].keys()
         self.graph.add_nodes(is_a_manager_nodes)
         self.graph.add_linked_issues_of_type('is manager of')
 

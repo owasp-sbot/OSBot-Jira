@@ -39,7 +39,16 @@ class Test_Nodes(TestCase):
     def test_only_link_types(self):
         graph_name = 'graph_XTK'
         link_types = 'has RISK'
-        self.filters.only_with_link_types('T7F3AUXGV', 'DDKUZTK6X', [graph_name,link_types])
+        graph: GS_Graph = self.filters.only_with_link_types(params=[graph_name,link_types])
+        graph.render_puml_and_save_tmp()
+
+    def test_only_with_field_equal_to(self):
+        graph_name = 'graph_XTK'
+        field      = 'Rating'
+        ratings    = 'Medium'
+        graph: GS_Graph = self.filters.only_with_field_equal_to(params=[graph_name, field, ratings])
+        self.result = graph.nodes__ratings()
+        graph.render_puml_and_save_tmp()
 
     def test_remove_issue_types(self):
         graph_name = 'graph_9G8'
@@ -47,10 +56,12 @@ class Test_Nodes(TestCase):
         self.filters.remove_issue_types('T7F3AUXGV', 'DDKUZTK6X', [graph_name,issue_type])
 
     def test_only_links_between_nodes(self):
-        graph_name = 'graph_XGV'
-        #graph_name = 'graph_XKW'
+        #graph_name = 'graph_XGV'
+        graph_name = 'graph_9G8'
         graph = self.filters.only_links_between_nodes(params=[graph_name])
-        Dev.pprint(len(sorted(graph.edges)))
+        assert len(sorted(graph.nodes)) == 17
+        #graph.render_puml_and_save_tmp()
+
 
     def test_group_by_field(self):
         graph_name = 'graph_XTK'

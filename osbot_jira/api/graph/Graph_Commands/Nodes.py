@@ -81,6 +81,7 @@ class Nodes:
                                                                                      edges_text), []
         return ":red_circle: graph not found: `{0}`".format(graph_name), []
 
+    # move to filter
     @staticmethod
     def remove_link(params):
         (text, attachments) = Nodes._check_params(params, ['Graph Name', 'Link type'])

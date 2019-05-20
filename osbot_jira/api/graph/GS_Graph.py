@@ -74,8 +74,8 @@ class GS_Graph:
 
     # this needs to be refactored and improved (since there are now more than 10k issues)
     # and this is called by the .add_all_linked_issues method
-    def link_types_per_key(self):
-        link_types = self.link_types()
+    def all_link_types_per_key(self):
+        link_types = self.all_link_types()
 
         result = {}
         for link_type, data in link_types.items():
@@ -89,7 +89,7 @@ class GS_Graph:
         if keys is None:
             keys = []
         self.expand_link_types_to_add()
-        link_types_per_key   = self.link_types_per_key()        # this needs to be refactored and improved (since there are now more than 10k issues)
+        link_types_per_key   = self.all_link_types_per_key()        # this needs to be refactored and improved (since there are now more than 10k issues)
         only_from_projects   = self.puml_options['only-from-projects']
         link_types_to_add    = self.puml_options['link-types-to-add' ]
         link_types_to_ignore = self.puml_options['link-types-to-ignore']
@@ -114,7 +114,7 @@ class GS_Graph:
 
     def add_linked_issues_of_type(self, link_type):
         link_type = link_type.strip()                                       # remove any spaces
-        mappings = self.link_types().get(link_type)
+        mappings = self.all_link_types().get(link_type)
         if mappings:
             for key in list(self.nodes):                                    # for each key provided (it is important to pin the self.nodes here since that value is changed below)
                 linked_issues = mappings.get(key)
@@ -153,6 +153,9 @@ class GS_Graph:
                     self.add_node(epic_key)
         return self
 
+    def edges__link_types(self):
+        return sorted(list(set([edge[1] for edge in self.edges])))
+
     def expand_link_types_to_add(self):
         link_types_to_add = self.puml_options['link-types-to-add']
         extra_link_types = []
@@ -168,9 +171,6 @@ class GS_Graph:
         if self.issues is None or reload is True:
             self.issues = self.api_issues.issues(self.nodes)
         return self.issues
-
-    def get_unique_link_types(self):
-        return list(set([edge[1] for edge in self.edges]))
 
     def get_puml             (self):
         return self.puml.puml
@@ -189,7 +189,7 @@ class GS_Graph:
 
 
     # this needs to be refactored since it is quite an expensive call (invoked quite often)
-    def link_types(self, index = "all"):
+    def all_link_types(self, index = "all"):
         if self._link_types is None:
             self._link_types = self.api_issues.link_types(index)
         return self._link_types
@@ -204,6 +204,20 @@ class GS_Graph:
             self.nodes = data['nodes']
             self.edges = data['edges']
         return self
+
+    def nodes__ratings(self):
+        return self.nodes__field_values('Rating')
+
+    def nodes__field_values(self,field):
+        values = []
+        issues = self.get_nodes_issues()
+        for node in self.nodes:
+            issue = issues.get(node)
+            if issue:
+                value = issue.get(field)
+                if value:
+                    values.append(value)
+        return sorted(list(set(values)))
 
     def remove_link_type(self, link_type_to_remove):
         for edge in list(self.edges):                       # create new list so that it is not affected by the remove action
@@ -247,6 +261,7 @@ class GS_Graph:
 
         return self
 
+    # replace with filter only_edges_with_both_nodes
     def remove_no_links_with_no_nodes(self):
         new_edges = []
         nodes = self.nodes
@@ -263,6 +278,7 @@ class GS_Graph:
                 (from_key, link_type, to_key) = edge
                 if from_key == key or to_key == key:
                     self.edges.remove(edge)
+        self.issues = None                              # reset this value since we modified the issues list
         return self
 
     def remove_nodes(self, keys):

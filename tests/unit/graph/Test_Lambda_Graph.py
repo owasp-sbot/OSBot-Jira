@@ -80,7 +80,7 @@ class Test_Lambda_Graph(TestCase):
 
     def test_render_and_save_gs_graph_____org_chart(self):
         graph = GS_Graph()
-        is_a_manager_nodes = graph.api_issues.link_types('it_assets')['is manager of'].keys()
+        is_a_manager_nodes = graph.api_issues.all_link_types('it_assets')['is manager of'].keys()
         graph.add_nodes(is_a_manager_nodes)
         graph.add_linked_issues_of_type('is manager of')
         graph.render_and_save_to_elk   ("test_save_gs_graph_____org_chart", "from unit test")

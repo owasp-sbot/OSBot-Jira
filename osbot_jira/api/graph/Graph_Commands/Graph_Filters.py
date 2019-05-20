@@ -34,7 +34,7 @@ class Graph_Filters:
     @staticmethod
     def _get_graph_from_params(team_id, channel, params):
         if len(params) <2:
-            text = ':red_circle: For this command, you need to provide two parameters: `graph_name` and `link types` (can be comma delimited)'
+            text = ':red_circle: For this command, you need to provide two parameters: `graph_name` and `values` (can be comma delimited)'
             slack_message(text, [], channel, team_id)
             return None,None,None
         graph_name = params.pop(0)
@@ -68,53 +68,35 @@ class Graph_Filters:
             return Graph_Filters._save_graph_and_send_slack_message(team_id, channel, graph, graph_name)
 
     @staticmethod
-    def only_with_link_types(team_id, channel, params):
+    def only_with_link_types(team_id=None, channel=None, params=None):
         (graph_name,graph,params) = Graph_Filters._get_graph_from_params(team_id, channel, params)
 
-        new_edges = []
-
-        for index,edge in enumerate(graph.edges):
-            link_type = edge[1]
-            if link_type in params:
-                new_edges.append(edge)
-
-        graph.set_edges(new_edges).remove_no_links()
-
-        return Graph_Filters._save_graph_and_send_slack_message(team_id, channel, graph, graph_name)
+        if graph:
+            Filters().setup(graph).only_with_link_types(params)
+            return Graph_Filters._save_graph_and_send_slack_message(team_id, channel, graph, graph_name)
 
     @staticmethod
-    def only_with_ratings(team_id, channel, params):
-        (graph_name, graph, params) = Graph_Filters._get_graph_from_params(team_id, channel, params)
+    def only_with_field_equal_to(team_id=None, channel=None, params=None):
+        (text, attachments) = Graph_Filters._check_params(params, ['Graph Name','Field Name', 'Field Value'])
+        if text: return text, attachments
+        graph_name = params.pop(0)
+        field_name = params.pop(0)
+        values     = " ".join(params).split(',')
+        graph      = Graph_Filters._get_graph(graph_name)
+        if graph:
+            Filters().setup(graph).only_with_field_equal_to(field_name,values)
+            return Graph_Filters._save_graph_and_send_slack_message(team_id, channel, graph, graph_name)
 
-        new_nodes = []
-        issues = graph.get_nodes_issues()
-        for key, issue in issues.items():
-            issue_type = issue.get('Rating')
-            if issue_type in params:
-                new_nodes.append(key)
 
-        graph.set_nodes(new_nodes)  # this version as an interesting side effect since we are not removing the edges with no nodes
-
-        return Graph_Filters._save_graph_and_send_slack_message(team_id, channel, graph, graph_name)
-
-    # this filter will replace all edges with all links between the current nodes
     @staticmethod
     def only_links_between_nodes(team_id=None, channel=None, params=[]):
         (text, attachments) = Graph_Filters._check_params(params, ['Graph Name'])
         if text: return text, attachments
         graph_name  = params[0]
         graph       = Graph_Filters._get_graph(graph_name)
-        graph.edges = []                                  # clear all edges from graphh
 
         if graph:
-            issues = graph.get_nodes_issues().items()
-            for key,issue in issues:
-                if issue:
-                    issue_links = issue.get('Issue Links')
-                    for issue_link, targets in issue_links.items():
-                        for target in targets:
-                            if key in graph.nodes and target in graph.nodes:
-                                graph.add_edge(key,issue_link,target)
+            Filters().setup(graph).only_links_between_nodes()
 
         return Graph_Filters._save_graph_and_send_slack_message(team_id, channel, graph, graph_name)
 
@@ -266,7 +248,7 @@ class Graph_Filters:
     def search_by_field(team_id=None, channel=None, params=None):
         results = []
         (graph_name, graph, params) = Graph_Filters._get_graph_from_params(team_id, channel, params)
-        if graph:                                    # todo : add better error handling for passing to correct params for the search
+        if graph:                                     # todo : add better error handling for passing to correct params for the search
             params = params.pop()                     # todo : add better error handling for passing to correct params for the search
             issues = graph.get_nodes_issues()
             if "=" in params:
@@ -292,7 +274,7 @@ class Graph_Filters:
                         results.append(key)
                         #results.append(issue.get(field_name.strip()))
         if len(results) > 0:
-            graph.set_nodes(results).remove_no_links_with_no_nodes()
+            graph.set_nodes(results).remove_no_links_with_no_nodes() # replace with filter only_edges_with_both_nodes
             return Graph_Filters._save_graph_and_send_slack_message(team_id, channel, graph, graph_name)
         else:
             text = ':red_circle: no matches for the search query provided'
