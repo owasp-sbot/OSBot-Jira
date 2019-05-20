@@ -1,7 +1,7 @@
 from unittest import TestCase
 
-from gs_elk.Graph_Commands.Commands_Helper import Commands_Helper
-from gs_elk.Graph_Commands.Nodes           import Nodes
+from osbot_jira.api.graph.Graph_Commands.Commands_Helper import Commands_Helper
+from osbot_jira.api.graph.Graph_Commands.Nodes import Nodes
 
 
 class Test_Commands_Helper(TestCase):

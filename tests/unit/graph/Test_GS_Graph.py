@@ -1,5 +1,6 @@
 import json
 import textwrap
+import unittest
 from unittest        import TestCase
 
 from pbx_gs_python_utils.utils.Dev import Dev
@@ -143,9 +144,9 @@ class Test_GS_Graph(TestCase):
         Dev.pprint(len(graph.nodes))
         Dev.pprint(len(graph.edges))
 
-
+    @unittest.skip("needs fixing the ES index")
     def test_add_all_linked_issues____IT_Assets(self):
-        it_systems = self.graph.api_issues.elastic().search_using_lucene_index_by_id('Issue\ Type: "IT Asset"')
+        it_systems = self.graph.api_issues.elastic().search_using_lucene_index_by_id('Issue\ Type: "IT Assets"')
         keys       = list(it_systems.keys())[0:20]
         self.graph.set_puml_width(5000)
         self.graph.set_link_types_from_issues(it_systems)
@@ -206,7 +207,7 @@ class Test_GS_Graph(TestCase):
     #### use cases
 
     def test____create_org_chart_everybody(self):
-        is_a_manager_nodes = self.graph.api_issues.all_link_types('it_assets')['is manager of'].keys()
+        is_a_manager_nodes = self.graph.all_link_types('it_assets')['is manager of'].keys()
         self.graph.add_nodes(is_a_manager_nodes)
         self.graph.add_linked_issues_of_type('is manager of')
 

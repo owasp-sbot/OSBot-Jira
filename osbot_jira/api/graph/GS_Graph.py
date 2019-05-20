@@ -440,7 +440,9 @@ class GS_Graph:
                  "size_puml"   : len(self.puml.puml)
                 }
 
-
+    def filter(self):
+        from osbot_jira.api.graph.Filters import Filters
+        return Filters().setup(graph=self)
 
     # LEGACY (Check and delete)
 

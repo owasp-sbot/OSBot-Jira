@@ -110,6 +110,7 @@ class test_Filters(TestCase):
     def test_remove_link_types(self):
         self.use_graph('graph_9G8').remove_link_types(['has RISK', 'is child of'])
         assert self.graph.edges__link_types() == ['has Business Owner', 'has Technical Owner', 'is managed by']
+        self.show_graph()
 
 
     def test_search_by_field(self):
@@ -139,3 +140,8 @@ class test_Filters(TestCase):
         #self.result = self.graph.edges__link_types()
 
         #self.show_graph()
+
+    def test__graph_filter(self):
+        graph :GS_Graph = self.use_graph('graph_9G8').graph
+        graph.filter().remove_field_equal_to('Project', 'GS People')
+        assert graph.edges__link_types() == ['has RISK', 'is child of']
