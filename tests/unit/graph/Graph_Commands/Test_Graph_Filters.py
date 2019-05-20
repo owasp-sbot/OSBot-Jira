@@ -18,11 +18,6 @@ class Test_Nodes(TestCase):
         if self.result is not None:
             Dev.pprint(self.result)
 
-    def test_remove_link_types(self):
-        graph_name = 'graph_XTK'
-        link_types = 'has RISK'
-        self.filters.remove_link_types('T7F3AUXGV', 'DDKUZTK6X', [graph_name, link_types])
-
     def test_only_with_issue_types(self):
         graph_name = 'graph_9G8'
         issue_type = 'People'
@@ -53,7 +48,15 @@ class Test_Nodes(TestCase):
     def test_remove_issue_types(self):
         graph_name = 'graph_9G8'
         issue_type = 'Risk'
-        self.filters.remove_issue_types('T7F3AUXGV', 'DDKUZTK6X', [graph_name,issue_type])
+        graph = self.filters.remove_issue_types(params=[graph_name,issue_type])
+        graph.render_puml_and_save_tmp()
+
+    def test_remove_link_types(self):
+        graph_name = 'graph_XTK'
+        link_types = 'has RISK,is child of'
+        graph = self.filters.remove_link_types(params= [graph_name, link_types])
+        graph.render_puml_and_save_tmp()
+
 
     def test_only_links_between_nodes(self):
         #graph_name = 'graph_XGV'
@@ -65,27 +68,26 @@ class Test_Nodes(TestCase):
 
     def test_group_by_field(self):
         graph_name = 'graph_XTK'
-        field_name = 'Issue Type'
-        #field_name = 'Rating'
+        #field_name = 'Issue Type'
+        field_name = 'Rating'
         #field_name = 'Assignee'
-        result = self.filters.group_by_field(params=[graph_name,'Issue','Type'])
-        Dev.pprint(result.nodes)
-        Dev.pprint(result.edges)
+        graph = self.filters.group_by_field(params=[graph_name,field_name])
+        graph.render_puml_and_save_tmp()
 
     def test_group_by_field__issue_links(self):
         graph_name  = 'graph_ZS9'
         field_name  = 'Issue Links'
         #field_name = 'Status'
-        graph       = self.filters.group_by_field('T7F3AUXGV', 'DDKUZTK6X', params=[graph_name, field_name],)
-        Dev.pprint(graph)
-        if graph:
-            graph_name = Graph_Filters._save_graph(graph)
-            params = ['viva_graph', graph_name, 'default']
-            png_data = Lambda('lambdas.browser.lambda_browser').invoke({"params": params, 'data': {}})
-            Dev.pprint(png_data)
-            Browser_Lamdba_Helper.save_png_data(png_data)
-
-            Dev.pprint("Graph Name: {0} image size {1}".format(graph_name, len(png_data)))
+        graph       = self.filters.group_by_field(params=[graph_name, field_name],)
+        graph.render_puml_and_save_tmp()
+        # if graph:
+        #     graph_name = Graph_Filters._save_graph(graph)
+        #     params = ['viva_graph', graph_name, 'default']
+        #     png_data = Lambda('lambdas.browser.lambda_browser').invoke({"params": params, 'data': {}})
+        #     Dev.pprint(png_data)
+        #     Browser_Lamdba_Helper.save_png_data(png_data)
+        #
+        #     Dev.pprint("Graph Name: {0} image size {1}".format(graph_name, len(png_data)))
 
  #       Dev.pprint(result.edges)FN
 
@@ -97,7 +99,8 @@ class Test_Nodes(TestCase):
         value      = 'Jira '
         graph = self.filters.search_by_field(params=[graph_name, field_name, "=", value])
         graph = self.filters.search_by_field(params=[graph_name, field_name, "~", value])
-        Dev.pprint(graph.nodes)
+        graph.render_puml_and_save_tmp()
+        #Dev.pprint(graph.nodes)
         #Dev.pprint(graph.edges)
         #Dev.pprint(self.filters.search_by_field(params=[graph_name, field_name, "!", value]))
 

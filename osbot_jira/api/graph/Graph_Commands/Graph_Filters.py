@@ -97,45 +97,22 @@ class Graph_Filters:
 
         if graph:
             Filters().setup(graph).only_links_between_nodes()
-
-        return Graph_Filters._save_graph_and_send_slack_message(team_id, channel, graph, graph_name)
+            return Graph_Filters._save_graph_and_send_slack_message(team_id, channel, graph, graph_name)
 
     @staticmethod
-    def remove_issue_types(team_id, channel, params):
+    def remove_issue_types(team_id=None, channel=None, params=None):
         (graph_name, graph, params) = Graph_Filters._get_graph_from_params(team_id, channel, params)
 
-        new_nodes = []
-        new_edges = []
-        issues = graph.get_nodes_issues()
-        for key, issue in issues.items():
-            issue_type = issue.get('Issue Type')
-            if issue_type not in params:
-                new_nodes.append(key)
-
-        for edge in graph.edges:
-            from_key = edge[0]
-            to_key  = edge[2]
-            if from_key in new_nodes and to_key in new_nodes:
-                new_edges.append(edge)
-
-        graph.set_nodes(new_nodes).set_edges(new_edges)
-
-        return Graph_Filters._save_graph_and_send_slack_message(team_id, channel, graph, graph_name)
+        if graph:
+            Filters().setup(graph).remove_field_equal_to('Issue Type', params)
+            return Graph_Filters._save_graph_and_send_slack_message(team_id, channel, graph, graph_name)
 
     @staticmethod
-    def remove_link_types(team_id, channel, params):
+    def remove_link_types(team_id=None, channel=None, params=None):
         (graph_name,graph,params) = Graph_Filters._get_graph_from_params(team_id, channel, params)  # get graph object
-
-        new_edges = []                                                                              # array to hold the new edges
-
-        for index,edge in enumerate(graph.edges):                                                   # for each edge
-            link_type = edge[1]                                                                     # get link_type from edge triplet: (from_node, link_type, to_node)
-            if link_type not in params:                                                             # if link_type is NOT in the params passed
-                new_edges.append(edge)                                                              # add edge from new_edges array
-
-        graph.set_edges(new_edges).remove_no_links()                                                # update original graph with new edges and remove nodes with no links
-
-        return Graph_Filters._save_graph_and_send_slack_message(team_id, channel, graph, graph_name)       # save graph in ELK and send updates via Slack
+        if graph:
+            Filters().setup(graph).remove_link_types(params)
+            return Graph_Filters._save_graph_and_send_slack_message(team_id, channel, graph, graph_name)       # save graph in ELK and send updates via Slack
 
     @staticmethod
     def remove_nodes_with_no_links(team_id, channel, params):
@@ -159,9 +136,7 @@ class Graph_Filters:
         graph = Graph_Filters._get_graph(graph_name)
 
         if graph:
-
             graph.remove_with_links()               # main action (the rest is the same for most filters)
-
             return Graph_Filters._save_graph_and_send_slack_message(team_id, channel, graph, graph_name)
         else:
             text = ':red_circle: Graph not found : {0}'.format(graph_name)
@@ -195,54 +170,15 @@ class Graph_Filters:
         if len(params) < 2:
             return slack_message(':red_circle: For this filter, you need to provide a `graph_name` and a `field` name: ', [], channel, team_id)
 
-
         graph_name = params.pop(0)
         field_name = ' '.join(params)
 
         slack_message(":point_right: Creating new graph using the `group_by_field` filter on the `{0}` field of the `{1}` graph".format(field_name,graph_name),[], channel, team_id)
 
         graph  = Graph_Filters._get_graph(graph_name)
-        issues = graph.get_nodes_issues()
-        nodes  = graph.nodes
-        edges  = graph.edges
-        graph  = GS_Graph()
-        root_node = graph_name # nodes[0]
-        graph.add_node(root_node)
-        if field_name == 'Issue Links':
-            for edge in edges:
-                #from_key   = edge[0]
-                link_type  = edge[1]
-                to_key     = edge[2]
-                #from_issue = Misc.get_value(issues,from_key,{})
-                to_issue   = Misc.get_value(issues, to_key, {})
-                #from_value = Misc.get_value(from_issue, field_name)
-                to_summary = Misc.get_value(to_issue, 'Summary')
-                to_key     = Misc.get_value(to_issue, 'Key'    )
-                #to_value   = "{0} | {1}".format(to_summary,to_key)
-
-                graph.add_node(link_type)
-                graph.add_node(to_key)
-                graph.add_edge(graph_name, '', link_type)
-                graph.add_edge(link_type , '', to_key)
-
-        else:
-            for node in  nodes:
-                issue = issues.get(node)
-                if issue:
-                    value = issue.get(field_name)
-                    #if field_name == 'Issue Links':
-                        # for link_name,issue_links in value.items():
-                        #     for issue_link in issue_links:
-                        #         graph.add_node(link_name)
-                        #         graph.add_edge(root_node, field_name, link_name)
-                        #         graph.add_edge(link_name, field_name, issue_link)
-                        # pass
-                    #else:
-                    graph.add_node(node)
-                    graph.add_edge(root_node, field_name, value)
-                    graph.add_edge(value    ,  '' , node)
-
-        return Graph_Filters._save_graph_and_send_slack_message(team_id, channel, graph, graph_name)
+        if graph:
+            Filters().setup(graph).group_by_field(graph_name, field_name)
+            return Graph_Filters._save_graph_and_send_slack_message(team_id, channel, graph, graph_name)
 
     @staticmethod
     def search_by_field(team_id=None, channel=None, params=None):

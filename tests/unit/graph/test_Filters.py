@@ -11,9 +11,9 @@ from osbot_jira.api.graph.GS_Graph import GS_Graph
 class test_Filters(TestCase):
 
     def setUp(self):
-        self.graph = GS_Graph()
-        self.filters = Filters()
-        self.result  = None
+        self.graph   : GS_Graph = None
+        self.filters            = Filters()
+        self.result             = None
 
     def tearDown(self):
         if self.result is not None:
@@ -32,8 +32,8 @@ class test_Filters(TestCase):
         return graph
 
     def use_graph(self,graph_name):
-        graph = self.get_graph(graph_name)
-        return self.filters.setup(graph=graph)
+        self.graph = self.get_graph(graph_name)
+        return self.filters.setup(graph=self.graph)
 
     def show_graph(self):
         self.filters.graph.render_puml_and_save_tmp()
@@ -41,6 +41,18 @@ class test_Filters(TestCase):
     # class methods
     def test__init__(self):
         assert self.filters.graph is None
+
+    def test_group_by_field(self):
+        root_node = 'Group by field'
+        self.use_graph('graph_9G8').group_by_field(root_node, 'Project')
+        assert root_node   in self.graph.nodes
+        assert 'IT Assets' in self.graph.nodes
+
+    def test_group_by_field__Issue_Links(self):         # Issue_Links are handled differently
+        root_node = 'Group by field'
+        self.use_graph('graph_9G8').group_by_field(root_node, 'Issue Links')
+        assert root_node   in self.graph.nodes
+        assert 'has RISK'  in self.graph.nodes
 
     def test_only_with_issue_types(self):
         graph_name  = 'graph_9G8'
@@ -82,3 +94,48 @@ class test_Filters(TestCase):
         assert self.filters.graph.edges__link_types() == [ 'RISK affects', 'has Business Owner', 'has RISK', 'has Technical Owner', 'is Business Owner', 'is Technical Owner', 'is child of', 'is managed by', 'is manager of', 'is parent of']
         #self.show_graph()
 
+
+    def test_remove_field_equal_to(self):
+        self.use_graph('graph_9G8').remove_field_equal_to('Issue Type', ['Risk','People'])
+        assert self.graph.nodes__field_values('Issue Type') == ['Business entity', 'IT Asset']
+
+    def test_remove_nodes_with_issue_types(self):
+        self.use_graph('graph_9G8').remove_nodes_with_issue_types(['Risk','People'])
+        assert self.graph.nodes__field_values('Issue Type') == ['Business entity', 'IT Asset']
+
+    def test_remove_nodes_from_projects(self):
+        self.use_graph('graph_9G8').remove_nodes_from_projects(['GS People'])
+        assert self.graph.nodes__field_values('Project') == [ 'IT Assets', 'RISK']
+
+    def test_remove_link_types(self):
+        self.use_graph('graph_9G8').remove_link_types(['has RISK', 'is child of'])
+        assert self.graph.edges__link_types() == ['has Business Owner', 'has Technical Owner', 'is managed by']
+
+
+    def test_search_by_field(self):
+        self.use_graph('graph_9G8').search_by_field('Project','equals', 'gs people')
+        assert self.graph.edges__link_types() == ['is managed by']
+
+        self.use_graph('graph_9G8').search_by_field__equals('Project', 'Risk')
+        assert self.graph.edges__link_types() == ['has RISK']
+
+        self.use_graph('graph_9G8').search_by_field('Project', 'not equals', 'gs people')
+        assert self.graph.edges__link_types() == ['has RISK', 'is child of']
+
+        self.use_graph('graph_9G8').search_by_field__not_equals('Project', 'IT Assets')
+        assert self.graph.edges__link_types() == ['has RISK', 'is managed by']
+
+        self.use_graph('graph_9G8').search_by_field('Summary', 'contains', 'jira')
+        assert self.graph.edges__link_types() == ['has RISK']
+
+        self.use_graph('graph_9G8').search_by_field__contains('Summary', 'Group')
+        assert self.graph.edges__link_types() == ['has Business Owner', 'is child of']
+
+        self.use_graph('graph_9G8').search_by_field('Summary', 'not contains', 'jira')
+        assert self.graph.edges__link_types() == ['has Business Owner', 'has Technical Owner', 'is child of', 'is managed by']
+
+        self.use_graph('graph_9G8').search_by_field__not_contains('Summary', 'Group')
+        assert self.graph.edges__link_types() == ['has RISK', 'has Technical Owner', 'is child of', 'is managed by']
+        #self.result = self.graph.edges__link_types()
+
+        #self.show_graph()
