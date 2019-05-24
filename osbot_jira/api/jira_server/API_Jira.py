@@ -123,7 +123,7 @@ class API_Jira:
             issue_Link["Issue Type"] = link_data.fields.issuetype.name
             issue_Link["Id"        ] = link.id
             issue_Link["Key"       ] = link_data.key
-            issue_Link["Priority"  ] = link_data.fields.priority.name
+            #issue_Link["Priority"  ] = link_data.fields.priority.name
             issue_Link["Status"    ] = link_data.fields.status.name
             issue_Link["Summary"   ] = link_data.fields.summary
 
