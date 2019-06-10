@@ -147,36 +147,7 @@ class Test_API_Jira(unittest.TestCase):
         #assert len(set(keys)) > 100
 
 
-    # new features
-
-    # def test___add_new_fields_to_security_goal(self):
-    #     from API_Elastic_Jira import API_Elastic_Jira
-    #     elastic_jira = API_Elastic_Jira('it_assets').setup()                                # API that exposes JRA and ELK
-    #     api_jira     = elastic_jira.api_gs_jira.api_Jira
-    #     elastic      = elastic_jira.elastic
-    #     schema       =  api_jira.fields()                                                   # find ids from schema
-    #     #Dev.pprint(schema)
-    #
-    #     # GDPR Article      - customfield_14156
-    #     # ISO27001 Standard - customfield_14157
-    #
-    #     issue = api_jira.search_no_cache('Key=SC-105').get('SC-105')                        # get data from JIRA and
-    #     #Dev.pprint(issue)
-    #     assert issue.get('GDPR Article').pop()      == 'Recital 83 Security of Processing'  # confirm conversion went ok
-    #     assert issue.get('ISO27001 Standard').pop() == 'A.18.1.5'
-    #
-    #     result = elastic.add(issue, "Key")                                                  # send data to ELK
-    #     #Dev.pprint(result)
-
-
-
-    # def test_covert_issue__new_people_field(self):
-    #     raw_issue = self.api.jira().issue('GSP-95')
-    #     issue = self.api.convert_issue(raw_issue)
-    #     Dev.pprint(issue)
-    #
-    #
-    # def test_bug_no_epic_links(self):
-    #     key = 'GSOS-181'
-    #     issue = self.api.issue(key)
-    #     Dev.pprint(issue)
+    def test_covert_issue_vuln_priority(self):
+        key = 'VULN-1205'
+        assert self.api.issue(key).get('VULN Priority') == 'P3'
+        assert self.api.issue(key).get('VULN-1624')     is None

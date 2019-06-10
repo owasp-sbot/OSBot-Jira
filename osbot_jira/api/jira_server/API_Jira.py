@@ -105,7 +105,8 @@ class API_Jira:
                     "Reporter"          : custom_field_value('reporter'          , 'name'       ) ,
                     "Risk Owner"        : custom_field_value('customfield_12622' , 'displayName') ,
                     "Updated"           : issue.fields.updated                                    ,
-                    "Impacts"           : custom_field_value('customfield_14162' , 'value'       ) }
+                    "Impacts"           : custom_field_value('customfield_14162' , 'value'       ),
+                    'VULN Priority'     : custom_field_value('customfield_14263' , 'value'       )}
 
 
         for link in issue.fields.issuelinks:
