@@ -148,6 +148,5 @@ class Test_API_Jira(unittest.TestCase):
 
 
     def test_covert_issue_vuln_priority(self):
-        key = 'VULN-1205'
-        assert self.api.issue(key).get('VULN Priority') == 'P3'
-        assert self.api.issue(key).get('VULN-1624')     is None
+        assert self.api.issue('VULN-1205').get('VULN Priority') == 'P3'
+        assert self.api.issue('VULN-1624').get('VULN Priority') is None
