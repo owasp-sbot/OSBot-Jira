@@ -49,7 +49,7 @@ class test_GS_Bot_Jira(unittest.TestCase):
 
 
     def test_cmd_issue(self):
-        result = self.api.cmd_issue(['issue', 'SEC-10965', 2000, 2000],'T7F3AUXGV', 'DDKUZTK6X')
+        result = self.api.cmd_issue(['issue', 'SEC-10965', '2000', '2000'],'T7F3AUXGV', 'DDKUZTK6X')
         Dev.pprint(result.get('text'))
 
     def test_cmd_links(self):

@@ -18,7 +18,7 @@ from osbot_jira.api.graph.Lambda_Graph                      import Lambda_Graph
 class GS_Bot_Jira:
 
     def __init__(self):
-        self.version = "v0.32"
+        self.version = "v0.33"
 
     def cmd_created_in_last(self, params, team_id=None, channel=None):
         elk_to_slack = ELK_to_Slack()
@@ -95,14 +95,15 @@ class GS_Bot_Jira:
             params.pop(0) # remove 'issue' command
 
             issue_id = params.pop(0).upper()
-            width    = Misc.array_pop(params,0)
-            height   = Misc.array_pop(params, 0)
+            width    = Misc.to_int(Misc.array_pop(params, 0))
+            height   = Misc.to_int(Misc.array_pop(params, 0))
 
             text = 'Getting screenshot for issue `{0}`'.format(issue_id)
             if width:
                 text += ' with width `{0}`'.format(width)
             if height:
                 text += ' and height `{0}`'.format(height)
+
             payload = {
                             'issue_id': issue_id,
                             'channel' : channel ,
