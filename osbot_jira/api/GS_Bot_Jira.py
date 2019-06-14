@@ -88,27 +88,45 @@ class GS_Bot_Jira:
         return {"text": text, "attachments": [{ 'text': issues_text , 'color':'good'}]}
 
     def cmd_issue(self, params, team_id, channel):
-        #log_to_elk('in cmd_issue', {'params' : params, 'channel': channel})
         attachments = []
-        if len(params) == 1:
+        if len(params) < 2:
             text = ":exclamation: you must provide an issue id "
         else:
-            key         = params[1].upper()
-            jira_link   = "https://jira.photobox.com/browse/{0}".format(key)
-            api_issues = API_Issues()
-            es_index   = api_issues.resolve_es_index(key)
-            if es_index:
-                text        = "....._fetching data for *<{0}|{1}>* _from index:_ *{2}*".format(jira_link, key, es_index)
+            params.pop(0) # remove 'issue' command
 
-                table       = api_issues.create_issue_table(key)
+            issue_id = params.pop(0).upper()
+            width    = Misc.array_pop(params,0)
+            height   = Misc.array_pop(params, 0)
 
-                if channel:
-                    payload = {"puml": table.puml ,
-                               "channel": channel,
-                               "team_id": team_id }
-                    Lambda('utils.puml_to_slack').invoke_async(payload)
-            else:
-                text = ":exclamation: could not find index for issue "
+            text = 'Getting screenshot for issue `{0}`'.format(issue_id)
+            if width:
+                text += ' with width `{0}`'.format(width)
+            if height:
+                text += ' and height `{0}`'.format(height)
+            payload = {
+                            'issue_id': issue_id,
+                            'channel' : channel ,
+                            'team_id' : team_id ,
+                            'width'   : width   ,
+                            'height'  : height
+                      }
+            Lambda('osbot_browser.lambdas.jira_web').invoke_async(payload)
+            # previews version (that showed a plantuml table
+            # jira_link   = "https://jira.photobox.com/browse/{0}".format(key)
+            # api_issues = API_Issues()
+            # es_index   = api_issues.resolve_es_index(key)
+            # if es_index:
+            #     text        = "....._fetching data for *<{0}|{1}>* _from index:_ *{2}*".format(jira_link, key, es_index)
+            #
+            #     table       = api_issues.create_issue_table(key)
+            #
+            #     if channel:
+            #         payload = {"puml": table.puml ,
+            #                    "channel": channel,
+            #                    "team_id": team_id }
+            #         Lambda('utils.puml_to_slack').invoke_async(payload)
+            # else:
+            #     text = ":exclamation: could not find index for issue "
         return {"text": text, "attachments": attachments}
 
     def cmd_links(self, params, team_id=None, channel=None, user=None, only_create=False,save_graph=True):

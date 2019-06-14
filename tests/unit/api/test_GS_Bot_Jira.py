@@ -48,6 +48,10 @@ class test_GS_Bot_Jira(unittest.TestCase):
         assert ':point_right: Elk search had ' in result.get('text')
 
 
+    def test_cmd_issue(self):
+        result = self.api.cmd_issue(['issue', 'SEC-10965', 2000, 2000],'T7F3AUXGV', 'DDKUZTK6X')
+        Dev.pprint(result.get('text'))
+
     def test_cmd_links(self):
         result = self.api.cmd_links(['links', 'SEC-10965', 'all', '1'])
         assert ' "target": "SEC-10965",\n' in result.get('text')
