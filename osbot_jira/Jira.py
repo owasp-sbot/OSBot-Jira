@@ -35,8 +35,8 @@ class Jira:
 
     def search(self, query):
         params = query.split(' ')
-        query = self.elk_to_slack.get_search_query(params)
-        return self.api_issues.search_using_lucene(query)
+        query = self.elk_to_slack().get_search_query(params)
+        return self.api_issues().search_using_lucene(query)
 
     def graph_links(self, target, direction, depth):
         return self.lambda_graph().graph_links(target, direction, depth)

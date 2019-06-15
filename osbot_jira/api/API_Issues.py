@@ -17,7 +17,7 @@ class API_Issues:
     def elastic(self):
         if self._elastic is None:
             #current_host_online()
-            self._elastic = Elastic_Search(aws_secret_id=self.secrets_id)
+            self._elastic = Elastic_Search(aws_secret_id=self.secrets_id, index=self.index)
         return self._elastic
 
     def epic_issues(self, epic_key):
