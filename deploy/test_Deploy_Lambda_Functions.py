@@ -11,7 +11,7 @@ from osbot_jira.Deploy import Deploy
 class test_Deploy_Lambda_Functions(TestCase):
 
     def test_deploy_lambda_functions(self):
-        code_path = Files.path_combine('.','..')
+        #code_path = Files.path_combine('.','..')
 
         targets = [
                     'osbot_jira.lambdas.elastic_jira'    ,   #   elastic_jira.py    GS_Bot_Jira

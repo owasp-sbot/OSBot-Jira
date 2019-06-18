@@ -18,7 +18,7 @@ from osbot_jira.api.graph.Lambda_Graph                      import Lambda_Graph
 class GS_Bot_Jira:
 
     def __init__(self):
-        self.version = "v0.33"
+        self.version = "v0.35 (GSBot)"
 
     def cmd_created_in_last(self, params, team_id=None, channel=None):
         elk_to_slack = ELK_to_Slack()
@@ -226,94 +226,94 @@ class GS_Bot_Jira:
             Lambda('lambdas.browser.lambda_browser').invoke_async({"params": [ "table", graph_name , 'graph_simple'], "data":{"channel" : channel, "team_id": team_id}})
         return {"text": text, "attachments": attachments}
 
-    def cmd_server(self, params, team_id=None, channel=None):
-        attachments = []
-        if len(params) < 2:
-            text = ":exclamation: you must provide an server command"
-        else:
-            params.pop(0)                           # remove 1st command since it is 'server'
-            command  = params.pop(0)
-            data     = Secrets('sync-server-ngrok').value_from_json_string()
-            username = data.get('username')
-            password = data.get('password')
-            if command[0] !='/':
-                url = "https://gs-jira.ngrok.io/server/{0}".format(command)
-            else:
-                url = "https://gs-jira.ngrok.io{0}".format(command)
-            result   = requests.get(url, auth=(username, password)).text
-            text     = "{0}".format(result)
-            #attachments = [{'text':url}]
+    # def cmd_server(self, params, team_id=None, channel=None):
+    #     attachments = []
+    #     if len(params) < 2:
+    #         text = ":exclamation: you must provide an server command"
+    #     else:
+    #         params.pop(0)                           # remove 1st command since it is 'server'
+    #         command  = params.pop(0)
+    #         data     = Secrets('sync-server-ngrok').value_from_json_string()
+    #         username = data.get('username')
+    #         password = data.get('password')
+    #         if command[0] !='/':
+    #             url = "https://gs-jira.ngrok.io/server/{0}".format(command)
+    #         else:
+    #             url = "https://gs-jira.ngrok.io{0}".format(command)
+    #         result   = requests.get(url, auth=(username, password)).text
+    #         text     = "{0}".format(result)
+    #         #attachments = [{'text':url}]
+    #
+    #     return {"text": text, "attachments": attachments}
 
-        return {"text": text, "attachments": attachments}
+    # def cmd_down(self, params, team_id=None, channel=None, user=None):
+    #     self.up_down("down", params, team_id, channel, user)
+    #
+    # def cmd_up(self, params, team_id=None, channel=None, user=None):
+    #     self.up_down("up", params, team_id, channel, user)
 
-    def cmd_down(self, params, team_id=None, channel=None, user=None):
-        self.up_down("down", params, team_id, channel, user)
-
-    def cmd_up(self, params, team_id=None, channel=None, user=None):
-        self.up_down("up", params, team_id, channel, user)
-
-    def cmd_load_sheet(self, params, team_id=None, channel=None):
-        def send_slack_message(message):
-            slack_message(message, [], channel, team_id)
-
-        # def show_pdf(file_id,icon, when):
-        #     send_slack_message('{0} this is what the file currently looks `{1}` the sync'.format(icon, when))
-        #     Lambda('gsbot_gsuite.lambdas.gdocs').invoke({"params":['pdf', file_id], 'data':{'team_id':team_id,'channel': channel}})
-
-
-        if len(params) < 2:
-            text = ":exclamation: you must provide an gsuite `file_id` (you can find this on the url of the document you want to sync)"
-            send_slack_message(text)
-        else:
-            params.pop(0)  # remove 1st command since it is 'server'
-            file_id = params.pop(0)
-
-            #send_slack_message(':point_right: Staring syncing workflow for file `{0}`'.format(file_id))
-            #show_pdf          (file_id, ':one:', 'BEFORE')
-            #send_slack_message(':two: syncing data ...')
-
-            result = self.cmd_server(['server','/jira-sync/load-jira/{0}'.format(file_id)])
-            #[trigger_sync_jira_sheets]
-            status = json.loads(result.get('text')).get('status')
-            send_slack_message('Execution result: `{0}`'.format(status))
-
-            #show_pdf(file_id, ':three:','AFTER')
-
-        return None,None
+    # def cmd_load_sheet(self, params, team_id=None, channel=None):
+    #     def send_slack_message(message):
+    #         slack_message(message, [], channel, team_id)
+    #
+    #     # def show_pdf(file_id,icon, when):
+    #     #     send_slack_message('{0} this is what the file currently looks `{1}` the sync'.format(icon, when))
+    #     #     Lambda('gsbot_gsuite.lambdas.gdocs').invoke({"params":['pdf', file_id], 'data':{'team_id':team_id,'channel': channel}})
+    #
+    #
+    #     if len(params) < 2:
+    #         text = ":exclamation: you must provide an gsuite `file_id` (you can find this on the url of the document you want to sync)"
+    #         send_slack_message(text)
+    #     else:
+    #         params.pop(0)  # remove 1st command since it is 'server'
+    #         file_id = params.pop(0)
+    #
+    #         #send_slack_message(':point_right: Staring syncing workflow for file `{0}`'.format(file_id))
+    #         #show_pdf          (file_id, ':one:', 'BEFORE')
+    #         #send_slack_message(':two: syncing data ...')
+    #
+    #         result = self.cmd_server(['server','/jira-sync/load-jira/{0}'.format(file_id)])
+    #         #[trigger_sync_jira_sheets]
+    #         status = json.loads(result.get('text')).get('status')
+    #         send_slack_message('Execution result: `{0}`'.format(status))
+    #
+    #         #show_pdf(file_id, ':three:','AFTER')
+    #
+    #     return None,None
 
 
-    def cmd_diff_sheet(self, params, team_id=None, channel=None):
-        def send_slack_message(message):
-            slack_message(message, [], channel, team_id)
+    # def cmd_diff_sheet(self, params, team_id=None, channel=None):
+    #     def send_slack_message(message):
+    #         slack_message(message, [], channel, team_id)
+    #
+    #     if len(params) < 2:
+    #         text = ":exclamation: you must provide an gsuite `file_id` (you can find this on the url of the document you want to sync)"
+    #         send_slack_message(text)
+    #     else:
+    #         params.pop(0)  # remove 1st command since it is 'server'
+    #         file_id = params.pop(0)
+    #         send_slack_message(':one: diffing data ...')
+    #         result = self.cmd_server(['server','/jira-sync/diff-sheet/{0}'.format(file_id)])
+    #         send_slack_message(result)
+    #
+    #     return None,None
 
-        if len(params) < 2:
-            text = ":exclamation: you must provide an gsuite `file_id` (you can find this on the url of the document you want to sync)"
-            send_slack_message(text)
-        else:
-            params.pop(0)  # remove 1st command since it is 'server'
-            file_id = params.pop(0)
-            send_slack_message(':one: diffing data ...')
-            result = self.cmd_server(['server','/jira-sync/diff-sheet/{0}'.format(file_id)])
-            send_slack_message(result)
-
-        return None,None
-
-    def cmd_sync_sheet(self, params, team_id=None, channel=None):
-        def send_slack_message(message):
-            slack_message(message, [], channel, team_id)
-
-        if len(params) < 2:
-            text = ":exclamation: you must provide an gsuite `file_id` (you can find this on the url of the document you want to sync)"
-            send_slack_message(text)
-        else:
-            params.pop(0)  # remove 1st command since it is 'server'
-            file_id = params.pop(0)
-            #send_slack_message(':one: diffing data ...')
-            result = self.cmd_server(['server','/jira-sync/sync-sheet/{0}'.format(file_id)])
-            status = Misc.get_value(Misc.json_load(result.get('text')),'status',result)
-            send_slack_message('Execution result: `{0}`'.format(status))
-
-        return None,None
+    # def cmd_sync_sheet(self, params, team_id=None, channel=None):
+    #     def send_slack_message(message):
+    #         slack_message(message, [], channel, team_id)
+    #
+    #     if len(params) < 2:
+    #         text = ":exclamation: you must provide an gsuite `file_id` (you can find this on the url of the document you want to sync)"
+    #         send_slack_message(text)
+    #     else:
+    #         params.pop(0)  # remove 1st command since it is 'server'
+    #         file_id = params.pop(0)
+    #         #send_slack_message(':one: diffing data ...')
+    #         result = self.cmd_server(['server','/jira-sync/sync-sheet/{0}'.format(file_id)])
+    #         status = Misc.get_value(Misc.json_load(result.get('text')),'status',result)
+    #         send_slack_message('Execution result: `{0}`'.format(status))
+    #
+    #     return None,None
 
 
     def cmd_version(self, params, team_id=None, channel=None):
@@ -325,26 +325,26 @@ class GS_Bot_Jira:
 
     # helpers
 
-    def up_down(self, direction, params, team_id=None, channel=None, user=None):
-        if len(params) != 3:
-            text = ':red_circle: for the `jira {0}` command, you need to provide 2 parameters: ' \
-                   '\n\t\t - `jira key or graph` '                                              \
-                   '\n\t\t - `depth` '.format(direction)
-            slack_message(text, [], channel, team_id)
-            return
-
-        target = params[1]
-        depth  = int(params[2])
-        params = ['links', target, direction, depth]
-
-
-        (graph, graph_name, depth, direction, target) = self.cmd_links(params, team_id, channel, user, only_create=True)
-        if graph:
-            text = ':point_right: Created graph for `{0}` in the direction `{1}`, with depth `{2}`, with name `{3}`, with `{4}` nodes and `{5}` edges' \
-                            .format(target, direction, depth, graph_name, len(graph.nodes), len(graph.edges))
-            slack_message(text, [], channel, team_id)
-            Lambda('lambdas.browser.lambda_browser').invoke_async({"data": {"team_id": team_id, "channel": channel}, "params": ['viva_graph', graph_name, 'default']})
-
+    # def up_down(self, direction, params, team_id=None, channel=None, user=None):
+    #     if len(params) != 3:
+    #         text = ':red_circle: for the `jira {0}` command, you need to provide 2 parameters: ' \
+    #                '\n\t\t - `jira key or graph` '                                              \
+    #                '\n\t\t - `depth` '.format(direction)
+    #         slack_message(text, [], channel, team_id)
+    #         return
+    #
+    #     target = params[1]
+    #     depth  = int(params[2])
+    #     params = ['links', target, direction, depth]
+    #
+    #
+    #     (graph, graph_name, depth, direction, target) = self.cmd_links(params, team_id, channel, user, only_create=True)
+    #     if graph:
+    #         text = ':point_right: Created graph for `{0}` in the direction `{1}`, with depth `{2}`, with name `{3}`, with `{4}` nodes and `{5}` edges' \
+    #                         .format(target, direction, depth, graph_name, len(graph.nodes), len(graph.edges))
+    #         slack_message(text, [], channel, team_id)
+    #         Lambda('lambdas.browser.lambda_browser').invoke_async({"data": {"team_id": team_id, "channel": channel}, "params": ['viva_graph', graph_name, 'default']})
+    #
 
     # main method
 
@@ -366,16 +366,20 @@ class GS_Bot_Jira:
                 if command == 'updated_in_last'    : return self.cmd_updated_in_last(params, team_id, channel)
                 if command == 'issue'              : return self.cmd_issue          (params, team_id, channel)
                 if command == 'links'              : return self.cmd_links          (params, team_id, channel, user)
-                if command == 'up'                 : return self.cmd_up             (params, team_id, channel, user)
-                if command == 'down'               : return self.cmd_down           (params, team_id, channel, user)
+                #if command == 'up'                 : return self.cmd_up             (params, team_id, channel, user)
+                #if command == 'down'               : return self.cmd_down           (params, team_id, channel, user)
                 if command == 'search'             : return self.cmd_search         (event          )
-                if command == 'server'             : return self.cmd_server         (params, team_id, channel)
-                if command == 'load_sheet'         : return self.cmd_load_sheet     (params, team_id, channel)
+                #if command == 'server'             : return self.cmd_server         (params, team_id, channel)
+                #if command == 'load_sheet'         : return self.cmd_load_sheet     (params, team_id, channel)
                 if command == 'table'              : return self.cmd_table          (params, team_id, channel)
-                if command == 'sync_sheet'         : return self.cmd_sync_sheet     (params, team_id, channel)
-                if command == 'diff_sheet'         : return self.cmd_diff_sheet     (params, team_id, channel)
-                if command == 'graph_sheet'        : return self.cmd_graph_sheet    (params, team_id, channel)
+                #if command == 'sync_sheet'         : return self.cmd_sync_sheet     (params, team_id, channel)
+                #if command == 'diff_sheet'         : return self.cmd_diff_sheet     (params, team_id, channel)
+                #if command == 'graph_sheet'        : return self.cmd_graph_sheet    (params, team_id, channel)
                 if command == 'version'            : return self.cmd_version        (params, team_id, channel)
+
+                if '-' in command and ' ' not in command and len(command) < 10:  # if it looks like a Issue ID, call the cmd_issue function
+                    params.insert(0,'issue')
+                    return self.cmd_issue(params, team_id, channel)
 
                 #return self.cmd_issue(['issue'] + params, channel)        # default to this one
                 text = ':red_circle: Not supported command `{0}` , see all available using `jira help`'.format(command)
