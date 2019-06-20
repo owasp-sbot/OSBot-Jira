@@ -3,6 +3,7 @@ from pbx_gs_python_utils.utils.Lambdas_Helpers      import slack_message, log_to
 from pbx_gs_python_utils.utils.Misc                 import Misc
 from pbx_gs_python_utils.utils.slack.API_Slack      import API_Slack
 from osbot_jira.api.slack.Jira_Slack_Actions        import Jira_Slack_Actions
+from osbot_jira.api.slack.Slack_Jira_Search import Slack_Jira_Search
 from osbot_jira.api.slack.Slack_Message_Action      import Slack_Message_Action
 from osbot_jira.api.slack.dialogs.Jira_Create_Issue import Jira_Create_Issue
 
@@ -34,8 +35,6 @@ class Slack_Actions:
             handler = actions.get(callback_id)
             return handler().handle_action(data)
 
-        if callback_id == 'jira-create-issue-from-slack-message':
-            Jira_Slack_Actions()
 
         replace_original = False
         # todo: refactor to handler method
@@ -46,8 +45,17 @@ class Slack_Actions:
             except Exception as error:
                 return {'text': "Execution error: {0}".format(error), 'attachments': [], 'replace_original': replace_original}
 
-        text             = ':red_circle: requested action currently not supported: `{0}`'.format(callback_id)
-        return { 'text': text, 'attachments':[] , 'replace_original': replace_original }
+        if callback_id == 'jira_search_select_box':
+            return Slack_Jira_Search().from_select_box(data)
+            #return {'text': text, 'attachments': [], 'replace_original': replace_original}
+
+        text  = ':red_circle: requested action currently not supported: `{0}`'.format(callback_id)
+
+        channel = data['channel']['id']
+        team_id = data['team']['id']
+        slack_message(text, [], channel, team_id)
+
+        return { 'text': text, 'attachments': [] , 'replace_original': replace_original }
 
     def handle_message_action(self, event):
         channel     = event['channel']['id']
