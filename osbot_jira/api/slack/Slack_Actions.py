@@ -1,11 +1,9 @@
-from osbot_aws.apis.Lambda import Lambda
-from pbx_gs_python_utils.utils.Lambdas_Helpers import slack_message, log_to_elk
-from pbx_gs_python_utils.utils.Misc import Misc
-from pbx_gs_python_utils.utils.slack.API_Slack import API_Slack
-from pbx_gs_python_utils.utils.slack.API_Slack_Dialog import API_Slack_Dialog
-
-from osbot_jira.api.slack.Jira_Slack_Actions import Jira_Slack_Actions
-from osbot_jira.api.slack.Slack_Dialog_Submissions import Slack_Dialog_Submissions
+from osbot_aws.apis.Lambda                          import Lambda
+from pbx_gs_python_utils.utils.Lambdas_Helpers      import slack_message, log_to_elk
+from pbx_gs_python_utils.utils.Misc                 import Misc
+from pbx_gs_python_utils.utils.slack.API_Slack      import API_Slack
+from osbot_jira.api.slack.Jira_Slack_Actions        import Jira_Slack_Actions
+from osbot_jira.api.slack.Slack_Message_Action      import Slack_Message_Action
 from osbot_jira.api.slack.dialogs.Jira_Create_Issue import Jira_Create_Issue
 
 
@@ -16,7 +14,6 @@ class Slack_Actions:
         #slack_dialog = API_Slack_Dialog().test_render()
         slack_dialog = Jira_Create_Issue().setup().render()
         API_Slack().slack.api_call("dialog.open", trigger_id=trigger_id, dialog=slack_dialog)
-
 
         return {"text": "Opening test dialog ...", "attachments": [], 'replace_original': False}
 
@@ -37,6 +34,9 @@ class Slack_Actions:
             handler = actions.get(callback_id)
             return handler().handle_action(data)
 
+        if callback_id == 'jira-create-issue-from-slack-message':
+            Jira_Slack_Actions()
+
         replace_original = False
         # todo: refactor to handler method
         if callback_id == 'gs_detect_slack':
@@ -48,6 +48,26 @@ class Slack_Actions:
 
         text             = ':red_circle: requested action currently not supported: `{0}`'.format(callback_id)
         return { 'text': text, 'attachments':[] , 'replace_original': replace_original }
+
+    def handle_message_action(self, event):
+        channel     = event['channel']['id']
+        team_id     = event['team']['id']
+        callback_id = event.get('callback_id')
+        message     = event.get('message')
+        trigger_id  =  event.get('trigger_id'),
+        #text       = message.get('text')
+        #slack_message('in handle_message_action: `{0}` with message `{1}`'.format(callback_id,message), [], channel, team_id)
+        # payload = { "channel"    : channel     ,
+        #             "team_id"    : team_id     ,
+        #             'callback_id': callback_id ,
+        #             "data"       : message     }
+
+        if callback_id == 'jira-create-issue-from-slack-message':
+            Slack_Message_Action(message, trigger_id, channel, team_id).jira_create_issue_from_slack_message()
+
+
+        #result = Lambda('osbot_jira.lambdas.slack_jira_actions').invoke(payload)  # calling lambda that handles submissions
+        #slack_message("result {0}".format(result), [], channel,team_id)
 
     def handle_dialog_submission(self, event):
 
@@ -74,8 +94,9 @@ class Slack_Actions:
                      "data"   : data  }
         Lambda('osbot_jira.lambdas.slack_jira_actions').invoke_async(payload) # calling lambda that handles submissions
 
+        return {}
 
-        # original code and tests (to remove)
+        # original code and tests (to remove) - see example on how to return errors
 
 
         # log_to_elk(submission,index='slack_interaction')
@@ -114,7 +135,6 @@ class Slack_Actions:
         #error_message = ":red_circle: Dialog callback_id not supported: {0}".format(callback_id)
         #slack_message(error_message, [], channel,team_id)
             #self.api_slack.send_message(error_message, channel=channel)
-        return {}
 
         # return {
         #           "errors": [
@@ -154,18 +174,15 @@ class Slack_Actions:
 
         event_type = event.get('type')
 
-
-
         if   event_type == 'interactive_message' : return self.handle_interactive_message (event)
         elif event_type == 'dialog_submission'   : return self.handle_dialog_submission (event)
+        elif event_type == 'message_action'      : return self.handle_message_action(event)
+        elif event_type == 'dialog_cancellation' : return {}
         #elif event_type == 'dialog_suggestion'   : return self.handle_dialog_suggestion(event)
-
-        elif event_type == 'dialog_cancellation': return {}
-
         #elif 'type%22%3A%22dialog_submission'   in body: return self.process_dialog_submission (self.decode_body_with_payload(body))
         #elif 'type%22%3A%22message_action'      in body: return self.process_interactive_action(self.decode_body_with_payload(body))
         #elif 'type%22%3A%22dialog_suggestion'   in body: return self.process_dialog_suggestion (self.decode_body_with_payload(body), "label")
         else:
             #slack_message("Event_Type: {0} ```{1}```".format(event_type, event), [], channel, team_id)
-            slack_message(":red_circle: Unsupported slack action type: {0}".format(event_type), [], 'DDKUZTK6X')
+            slack_message(":red_circle: Unsupported slack action type: {0}".format(event_type), [], channel, team_id)
             return ":red_circle: Unsupported slack action type: {0}".format(event_type)

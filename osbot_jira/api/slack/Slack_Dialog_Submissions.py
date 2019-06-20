@@ -5,7 +5,7 @@ from pbx_gs_python_utils.utils.Misc import Misc
 
 class Slack_Dialog_Submissions:
 
-    def __init__(self, data, channel, team_id):
+    def __init__(self, data, channel=None, team_id=None):
         self.data       = data
         self.submission = Misc.get_value(data,'submission')
         self.channel    = channel

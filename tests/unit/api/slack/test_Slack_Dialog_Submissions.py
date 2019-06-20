@@ -9,8 +9,6 @@ from osbot_jira.api.slack.Slack_Dialog_Submissions import Slack_Dialog_Submissio
 class test_Slack_Dialog_Submissions(TestCase):
 
     def setUp(self):
-        self.submission       = {'channel': 'DDKUZTK6X'}
-        self.dialog_submissions = Slack_Dialog_Submissions(self.submission)
         self.result = None
 
     def tearDown(self):
@@ -18,8 +16,7 @@ class test_Slack_Dialog_Submissions(TestCase):
             Dev.pprint(self.result)
 
     def test_handle(self):
-        self.result = self.dialog_submissions.handle()
-
+        self.result = Slack_Dialog_Submissions({})
 
     def test__update_lambda(self):
         Deploy('osbot_jira.lambdas.slack_jira_actions').deploy()  # update the jira actions
