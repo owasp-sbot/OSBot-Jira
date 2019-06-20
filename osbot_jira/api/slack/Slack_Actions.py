@@ -38,13 +38,9 @@ class Slack_Actions:
             return handler().handle_action(data)
 
         replace_original = False
-
+        # todo: refactor to handler method
         if callback_id == 'gs_detect_slack':
-            #return {'text': 'here: {0}'.format(data), 'attachments': [], 'replace_original': replace_original}
             try:
-                #channel = data['channel']['id']
-                #team_id = data['team']['id']
-                #slack_message('in gs_detect_slack handled: {0}'.format(data), [], channel, team_id)
                 text = Lambda('gs_detect.lambdas.alerting_slack_callbacks').invoke(data)
                 return {'text': text,  'attachments': [], 'replace_original': replace_original}
             except Exception as error:
@@ -71,7 +67,17 @@ class Slack_Actions:
 
         log_to_elk('Slack_Actions.handle_dialog_submission', data=data, index='slack_interaction', category='OSBot-jira')
 
-        Slack_Dialog_Submissions(data,channel, team_id).handle()
+
+
+        payload =  { "channel": channel,
+                     "team_id": team_id,
+                     "data"   : data  }
+        Lambda('osbot_jira.lambdas.slack_jira_actions').invoke_async(payload) # calling lambda that handles submissions
+
+
+        # original code and tests (to remove)
+
+
         # log_to_elk(submission,index='slack_interaction')
         #
         # payload = {

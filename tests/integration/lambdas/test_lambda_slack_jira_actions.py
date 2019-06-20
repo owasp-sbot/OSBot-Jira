@@ -20,14 +20,31 @@ class test_lambda_gsbot_gs_jira(TestCase):
 
     def test___bad_action(self):
         self.test_lambda_update()
-        payload = {  #'channel': 'GDL2EC3EE'
-                     # 'team_id':'T7F3AUXGV'
+        payload = {
                        "data": { "callback_id": 'abc',
-                                 "submission" : {
+                                 "submission" : { 'callback_id' : 'abc' }}}
+        assert self.aws_lambda.invoke(payload) == ':red_circle: Sorry, action not recognized : abc'
 
-                    }}}
-        self.result = payload
+    def test___action_show_issue_screenshot(self):
+        self.test_lambda_update()
+        payload = {  'channel': 'DDKUZTK6X' ,
+                     'team_id':'T7F3AUXGV'  ,
+                     "data": { "callback_id": 'show_issue_screnshot',
+                                 "submission" : { 'callback_id' : 'show_issue_screnshot' , 'issue_id':'RISK-12'}}}
         self.result = self.aws_lambda.invoke(payload)
+
+    def test___action_jira_create_issue(self):
+        self.test_lambda_update()
+        payload = {  'channel': 'DDKUZTK6X' ,
+                     'team_id':'T7F3AUXGV'  ,
+                     "data"   : {   "callback_id": 'jira_create_issue',
+                                    "submission" : { 'callback_id' : 'show_issue_screnshot' ,
+                                                     'project'      : 'SEC',
+                                                     'issue_type'   : 'Task',
+                                                     'summary'      : 'an test issue',
+                                                     'description'  : 'an test description'}}}
+        self.result = self.aws_lambda.invoke(payload)
+
 
 
     def test_lambda_update(self):

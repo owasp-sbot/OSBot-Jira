@@ -19,7 +19,7 @@ from osbot_jira.api.slack.Jira_Slack_Actions import Jira_Slack_Actions
 class GS_Bot_Jira:
 
     def __init__(self):
-        self.version = "v0.37 (GSBot)"
+        self.version = "v0.38 (GSBot)"
 
     def cmd_actions(self, params, team_id=None, channel=None):
         text, attachments = Jira_Slack_Actions().get_actions_ui()
@@ -103,7 +103,7 @@ class GS_Bot_Jira:
             width    = Misc.to_int(Misc.array_pop(params, 0))
             height   = Misc.to_int(Misc.array_pop(params, 0))
 
-            text = 'Getting screenshot for issue `{0}`'.format(issue_id)
+            text = ':point_right: Getting screenshot for issue `{0}`'.format(issue_id)
             if width:
                 text += ' with width `{0}`'.format(width)
             if height:

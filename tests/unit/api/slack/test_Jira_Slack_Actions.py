@@ -27,12 +27,13 @@ class test_Jira_Slack_Actions(TestCase):
         self.result = self.slack_actions.handle_action({'actions': [{'value':'create_issue'}]})
 
 
-    def test__update_lambda(self):
-        Deploy('osbot_jira.lambdas.elastic_jira').deploy()              # update the actions menu
-        Deploy('osbot_jira.lambdas.slack_actions').deploy()             # update the callback action
+    def test__update_lambdas(self):
+        Deploy('osbot_jira.lambdas.elastic_jira'      ).deploy()             # update the actions menu
+        Deploy('osbot_jira.lambdas.slack_actions'     ).deploy()             # update the callback action
+        Deploy('osbot_jira.lambdas.slack_jira_actions').deploy()             # update the jira actions
 
     def test__invoke_lambda(self):
-        self.test__update_lambda()
+        self.test__update_lambdas()
         payload = {'params': ['actions'], 'channel':'DDKUZTK6X', 'team_id':'T7F3AUXGV'}
         self.result = Lambda('osbot_jira.lambdas.elastic_jira').invoke(payload)
 

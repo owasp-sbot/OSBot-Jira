@@ -2,6 +2,7 @@ from unittest import TestCase
 
 from pbx_gs_python_utils.utils.Dev import Dev
 
+from osbot_jira.Deploy import Deploy
 from osbot_jira.api.slack.Slack_Dialog_Submissions import Slack_Dialog_Submissions
 
 
@@ -18,4 +19,8 @@ class test_Slack_Dialog_Submissions(TestCase):
 
     def test_handle(self):
         self.result = self.dialog_submissions.handle()
+
+
+    def test__update_lambda(self):
+        Deploy('osbot_jira.lambdas.slack_jira_actions').deploy()  # update the jira actions
 

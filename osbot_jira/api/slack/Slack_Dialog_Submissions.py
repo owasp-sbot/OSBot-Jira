@@ -33,27 +33,34 @@ class Slack_Dialog_Submissions:
     def jira_create_issue(self):
         project     = self.submission.get('project')
         issue_type  = self.submission.get('issue_type')
-        summary     = self.submission.get('summary').replace('+', ' ')
+        summary     = self.submission.get('summary')
         description = self.submission.get('description')
-        if description:
-            description = description.replace('+', ' ')
-        else:
-            description = ''
-        self.send_message('Creating new `{0}` issue of project `{1}` with summary `{2}` and description `{3}`'.format(project, issue_type, summary,description))
+        if summary    : summary     = summary.replace('+', ' ')
+        if description: description = description.replace('+', ' ')
+        else          : description = ''
 
-        from osbot_jira.api.jira_server.API_Jira import API_Jira
-        try:
-            #result = API_Jira().issue_create(project, summary, description, issue_type)
-            #issue_id = "{0}".format(result)
-            #self.show_issue_screnshot(issue_id)
-            issue_id = 'TBD'
-            jira_link = "https://jira.photobox.com/browse/{0}".format(issue_id)
-            return 'Issue created ok: <{0}|{1}'.format(jira_link,issue_id)
-        except Exception as error:
-            return ':red_circle: Error creating issue {0}'.format(error)
+        if project and issue_type and summary:
+            self.send_message('Creating new `{0}` issue on project `{1}` with summary `{2}` and description `{3}`'.format(issue_type, project, summary,description))
+
+            from osbot_jira.api.jira_server.API_Jira import API_Jira
+            try:
+                result = API_Jira().issue_create(project, summary, description, issue_type)
+                new_issue_id = "{0}".format(result)
+                self.submission['issue_id'] = new_issue_id
+                self.show_issue_screnshot()
+                jira_link = "https://jira.photobox.com/browse/{0}".format(new_issue_id)
+                return 'Created issue: <{0}|{1}>'.format(jira_link,new_issue_id)
+            except Exception as error:
+                return ':red_circle: Error creating issue: {0}'.format(error)
+        return ':red_circle: Error in Slack_Dialog_Submissions.jira_create_issue. Missing required values from submission data: `{0}`'.format(self.submission)
 
         #slack_message('Creating issue: {0}'.format(self.submission), [], self.channel, self.team_id)
 
-    def show_issue_screnshot(self, issue_id):
-        payload = {'params': [issue_id], 'channel': 'DDKUZTK6X', 'team_id': 'T7F3AUXGV'}
-        Lambda('osbot_jira.lambdas.elastic_jira').invoke_async(payload)
+    def show_issue_screnshot(self):
+        issue_id = self.submission.get('issue_id')
+        if issue_id:
+            payload = {'params': [issue_id], 'channel': self.channel, 'team_id': self.team_id}
+            Lambda('osbot_jira.lambdas.elastic_jira').invoke_async(payload)
+            return ':point_right: Screenshot of `{0}` send to channel `{1}`'.format(issue_id, self.channel)
+        else:
+            return ':red_circle: in Slack_Dialog_Submissions.show_issue_screnshot, no `issue_id` was provided'

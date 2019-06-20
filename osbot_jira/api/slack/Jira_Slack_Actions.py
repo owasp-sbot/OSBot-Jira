@@ -47,12 +47,11 @@ class Jira_Slack_Actions:
             return self.message_execution_error(error)
 
 
-    def create_issue(self,event):
+    def create_issue(self, event):
         trigger_id = event.get('trigger_id')
+        channel    = event.get('channel').get('id')
+        team       = event.get('team'   ).get('id')
         slack_dialog = Jira_Create_Issue().setup().render()
-        API_Slack().slack.api_call("dialog.open", trigger_id=trigger_id, dialog=slack_dialog)
-        return {"text": "Opening Create issue pop up dialog", "attachments": [], 'replace_original': False}
+        API_Slack(channel,team).slack.api_call("dialog.open", trigger_id=trigger_id, dialog=slack_dialog)
+        return {"text": "Opening Create issue pop up dialog in {0} and {1}".format(channel, team), "attachments": [], 'replace_original': False}
 
-
-    def gs_detect_slack(self):
-        return {"text": "Calling gs detect lambda", "attachments": [], 'replace_original': False}
