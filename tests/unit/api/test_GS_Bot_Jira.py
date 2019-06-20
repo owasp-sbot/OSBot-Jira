@@ -5,8 +5,7 @@ import unittest
 from osbot_jira.api.GS_Bot_Jira                 import GS_Bot_Jira
 from pbx_gs_python_utils.utils.Dev              import Dev
 from pbx_gs_python_utils.utils.Lambdas_Helpers  import slack_message
-from osbot_aws.apis.Lambda                      import Lambda
-
+from osbot_aws.apis.Lambda import Lambda, upload_dependency
 
 
 class test_GS_Bot_Jira(unittest.TestCase):
@@ -14,6 +13,9 @@ class test_GS_Bot_Jira(unittest.TestCase):
         self.api     = GS_Bot_Jira()
         self.channel = 'DDKUZTK6X'                  # gsbot
 
+    # def test_update_dependency(self):
+    #     upload_dependency('jira')
+    #
     def test_handle_request(self):
         event = {}
         result = self.api.handle_request(event)

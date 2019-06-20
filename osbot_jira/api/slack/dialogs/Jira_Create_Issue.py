@@ -7,9 +7,13 @@ class Jira_Create_Issue(API_Slack_Dialog):
         super().__init__()
 
     def setup(self):
-        self.callback_id    = 'issue-suggestion'
-        self.title          = 'This is a test'
-        self.add_element_text("label 1", "name_1", "value 1", "hint 1", "placeholder 1")
+        self.callback_id = 'jira_create_issue'
+        self.title       = 'Create new issue in JIRA'
+        self.add_element_select  ("Project", 'project', [('SEC','SEC'),('VULN','VULN'),('RISK','RISK'),('GSCS','GSCS')], 'SEC')
+        self.add_element_select  ("Issue Type", 'issue_type', [('Task','Task'),('Meeting','Meeting'),('Vulnerability','Vulnerability'),('Risk','Risk')], 'Task')
+        self.add_element_text    ("Summary", "summary", "New issue", optional= False , hint="This is the issue's summary")
+        self.add_element_textarea("Description", "description", optional= True)
+
         return self
 
     def render(self):

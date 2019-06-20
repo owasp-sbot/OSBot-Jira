@@ -14,7 +14,7 @@ def run(event, context):
 
         if (result is not None) and (channel is not None):
             slack_message(result.get('text'), result.get('attachments'), channel=channel, team_id=team_id)
-
-        return result
+        else:
+            return result
     except Exception as error:
         log_to_elk("[elastic jira][Error]: {0}".format(error) , level='error')

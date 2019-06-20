@@ -13,12 +13,17 @@ from osbot_jira.api.elk.Elk_To_Slack                        import ELK_to_Slack
 from osbot_jira.api.graph.GS_Graph                          import GS_Graph
 from osbot_jira.api.graph.Graph_View import Graph_View
 from osbot_jira.api.graph.Lambda_Graph                      import Lambda_Graph
+from osbot_jira.api.slack.Jira_Slack_Actions import Jira_Slack_Actions
 
 
 class GS_Bot_Jira:
 
     def __init__(self):
         self.version = "v0.37 (GSBot)"
+
+    def cmd_actions(self, params, team_id=None, channel=None):
+        text, attachments = Jira_Slack_Actions().get_actions_ui()
+        return {"text": text, "attachments": attachments}
 
     def cmd_created_in_last(self, params, team_id=None, channel=None):
         elk_to_slack = ELK_to_Slack()
@@ -348,6 +353,7 @@ class GS_Bot_Jira:
 
     # main method
 
+    # todo: refactor to use dynamic method generation (this is the legacy way to resolve methods)
     def handle_request(self,event):
         #log_to_elk('in handle_request', event)
         params      = event.get('params')
@@ -361,6 +367,7 @@ class GS_Bot_Jira:
             command = params[0]
             try:
                 if command == 'help'               : return self.cmd_help           ()
+                if command == 'actions'            : return self.cmd_actions        (params, team_id, channel)
                 if command == 'created_in_last'    : return self.cmd_created_in_last(params, team_id, channel)
                 if command == 'created_between'    : return self.cmd_created_between(params, team_id, channel)
                 if command == 'updated_in_last'    : return self.cmd_updated_in_last(params, team_id, channel)
