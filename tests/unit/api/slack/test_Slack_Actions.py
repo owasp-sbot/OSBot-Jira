@@ -6,6 +6,7 @@ from pbx_gs_python_utils.utils.slack.API_Slack_Dialog import API_Slack_Dialog
 
 from osbot_jira.Deploy import Deploy
 from osbot_jira.api.slack.Slack_Actions import Slack_Actions
+from osbot_jira.api.slack.Slack_Jira_Search import Slack_Jira_Search
 
 
 class test_Slack_Actions(TestCase):
@@ -25,27 +26,14 @@ class test_Slack_Actions(TestCase):
         self.result = target({'callback_id': 'jira-slack-actions'})
 
     def test_handle_dialogue_suggestions(self):
-        #self.test__update_lambda_slack_actions()
-        dialog = API_Slack_Dialog()
-        dialog.add_element_select_external("Find issue", "key", "Search ELK for issue in indexes: jira and it_assets")
+        self.test__update_lambda_slack_actions()
+        #dialog = API_Slack_Dialog()
+        #dialog.add_element_select_external("Find issue", "key", "Search ELK for issue in indexes: jira and it_assets")
         #attachment = dialog.render()
-        attachment = {
-            "text": "Search jira",
-            "color": "#3AA3E3",
-            "attachment_type": "default",
-            "callback_id": "jira_search_select_box",
-            "actions": [
-                {
-                    "name": "lucene_query",
-                    "text": "Lucene Query",
-                    "type": "select",
-                    "data_source": "external"
-                }
-            ]
-        }
 
-        channel = 'DDKUZTK6X'
-        slack_message('Testing dynamic search', [attachment], channel)
+        channel            = 'DDKUZTK6X'
+        (text,attachments) = Slack_Jira_Search().get_drop_box_ui()
+        slack_message(text, attachments, channel)
 
 
     def test__update_lambda_slack_actions(self):
