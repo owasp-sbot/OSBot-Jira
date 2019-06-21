@@ -1,4 +1,7 @@
 import sys;
+
+from osbot_jira.Deploy import Deploy
+
 sys.path.append('..')
 import unittest
 
@@ -12,10 +15,19 @@ class test_GS_Bot_Jira(unittest.TestCase):
     def setUp(self):
         self.api     = GS_Bot_Jira()
         self.channel = 'DDKUZTK6X'                  # gsbot
+        self.result = None
+
+    def tearDown(self):
+        if self.result is not None:
+            Dev.pprint(self.result)
 
     # def test_update_dependency(self):
     #     upload_dependency('jira')
     #
+
+    def test__update_lambda_elastic_jira(self):
+        Deploy('osbot_jira.lambdas.elastic_jira'      ).deploy()             # update the actions menu)
+
     def test_handle_request(self):
         event = {}
         result = self.api.handle_request(event)
@@ -37,6 +49,13 @@ class test_GS_Bot_Jira(unittest.TestCase):
         assert result == {  'attachments': [],
                             'text': '....._fetching data for '
                             '*<https://jira.photobox.com/browse/AAAA|AAAA>* _from index:_ *jira*'}
+
+
+    def test_cmd_create(self):
+        params = ['create','Task', 'an','task']
+        #self.result = self.api.cmd_create(params)
+        self.result = self.api.cmd_issue(['issue','SEC-11823'],None,None)
+
 
 
     def test_cmd_created_in_last(self):

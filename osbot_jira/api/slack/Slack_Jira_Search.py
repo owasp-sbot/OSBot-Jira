@@ -3,6 +3,7 @@ from pbx_gs_python_utils.utils.Misc import Misc
 from pbx_gs_python_utils.utils.Lambdas_Helpers import slack_message
 
 from osbot_jira.api.API_Issues import API_Issues
+from osbot_jira.api.elk.Elk_To_Slack import ELK_to_Slack
 
 
 class Slack_Jira_Search():
@@ -10,19 +11,36 @@ class Slack_Jira_Search():
     def from_select_box(self,data):
 
         if data.get('actions'):                                 # happens when the user selected an issue
-            return self.handle_actions()
+            return self.handle_actions(data)
 
         return self.return_search_results(data.get('value'))    # happens when user types on dropdown
 
     def return_search_results(self,query):
-        api_issues = API_Issues()
-        issues = api_issues.search_using_lucene(query,15)
-        results = { "options": [ ]}
+        query = query.replace('+', ' ')
+        max_show  = 100
+        max_query = 500
+        issues = ELK_to_Slack().cmd_search(query.split(' '))
+        #api_issues = API_Issues()
+        #query = self.get_search_query(params)
+        #issues = api_issues.search_using_lucene(query,max_query)
 
+        count = len(issues)
+        options = []
+        if count > max_show:
+            options.append({'text':'[{0} matches, showing first {1}]'.format(count, max_show), 'value':'NA'})
+        else:
+            options.append({'text':'[{0} matches]'.format(count), 'value':'NA'})
+        options.append({'text': '------------------------------', 'value':'NA'})
+
+        issues = issues[0:max_show]
+        items = {}
         for issue in issues:
-            text = "{1} - {0}".format(issue.get('Summary'), issue.get('Key'))
-            results['options'].append({'text':text, 'value': issue.get('Key')})
-        return results
+           text = "{1}: {0}".format(issue.get('Summary'), issue.get('Issue Type'))
+           items[text] = issue.get('Key')
+        for text in sorted(items.keys()):
+            options.append({'text': text, 'value': items[text]})
+
+        return { "options": options}
 
     def handle_actions(self,data):
         channel = data['channel']['id']
@@ -36,8 +54,12 @@ class Slack_Jira_Search():
 
 
     def get_drop_box_ui(self):
+        # dialog = API_Slack_Dialog()
+        # dialog.add_element_select_external("Find issue", "key", "Search ELK for issue in indexes: jira and it_assets")
+        # attachment = dialog.render()
+
         text        = ''
-        attachments = [{    "text": "Search jira",
+        attachments = [ {    "text": "Search jira",
                             "color": "#3AA3E3",
                             "attachment_type": "default",
                             "callback_id": "jira_search_select_box",

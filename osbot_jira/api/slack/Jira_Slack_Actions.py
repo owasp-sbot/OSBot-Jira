@@ -2,6 +2,7 @@ from pbx_gs_python_utils.utils.Misc import Misc
 from pbx_gs_python_utils.utils.slack.API_Slack import API_Slack
 from pbx_gs_python_utils.utils.slack.API_Slack_Attachment import API_Slack_Attachment
 
+from osbot_jira.api.slack.Slack_Jira_Search import Slack_Jira_Search
 from osbot_jira.api.slack.dialogs.Jira_Create_Issue import Jira_Create_Issue
 
 
@@ -26,6 +27,7 @@ class Jira_Slack_Actions:
     def create(self):                                           # this is where the current buttons exist
         self.buttons_ui.set_callback_id(self.callback_id)
         self.add_button('Create Issue')
+        self.add_button('Search')
         #self.add_button('Search')
 
         return self
@@ -60,24 +62,29 @@ class Jira_Slack_Actions:
 
 
     def search(self, event):
-        trigger_id = event.get('trigger_id')
-        channel    = event.get('channel').get('id')
-        team       = event.get('team').get('id')
+        #channel    = event.get('channel').get('id')
+        #team       = event.get('team').get('id')
+        (text, attachments) = Slack_Jira_Search().get_drop_box_ui()
+        return {"text": text, "attachments": attachments,'replace_original': False}
 
-        from pbx_gs_python_utils.utils.slack.API_Slack_Dialog import API_Slack_Dialog
-        dialog = API_Slack_Dialog()
-        dialog.callback_id = 'issue-search-dialog'
-        dialog.title       = 'Search for Issue'
-        dialog.add_element_select_external("Find issue", "key", "Search ELK for issue in indexes: jira and it_assets")
-        dialog.add_element_select         ("View Type"       , "view-type", [
-                                                                                ("Table"                         , "table"                       ),
-                                                                                #("Issue Links all (depth 1)"     , "issue-links-all-depth-1"     ),
-                                                                                ("Issue Links (vuln path)"       , "issue-links-vuln-path"       ),
-                                                                                ("Issue Links (stakeholder path)", "issue-links-stakeholder-path")]
-                                                                                #('Issue Links (view all)'        , 'issue-links-view-all'        )]
-                                                             , "table")
-        dialog.add_element_select         ("View engine"     , "view-engine", [("Normal", "normal"),("With all links","with-all-links")], "normal")
+        #slack_message(text, attachments, channel)
+        # trigger_id = event.get('trigger_id')
 
-        slack_dialog = dialog.render()
-        API_Slack(channel, team).slack.api_call("dialog.open", trigger_id=trigger_id, dialog=slack_dialog)
-        return {"text": "Opening Search dialog", "attachments": [], 'replace_original': False}
+        #
+        # from pbx_gs_python_utils.utils.slack.API_Slack_Dialog import API_Slack_Dialog
+        # dialog = API_Slack_Dialog()
+        # dialog.callback_id = 'issue-search-dialog'
+        # dialog.title       = 'Search for Issue'
+        # dialog.add_element_select_external("Find issue", "key", "Search ELK for issue in indexes: jira and it_assets")
+        # dialog.add_element_select         ("View Type"       , "view-type", [
+        #                                                                         ("Table"                         , "table"                       ),
+        #                                                                         #("Issue Links all (depth 1)"     , "issue-links-all-depth-1"     ),
+        #                                                                         ("Issue Links (vuln path)"       , "issue-links-vuln-path"       ),
+        #                                                                         ("Issue Links (stakeholder path)", "issue-links-stakeholder-path")]
+        #                                                                         #('Issue Links (view all)'        , 'issue-links-view-all'        )]
+        #                                                      , "table")
+        # dialog.add_element_select         ("View engine"     , "view-engine", [("Normal", "normal"),("With all links","with-all-links")], "normal")
+        #
+        # slack_dialog = dialog.render()
+        # API_Slack(channel, team).slack.api_call("dialog.open", trigger_id=trigger_id, dialog=slack_dialog)
+        # return {"text": "Opening Search dialog", "attachments": [], 'replace_original': False}

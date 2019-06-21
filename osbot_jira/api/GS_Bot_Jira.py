@@ -7,7 +7,7 @@ from pbx_gs_python_utils.utils.Lambdas_Helpers              import slack_message
 from pbx_gs_python_utils.utils.Misc                         import Misc
 from pbx_gs_python_utils.utils.slack.API_Slack_Attachment   import API_Slack_Attachment
 
-from osbot_aws.apis.Lambda                                  import Lambda
+from osbot_aws.apis.Lambda import Lambda
 from osbot_jira.api.API_Issues                              import API_Issues
 from osbot_jira.api.elk.Elk_To_Slack                        import ELK_to_Slack
 from osbot_jira.api.graph.GS_Graph                          import GS_Graph
@@ -24,6 +24,35 @@ class GS_Bot_Jira:
     def cmd_actions(self, params, team_id=None, channel=None):
         text, attachments = Jira_Slack_Actions().get_actions_ui()
         return {"text": text, "attachments": attachments}
+
+    def cmd_create(self, params, team_id=None, channel=None):
+        if len(params) < 3:
+            text = ":exclamation: To create an issue you need to provide the `issue type` and `summary`. For example `jira create task abc"
+            return {"text": text, "attachments": []}
+        else:
+            params.pop(0)           # the create command
+            project = 'SEC'
+            issue_type = params.pop(0)
+            summary    = ' '.join(params)
+            slack_message(':point_right: Going to create an `{0}` issue, in project `{1}` with summary `{2}`'.format(issue_type, project,summary), [], channel,team_id)
+
+            #to do, move this feature to a separate lambda (which can be called to create issues
+            from osbot_aws.apis.Lambda import load_dependency
+            load_dependency('jira')
+            from osbot_jira.api.jira_server.API_Jira import API_Jira
+
+            # create issue
+            result = API_Jira().issue_create(project,summary,'',issue_type)
+            issue_id = "{0}".format(result)
+
+            # show issue screenshot
+            payload = {'issue_id': issue_id,'channel': channel,'team_id': team_id, }
+            Lambda('osbot_browser.lambdas.jira_web').invoke_async(payload)
+
+            # show link of new issue to user
+            jira_link = "https://jira.photobox.com/browse/{0}".format(issue_id)
+            text = ':point_right: New issue created with id <{0}|{1}>'.format(jira_link, issue_id)
+        return {"text": text, "attachments": []}
 
     def cmd_created_in_last(self, params, team_id=None, channel=None):
         elk_to_slack = ELK_to_Slack()
@@ -368,6 +397,7 @@ class GS_Bot_Jira:
             try:
                 if command == 'help'               : return self.cmd_help           ()
                 if command == 'actions'            : return self.cmd_actions        (params, team_id, channel)
+                if command == 'create'             : return self.cmd_create         (params, team_id, channel)
                 if command == 'created_in_last'    : return self.cmd_created_in_last(params, team_id, channel)
                 if command == 'created_between'    : return self.cmd_created_between(params, team_id, channel)
                 if command == 'updated_in_last'    : return self.cmd_updated_in_last(params, team_id, channel)
