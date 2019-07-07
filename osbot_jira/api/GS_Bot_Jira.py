@@ -1,7 +1,5 @@
 import json
 import pprint
-import requests
-from   osbot_aws.apis.Secrets import Secrets
 
 from pbx_gs_python_utils.utils.Lambdas_Helpers              import slack_message
 from pbx_gs_python_utils.utils.Misc                         import Misc
@@ -10,16 +8,16 @@ from pbx_gs_python_utils.utils.slack.API_Slack_Attachment   import API_Slack_Att
 from osbot_aws.apis.Lambda import Lambda
 from osbot_jira.api.API_Issues                              import API_Issues
 from osbot_jira.api.elk.Elk_To_Slack                        import ELK_to_Slack
-from osbot_jira.api.graph.GS_Graph                          import GS_Graph
 from osbot_jira.api.graph.Graph_View import Graph_View
 from osbot_jira.api.graph.Lambda_Graph                      import Lambda_Graph
-from osbot_jira.api.slack.Jira_Slack_Actions import Jira_Slack_Actions
+from osbot_jira.api.slack.views.Jira_Slack_Actions import Jira_Slack_Actions
+from osbot_jira.api.slack.views.Jira_View_Issue import Jira_View_Issue
 
 
 class GS_Bot_Jira:
 
     def __init__(self):
-        self.version = "v0.38 (GSBot)"
+        self.version = "v0.38a (GSBot)"
 
     def cmd_actions(self, params, team_id=None, channel=None):
         text, attachments = Jira_Slack_Actions().get_actions_ui()
@@ -121,7 +119,19 @@ class GS_Bot_Jira:
             self.cmd_table(["table", graph_name], team_id, channel)
         return {"text": text, "attachments": [{ 'text': issues_text , 'color':'good'}]}
 
-    def cmd_issue(self, params, team_id, channel):
+    def cmd_issue(self, params, team_id=None, channel=None):
+        if len(params) < 2:
+            text = ":exclamation: You must provide an issue id"
+            return {"text": text, "attachments": []}
+        else:
+            issue_id = params.pop(1)            # position 0 is the 'issue' command
+
+            text, attachments = Jira_View_Issue(issue_id).get_actions_ui()
+            return {"text": text, "attachments": attachments}
+
+
+
+    def cmd_screenshot(self, params, team_id, channel):
         attachments = []
         if len(params) < 2:
             text = ":exclamation: you must provide an issue id "

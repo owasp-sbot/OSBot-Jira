@@ -1,11 +1,14 @@
+import json
+
 from osbot_aws.apis.Lambda                          import Lambda
 from pbx_gs_python_utils.utils.Lambdas_Helpers      import slack_message, log_to_elk
 from pbx_gs_python_utils.utils.Misc                 import Misc
 from pbx_gs_python_utils.utils.slack.API_Slack      import API_Slack
-from osbot_jira.api.slack.Jira_Slack_Actions        import Jira_Slack_Actions
-from osbot_jira.api.slack.Slack_Jira_Search import Slack_Jira_Search
+from osbot_jira.api.slack.views.Jira_Slack_Actions  import Jira_Slack_Actions
+from osbot_jira.api.slack.Slack_Jira_Search         import Slack_Jira_Search
 from osbot_jira.api.slack.Slack_Message_Action      import Slack_Message_Action
 from osbot_jira.api.slack.dialogs.Jira_Create_Issue import Jira_Create_Issue
+from osbot_jira.api.slack.views.Jira_View_Issue import Jira_View_Issue
 
 
 class Slack_Actions:
@@ -29,8 +32,10 @@ class Slack_Actions:
         if callback_id == 'select_remote_1234'  : return self.handle_dialog_suggestion (data)
 
 
-        actions = {'jira-slack-actions' : Jira_Slack_Actions}
-
+        actions = {
+                    'jira-slack-actions' : Jira_Slack_Actions,
+                    'jira-view-issue'    : Jira_View_Issue
+                   }
         if actions.get(callback_id):
             handler = actions.get(callback_id)
             return handler().handle_action(data)
@@ -49,11 +54,11 @@ class Slack_Actions:
             return Slack_Jira_Search().from_select_box(data)
             #return {'text': text, 'attachments': [], 'replace_original': replace_original}
 
-        text  = ':red_circle: requested action currently not supported: `{0}`'.format(callback_id)
+        text  = ':red_circle: Requested action currently not supported: `{0}`'.format(callback_id)
 
-        channel = data['channel']['id']
-        team_id = data['team']['id']
-        slack_message(text, [], channel, team_id)
+        #channel = data['channel']['id']
+        #team_id = data['team']['id']
+        #slack_message(text, [], channel, team_id)
 
         return { 'text': text, 'attachments': [] , 'replace_original': replace_original }
 
@@ -176,7 +181,20 @@ class Slack_Actions:
                     ]
                 }
 
+    # todo: see if there is a better way to do this
+    def fix_slack_encoding(self, event):
+        try:
+            event_str   = json.dumps(event)
+            event_fixed = event_str   .replace('+', ' ')                    # fix the issue that slack replaces spaces with +
+            event_fixed = event_fixed.replace('“', '"').replace('”','"')    # fix " (double quote)
+            event_fixed = event_fixed.replace('‘', "'").replace('’', "'")   # fix " (single quote)
+            return json.loads(event_fixed)
+        except:
+            return event
+
     def handle_request(self, event):
+
+        event = self.fix_slack_encoding(event)
         channel = event['channel']['id']
         team_id = event['team']['id']
 

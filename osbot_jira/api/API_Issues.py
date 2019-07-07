@@ -269,6 +269,10 @@ class API_Issues:
                    .render())
         return table
 
+    def server_url(self):
+        host = self.elastic().host
+        if '5766d93460d' in host: return "https://jira.photobox.com"
+        return host
 
 
     # def graph_issue_links_plant_uml(self,key):

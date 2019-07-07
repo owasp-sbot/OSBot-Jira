@@ -26,7 +26,10 @@ class test_GS_Bot_Jira(unittest.TestCase):
     #
 
     def test__update_lambda_elastic_jira(self):
-        Deploy('osbot_jira.lambdas.elastic_jira'      ).deploy()             # update the actions menu)
+        Deploy('osbot_jira.lambdas.elastic_jira').deploy()             # update the main jira lambda
+
+    def test__update_lambda_slack_actions(self):
+        Deploy('osbot_jira.lambdas.slack_actions').deploy()            # update the lambda that handles the callbacks
 
     def test_handle_request(self):
         event = {}
@@ -54,7 +57,7 @@ class test_GS_Bot_Jira(unittest.TestCase):
     def test_cmd_create(self):
         params = ['create','Task', 'an','task']
         #self.result = self.api.cmd_create(params)
-        self.result = self.api.cmd_issue(['issue','SEC-11823'],None,None)
+        self.result = self.api.cmd_create(['issue','SEC-11823'],None,None)
 
 
 
@@ -70,7 +73,15 @@ class test_GS_Bot_Jira(unittest.TestCase):
 
 
     def test_cmd_issue(self):
-        result = self.api.cmd_issue(['issue', 'SEC-10965', '2000', '2000'],'T7F3AUXGV', 'DDKUZTK6X')
+        #self.test__update_lambda_elastic_jira()
+        self.test__update_lambda_slack_actions()
+        self.result = self.api.cmd_issue(['issue', 'SEC-11961'])
+        slack_message(self.result.get('text'), self.result.get('attachments'),'DDKUZTK6X', 'T7F3AUXGV')
+
+
+
+    def test_cmd_screenshot(self):
+        result = self.api.cmd_screenshot(['issue', 'SEC-10965', '2000', '500'],'T7F3AUXGV', 'DDKUZTK6X')
         Dev.pprint(result.get('text'))
 
     def test_cmd_links(self):
