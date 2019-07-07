@@ -17,7 +17,7 @@ from osbot_jira.api.slack.views.Jira_View_Issue import Jira_View_Issue
 class GS_Bot_Jira:
 
     def __init__(self):
-        self.version = "v0.38a (GSBot)"
+        self.version = "v0.39 (GSBot)"
 
     def cmd_actions(self, params, team_id=None, channel=None):
         text, attachments = Jira_Slack_Actions().get_actions_ui()
@@ -119,7 +119,7 @@ class GS_Bot_Jira:
             self.cmd_table(["table", graph_name], team_id, channel)
         return {"text": text, "attachments": [{ 'text': issues_text , 'color':'good'}]}
 
-    def cmd_issue(self, params, team_id=None, channel=None):
+    def cmd_issue_new(self, params, team_id=None, channel=None):
         if len(params) < 2:
             text = ":exclamation: You must provide an issue id"
             return {"text": text, "attachments": []}
@@ -131,7 +131,7 @@ class GS_Bot_Jira:
 
 
 
-    def cmd_screenshot(self, params, team_id, channel):
+    def cmd_issue(self, params, team_id, channel):
         attachments = []
         if len(params) < 2:
             text = ":exclamation: you must provide an issue id "
@@ -412,6 +412,7 @@ class GS_Bot_Jira:
                 if command == 'created_between'    : return self.cmd_created_between(params, team_id, channel)
                 if command == 'updated_in_last'    : return self.cmd_updated_in_last(params, team_id, channel)
                 if command == 'issue'              : return self.cmd_issue          (params, team_id, channel)
+                if command == 'issue_new'          : return self.cmd_issue_new      (params, team_id, channel)
                 if command == 'links'              : return self.cmd_links          (params, team_id, channel, user)
                 #if command == 'up'                 : return self.cmd_up             (params, team_id, channel, user)
                 #if command == 'down'               : return self.cmd_down           (params, team_id, channel, user)
