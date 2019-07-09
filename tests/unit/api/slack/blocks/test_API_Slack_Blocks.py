@@ -145,7 +145,26 @@ class test_API_Slack_Blocks(TestCase):
         url = 'https://image.freepik.com/free-vector/modern-check-list-illustration_79603-146.jpg'
         image = self.api.add_layout_image("image_block", url, 'image title')
         image.render()
-        self.api.add_divider()
+        #self.api.add_divider()
+
+    def test_add_layout_section__text(self):
+        section = self.api.add_layout_section("section_block")
+        section.add_text('this is an section')
+        section.render()
+
+    def test_add_layout_section__fields(self):
+        section = self.api.add_layout_section("section_block")
+        section.add_text('*Here are a bunch of fields:*')           # this is optional
+        section.add_field('field *mrkdwn*:', 'mrkdwn')
+        section.add_field('field *mrkdwn*', 'plain_text')
+        section.add_field('another one')
+        section.add_fields(['123', '`456`','789','a','*b*','- c' ,'d'])
+        #section.add_button('an button')
+        #section.add_date_picker('an picker', 'action_id')
+        #section.add_overflow([('a','b'), ('c','d')])
+        #section.add_select('an select', [('a','b'), ('c','d')])
+        section.add_select_users('select user', 'an_user', initial_user='U7ESE1XS7')
+        section.render()
 
     # add element blocks
 

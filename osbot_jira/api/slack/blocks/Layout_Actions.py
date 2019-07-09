@@ -71,22 +71,22 @@ class Layout_Actions:
         self.elements.append(select)
         return self
 
-    def add_select_users(self, text, action_id, initial_user=None, options=None):
+    def add_select_users(self, text, action_id, initial_user=None, confirm=None):
         select = { "action_id"   : action_id      ,
                    "type"        : "users_select" ,
                    "placeholder" : { "type": "plain_text","text": text }}
         if initial_user: select['initial_user'] = initial_user
-        if options     : select['options'     ] = options
+        if confirm     : select['confirm'     ] = confirm
         self.elements.append(select)
         return self
 
-    def add_select_channel(self, text, action_id, initial_channel=None, options=None):
+    def add_select_channel(self, text, action_id, initial_channel=None, confirm=None):
         select = { "action_id"   : action_id      ,
                    "type"        : "channels_select" ,
                    "placeholder" : { "type": "plain_text","text": text }}
 
         if initial_channel: select['initial_channel'] = initial_channel
-        if options        : select['options'        ] = options
+        if confirm        : select['confirm'        ] = confirm
 
         self.elements.append(select)
         return self

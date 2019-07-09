@@ -4,6 +4,7 @@ from pbx_gs_python_utils.utils.slack.API_Slack import API_Slack
 from osbot_jira.api.slack.blocks.Layout_Actions import Layout_Actions
 from osbot_jira.api.slack.blocks.Layout_Context import Layout_Context
 from osbot_jira.api.slack.blocks.Layout_Image import Layout_Image
+from osbot_jira.api.slack.blocks.Layout_Section import Layout_Section
 
 
 class API_Slack_Blocks:
@@ -74,6 +75,10 @@ class API_Slack_Blocks:
 
     def add_layout_image(self, block_id, image_url, title=None, alt_text=None):
         return Layout_Image(block_id, self.blocks, image_url, title, alt_text)
+
+    def add_layout_section(self, block_id):
+        return Layout_Section(block_id, self.blocks)
+
 
     # add element blocks
 
