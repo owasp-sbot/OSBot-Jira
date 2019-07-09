@@ -1,38 +1,10 @@
 ## Todo: refactor to a new OSBot_Slack (which also has the other classes currently in pbx_gs-python_utils
 from pbx_gs_python_utils.utils.slack.API_Slack import API_Slack
 
-## todo: move to separate file (and refactor common methods
-class Layout_Action:
-    def __init__(self, block_id, blocks):
-        self.block_id = block_id
-        self.blocks = blocks
-        self.elements = []
+from osbot_jira.api.slack.blocks.Layout_Actions import Layout_Actions
+from osbot_jira.api.slack.blocks.Layout_Context import Layout_Context
+from osbot_jira.api.slack.blocks.Layout_Image import Layout_Image
 
-    def add_button(self, text, action_id=None, url=None, value=None, style=None,confirm=None):
-        button = {'type'     : "button"  ,
-                  'text'     : {"type": 'plain_text', "text": text}}
-        if action_id: button['action_id'] = action_id;
-        if url      : button['url'      ] = url
-        if style    : button['style'    ] = style
-        if value    : button['value'    ] = value
-        if confirm  : button['confirm'  ] = confirm
-
-        if not action_id: button['action_id'] = text
-
-        self.elements.append(button)
-        return self
-
-    def add_image(self):
-        self.elements.append({ "type": "image",
-                               "image_url": image_url,
-            "alt_text": "Multiple cute kittens"
-        })
-
-    def render(self):
-        self.blocks.append({"type": "actions",
-                            "block_id": self.block_id,
-                            "elements": self.elements})
-        return self
 
 class API_Slack_Blocks:
     def __init__(self, text=None, callback_id=None, fallback=None):
@@ -95,48 +67,23 @@ class API_Slack_Blocks:
     # add layouts
 
     def add_layout_actions(self, block_id):
+        return Layout_Actions(block_id, self.blocks)
 
-        actions = Layout_Action(block_id, self.blocks)
+    def add_layout_context(self, block_id):
+        return Layout_Context(block_id, self.blocks)
 
-        return actions
+    def add_layout_image(self, block_id, image_url, title=None, alt_text=None):
+        return Layout_Image(block_id, self.blocks, image_url, title, alt_text)
 
     # add element blocks
 
-    def add_button(self, text, value=None, action_id=None, button_type="plain_text"):
-        self.blocks.append({
-		"type": "actions",
-		"block_id": "actionblock789",
-		"elements": [
-			{
-				"type": "button",
-				"text": {
-					"type": "plain_text",
-					"text": "Primary Button"
-				},
-				"style": "primary",
-				"value": "click_me_456"
-			},
-			{
-				"type": "button",
-				"text": {
-					"type": "plain_text",
-					"text": "Link Button"
-				},
-				"url": "https://api.slack.com/block-kit"
-			}
-		]
-	})
-     #   self.blocks.append({"type"     : "button",
-     #                       "text"     : { "type": button_type, "text": text },
-     #                       "value"    : value,
-     #                       "action_id": action_id })
 
     def add_divider(self):
         self.blocks.append({"type": "divider"})
         return self
 
-    def add_image(self, image_url, alt_text):
-        self.blocks.append({ "type": "image", "image_url": image_url, "alt_text":  alt_text})
+    # def add_image(self, image_url, alt_text):
+    #     self.blocks.append({ "type": "image", "image_url": image_url, "alt_text":  alt_text})
 
     def add_attachment(self,attachment):
         self.attachments.append(attachment)

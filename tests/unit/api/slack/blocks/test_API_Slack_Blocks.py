@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from pbx_gs_python_utils.utils.Dev import Dev
 
-from osbot_jira.api.slack.API_Slack_Blocks import API_Slack_Blocks
+from osbot_jira.api.slack.blocks.API_Slack_Blocks import API_Slack_Blocks
 
 
 class test_API_Slack_Blocks(TestCase):
@@ -110,13 +110,42 @@ class test_API_Slack_Blocks(TestCase):
         actions.add_button('12th button')
         actions.render()
 
-    def test_add_layout_actions__images(self):
+    def test_add_layout_actions__select(self):
         actions = self.api.add_layout_actions("action_block")
-        actions.add_button('an button', style='primary')
-        actions.add_image()
+        actions.add_button('an button'  , style='primary')
+        actions.add_date_picker('chose an date', 'an_date', initial_date='2019-07-01')
+        actions.add_overflow(options=[('option 1', 'value 1'), ('option 2', 'value 2')])
+        actions.add_select('an select 1', options=[('option 1', 'value 1'), ('option 2', 'value 2')])
+        actions.add_select('an select 2', options=[('option 1', 'value 1'), ('option 2', 'value 2')], initial_option='value 2')
+
+        actions.add_select('an select 3', option_groups = [('group_1', [('option 1', 'value 1'), ('option 2', 'value 2')]) ,
+                                                           ('group_2', [('option 3', 'value 3'), ('option 4', 'value 4')])],
+                                          initial_option='value 4')
+        actions.add_select_external('pick one', 'an_select', min_query_length=2)
+        actions.add_select_users   ('select user'   , 'an_user'        , initial_user='U7ESE1XS7')
+        actions.add_select_channel ('select channel', 'an_conversation', initial_channel=self.channel)
+
         actions.render()
 
+    def test_add_layout_context(self):
+        context = self.api.add_layout_context("context_block")
+        context.add_image('https://image.freepik.com/free-photo/red-drawing-pin_1156-445.jpg')
+        context.add_image('https://image.freepik.com/free-vector/modern-check-list-illustration_79603-146.jpg')
+        context.add_image('https://image.freepik.com/free-vector/flat-people-going-university_23-2148221026.jpg')
+        context.add_text('an text')
+        context.add_text('now with *markdown* :point_left:')
+        context.add_text('now without *markdown*', 'plain_text')
+        context.add_text('emoji is True  :point_right:', 'plain_text', emoji   =True )
+        context.add_text('emoji is False :point_right:', 'plain_text', emoji   =False)
+        context.add_text('verbatim is True: https://www.google.com'  , verbatim=True )
+        context.add_text('verbatim is False: https://www.google.com' , verbatim=False)
+        context.render()
 
+    def test_add_layout_image(self):
+        url = 'https://image.freepik.com/free-vector/modern-check-list-illustration_79603-146.jpg'
+        image = self.api.add_layout_image("image_block", url, 'image title')
+        image.render()
+        self.api.add_divider()
 
     # add element blocks
 
@@ -124,11 +153,9 @@ class test_API_Slack_Blocks(TestCase):
         self.api.set_text('an text').add_attachment({"pretext": "pre-hello", "text": "text-world"})
 
 
-    def test_add_button(self):
-        self.api.add_button("Click Me", value='click_me_123', action_id="button")
-
     def test_add_divider(self):
         self.api.add_divider()
 
-    def test_add_image(self):
-        self.api.add_image("http://placekitten.com/700/500", "Multiple cute kittens")
+    # def test_add_image(self):
+    #     url = 'https://image.freepik.com/free-vector/modern-check-list-illustration_79603-146.jpg'
+    #     self.api.add_image(url, "an image")

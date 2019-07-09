@@ -42,4 +42,5 @@ class test_Jira_View_Issue(TestCase):
 
         slack_message(text,attachments, 'DDKUZTK6X','T7F3AUXGV')
 
+
         self.result = attachments

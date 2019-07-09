@@ -1,7 +1,5 @@
 from pbx_gs_python_utils.utils.Misc import Misc
-from pbx_gs_python_utils.utils.slack.API_Slack import API_Slack
 from pbx_gs_python_utils.utils.slack.API_Slack_Attachment import API_Slack_Attachment
-from pbx_gs_python_utils.utils.slack.API_Slack_Dialog import API_Slack_Dialog
 
 from osbot_jira.api.API_Issues import API_Issues
 
@@ -32,7 +30,7 @@ class Jira_View_Issue():
             channel = event.get('channel').get('id')
             team_id = event.get('team').get('id')
             # temp code (refactor when adding full support for blocks)
-            from osbot_jira.api.slack.API_Slack_Blocks import API_Slack_Blocks
+            from osbot_jira.api.slack.blocks.API_Slack_Blocks import API_Slack_Blocks
             text = ':point_right: message not recognised: {0}'.format(action)
             API_Slack_Blocks().set_text(text).send_message(channel, team_id)
 
