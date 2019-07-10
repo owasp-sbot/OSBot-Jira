@@ -1,19 +1,26 @@
-class Layout_Actions:
-    def __init__(self, block_id, blocks):
-        self.block_id = block_id
-        self.blocks   = blocks
-        self.elements = []
+from pbx_gs_python_utils.utils.Misc import Misc
 
-    def add_button(self, text, action_id=None, url=None, value=None, style=None,confirm=None):
-        button = {'type'     : "button"  ,
-                  'text'     : {"type": 'plain_text', "text": text}}
-        if action_id: button['action_id'] = action_id;
+
+class Layout_Actions:
+    def __init__(self, action_id, blocks, block_id=None):
+        self.action_id = action_id
+        self.block_id  = block_id
+        self.blocks    = blocks
+        self.elements  = []
+
+
+    def resolve_action_id(self,text):
+        method = text.replace(' ','_').lower()
+        return "{0}::{1}".format(self.action_id, method)
+
+    def add_button(self, text, value=None, url=None, style=None,confirm=None):
+        button = {'type'     : "button"                              ,
+                  'text'     : {"type": 'plain_text', "text": text } ,
+                  'action_id': self.resolve_action_id(text)          }
         if url      : button['url'      ] = url
         if style    : button['style'    ] = style
         if value    : button['value'    ] = value
         if confirm  : button['confirm'  ] = confirm
-
-        if not action_id: button['action_id'] = text
 
         self.elements.append(button)
         return self
@@ -104,7 +111,9 @@ class Layout_Actions:
         return self
 
     def render(self):
-        self.blocks.append({"type": "actions",
-                            "block_id": self.block_id,
-                            "elements": self.elements})
+        if self.block_id is None:
+            self.block_id = Misc.random_string_and_numbers(4, 'block')
+        self.blocks.append({"type"    : "actions"      ,
+                            "block_id": self.block_id  ,
+                            "elements": self.elements} )
         return self

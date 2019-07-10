@@ -163,7 +163,9 @@ class test_API_Slack_Blocks(TestCase):
         #section.add_date_picker('an picker', 'action_id')
         #section.add_overflow([('a','b'), ('c','d')])
         #section.add_select('an select', [('a','b'), ('c','d')])
-        section.add_select_users('select user', 'an_user', initial_user='U7ESE1XS7')
+        #section.add_select_users   ('select user', 'an_user'   , initial_user    ='U7ESE1XS7'  )
+        #section.add_select_channel ('select user', 'an_channel', initial_channel =self.channel )
+        section.add_select_external('pick one'   , 'an_select' , min_query_length=2            )
         section.render()
 
     # add element blocks

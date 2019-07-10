@@ -62,6 +62,24 @@ class Slack_Actions:
 
         return { 'text': text, 'attachments': [] , 'replace_original': replace_original }
 
+    def handle_block_action(self,event):
+        channel = event['channel']['id']
+        team_id = event['team']['id']
+        message = event.get('message')
+        actions = event.get('actions')
+        try:
+            for item in actions:
+                action_data = json.loads(item.get('action_id'))
+                action = action_data.get('action')
+
+                text = "{0} - {1}".format(action,action_data)
+                slack_message(text, [], channel,team_id)
+            return None
+        except Exception as error:
+            slack_message(":red_circle: error in handle_block_action: `{0}` . Actions value was `{1}`".format(error,actions),[], channel,team_id)
+        #text = 'here'
+        #return {'text': text, 'attachments': [], 'replace_original': replace_original}
+
     def handle_message_action(self, event):
         channel     = event['channel']['id']
         team_id     = event['team']['id']
@@ -203,6 +221,7 @@ class Slack_Actions:
         if   event_type == 'interactive_message' : return self.handle_interactive_message (event)
         elif event_type == 'dialog_submission'   : return self.handle_dialog_submission (event)
         elif event_type == 'message_action'      : return self.handle_message_action(event)
+        elif event_type == 'block_actions'       : return self.handle_block_action(event)
         elif event_type == 'dialog_cancellation' : return {}
         #elif event_type == 'dialog_suggestion'   : return self.handle_dialog_suggestion(event)
         #elif 'type%22%3A%22dialog_submission'   in body: return self.process_dialog_submission (self.decode_body_with_payload(body))

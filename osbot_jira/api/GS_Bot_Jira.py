@@ -126,8 +126,10 @@ class GS_Bot_Jira:
         else:
             issue_id = params.pop(1)            # position 0 is the 'issue' command
 
-            text, attachments = Jira_View_Issue(issue_id).get_actions_ui()
-            return {"text": text, "attachments": attachments}
+            return Jira_View_Issue(issue_id,channel, team_id).create_and_send()
+
+            #text, attachments = Jira_View_Issue(issue_id).get_actions_ui()
+            #return {"text": text, "attachments": attachments}
 
 
 

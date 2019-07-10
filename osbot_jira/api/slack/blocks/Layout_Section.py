@@ -1,3 +1,5 @@
+from pbx_gs_python_utils.utils.Misc import Misc
+
 from osbot_jira.api.slack.blocks.Layout_Actions import Layout_Actions
 
 
@@ -8,6 +10,8 @@ class Layout_Section:
         self.text      = None
         self.fields    = []
         self.accessory = {}
+        if block_id is None:
+            self.block_id = Misc.random_string_and_numbers(4, 'block_')
 
     def add_text(self, text, text_type='mrkdwn', emoji=None, verbatim=None):
         element = {"text": text , "type": text_type }
@@ -44,6 +48,14 @@ class Layout_Section:
 
     def add_select_users(self, text, action_id, initial_user=None, confirm=None):
         self.accessory = Layout_Actions(None, []).add_select_users(text, action_id, initial_user,confirm).elements.pop()
+        return self
+
+    def add_select_channel(self, text, action_id, initial_channel=None, confirm=None):
+        self.accessory = Layout_Actions(None, []).add_select_channel(text, action_id, initial_channel,confirm).elements.pop()
+        return self
+
+    def add_select_external(self, text, action_id, initial_option=None, min_query_length=None, confirm=None):
+        self.accessory = Layout_Actions(None, []).add_select_external(text, action_id, initial_option,min_query_length, confirm).elements.pop()
         return self
 
     def render(self):

@@ -28,7 +28,7 @@ class API_Slack_Blocks:
         self.unfurl_media    = False
     # Helper methods
 
-    def send_message(self,channel=None, team_id=None):                      # needs to move to the main dedicated lambda function
+    def send_message(self,channel=None, team_id=None):                      # needs to move to the main dedicated lambda function (since this version supports the Slack blocks feature)
         api_slack = API_Slack(channel=channel, team_id=team_id)
         if  channel and team_id:                                            # to help with testing
             self.kwargs = {
@@ -67,8 +67,8 @@ class API_Slack_Blocks:
 
     # add layouts
 
-    def add_layout_actions(self, block_id):
-        return Layout_Actions(block_id, self.blocks)
+    def add_layout_actions(self, action_id=None, block_id=None):
+        return Layout_Actions(action_id, self.blocks,block_id)
 
     def add_layout_context(self, block_id):
         return Layout_Context(block_id, self.blocks)
@@ -76,7 +76,7 @@ class API_Slack_Blocks:
     def add_layout_image(self, block_id, image_url, title=None, alt_text=None):
         return Layout_Image(block_id, self.blocks, image_url, title, alt_text)
 
-    def add_layout_section(self, block_id):
+    def add_layout_section(self, block_id=None):
         return Layout_Section(block_id, self.blocks)
 
 
