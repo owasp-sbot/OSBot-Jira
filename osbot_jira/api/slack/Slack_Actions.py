@@ -63,17 +63,31 @@ class Slack_Actions:
         return { 'text': text, 'attachments': [] , 'replace_original': replace_original }
 
     def handle_block_action(self,event):
-        channel = event['channel']['id']
-        team_id = event['team']['id']
-        message = event.get('message')
-        actions = event.get('actions')
+        channel  = event['channel']['id']
+        team_id  = event['team']['id']
+        actions  = event.get('actions')
+        handlers = { 'Jira_View_Issue': Jira_View_Issue}
         try:
-            for item in actions:
-                action_data = json.loads(item.get('action_id'))
-                action = action_data.get('action')
-
-                text = "{0} - {1}".format(action,action_data)
-                slack_message(text, [], channel,team_id)
+            for action in actions:
+                split_action  = action.get('action_id').split('::')
+                action_class  = Misc.array_get(split_action, 0)
+                action_method = Misc.array_get(split_action, 1)
+                if action_class and action_method:
+                    target = handlers.get(action_class)
+                    if target:
+                        try:
+                            method = getattr(target, action_method)
+                            #slack_message(':point_right: Invoking method `{0}.{1}`'.format(action_class,action_method), [], channel, team_id)
+                            try:
+                                method(action, channel, team_id,event)
+                            except Exception as error:
+                                slack_message(':red_circle: Error in `handle_block_action` invocation of method `{0}.{1}`: `{2}`'.format(action_class,action_method, error), [], channel, team_id)
+                        except:
+                            slack_message(':red_circle: Error in `handle_block_action` could not resolve method: `{0}.{1}`'.format(action_class,action_method), [], channel, team_id)
+                    else:
+                        slack_message(':red_circle: Error in `handle_block_action` could not resolve class action: `{0}`'.format(action_class), [],channel, team_id)
+                else:
+                    slack_message(':red_circle: Error in `handle_block_action` could not resolve action: `{0}`'.format(action), [], channel, team_id)
             return None
         except Exception as error:
             slack_message(":red_circle: error in handle_block_action: `{0}` . Actions value was `{1}`".format(error,actions),[], channel,team_id)

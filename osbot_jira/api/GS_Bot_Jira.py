@@ -125,6 +125,7 @@ class GS_Bot_Jira:
             return {"text": text, "attachments": []}
         else:
             issue_id = params.pop(1)            # position 0 is the 'issue' command
+            #return {"text": issue_id, "attachments": []}
 
             return Jira_View_Issue(issue_id,channel, team_id).create_and_send()
 

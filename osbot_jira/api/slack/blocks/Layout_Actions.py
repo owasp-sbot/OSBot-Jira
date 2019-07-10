@@ -112,7 +112,7 @@ class Layout_Actions:
 
     def render(self):
         if self.block_id is None:
-            self.block_id = Misc.random_string_and_numbers(4, 'block')
+            self.block_id = Misc.random_string_and_numbers(4, 'block_')
         self.blocks.append({"type"    : "actions"      ,
                             "block_id": self.block_id  ,
                             "elements": self.elements} )

@@ -1,12 +1,14 @@
 import json
 
+from osbot_aws.apis.Lambda import Lambda
+from pbx_gs_python_utils.utils.Lambdas_Helpers import slack_message
 from pbx_gs_python_utils.utils.Misc import Misc
 from osbot_jira.api.API_Issues import API_Issues
 from osbot_jira.api.slack.blocks.API_Slack_Blocks import API_Slack_Blocks
 
 
 class Jira_View_Issue():
-    def __init__(self, issue_id=None, team_id=None, channel=None):
+    def __init__(self, issue_id=None, channel=None,team_id=None):
         self.issue_id    = issue_id
         self.channel     = channel
         self.team_id     = team_id
@@ -15,7 +17,7 @@ class Jira_View_Issue():
         #self.text        = None
         #self.name        = "jira-view-issue"
         #self.style       = 'primary'
-        self.action_id   = 'jira_view_issue'
+        self.action_id   = 'Jira_View_Issue'
         self.slack_blocks = API_Slack_Blocks()
         #self.slack_ui    = API_Slack_Attachment().set_callback_id(self.callback_id)
 
@@ -119,10 +121,13 @@ class Jira_View_Issue():
             'replace_original': True
         }
 
-    def edit_issue(self, event):
-        return {
-                    'text': 'in_edit_issue....: {0}'.format(event),
-                    'replace_original': False
-                }
+    @staticmethod
+    def edit_issue(action, channel, team_id, event):
+        slack_message(':point_right: In edit issue:{0}'.format(action), [], channel, team_id)
 
+    @staticmethod
+    def screenshot(action, channel, team_id, event):
+        issue_id = action.get('value')
+        payload = {'params': [issue_id], 'channel': channel, 'team_id': team_id}
+        Lambda('osbot_jira.lambdas.elastic_jira').invoke_async(payload)
 
