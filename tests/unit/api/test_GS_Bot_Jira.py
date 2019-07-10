@@ -81,8 +81,8 @@ class test_GS_Bot_Jira(unittest.TestCase):
     def test_cmd_issue_new(self):
         self.test__update_lambda_elastic_jira()
         #self.test__update_lambda_slack_actions()
-        self.result = self.api.cmd_issxue_new(['issue', 'SEC-11961'],'T7F3AUXGV','DDKUZTK6X')
-        #Ωslack_message(self.result.get('text'), self.result.get('attachments'),'DDKUZTK6X', 'T7F3AUXGV')
+        self.result = self.api.cmd_issue_new(['issue', 'SEC-11961'],'T7F3AUXGV','DDKUZTK6X')
+        #slack_message(self.result.get('text'), self.result.get('attachments'),'DDKUZTK6X', 'T7F3AUXGV')
 
 
 

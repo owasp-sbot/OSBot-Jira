@@ -77,8 +77,8 @@ class test_API_Slack_Blocks(TestCase):
 
     def test_add_layout_actions(self):
         self.api.set_text('with action layouts')
-        actions = self.api.add_layout_actions("actionblock789")
-        actions.add_button('first button', 'action_id_1')
+        actions = self.api.add_layout_actions('action_id_1',"actionblock789")
+        actions.add_button('first button')
         actions.add_button('primary'  , style='primary')
         actions.add_button('danger', style='danger')
         actions.add_button('bbx',  value='abc', url='https://news.bbc.co.uk',
@@ -148,24 +148,24 @@ class test_API_Slack_Blocks(TestCase):
         #self.api.add_divider()
 
     def test_add_layout_section__text(self):
-        section = self.api.add_layout_section("section_block")
+        section = self.api.add_layout_section()
         section.add_text('this is an section')
         section.render()
 
     def test_add_layout_section__fields(self):
-        section = self.api.add_layout_section("section_block")
+        section = self.api.add_layout_section()
         section.add_text('*Here are a bunch of fields:*')           # this is optional
         section.add_field('field *mrkdwn*:', 'mrkdwn')
         section.add_field('field *mrkdwn*', 'plain_text')
         section.add_field('another one')
         section.add_fields(['123', '`456`','789','a','*b*','- c' ,'d'])
-        #section.add_button('an button')
+        section.add_button('an button')
         #section.add_date_picker('an picker', 'action_id')
         #section.add_overflow([('a','b'), ('c','d')])
         #section.add_select('an select', [('a','b'), ('c','d')])
         #section.add_select_users   ('select user', 'an_user'   , initial_user    ='U7ESE1XS7'  )
         #section.add_select_channel ('select user', 'an_channel', initial_channel =self.channel )
-        section.add_select_external('pick one'   , 'an_select' , min_query_length=2            )
+        #section.add_select_external('pick one'   , 'an_select' , min_query_length=2            )
         section.render()
 
     # add element blocks

@@ -8,9 +8,8 @@ from osbot_jira.api.slack.blocks.Layout_Section import Layout_Section
 
 
 class API_Slack_Blocks:
-    def __init__(self, text=None, callback_id=None, fallback=None):
+    def __init__(self, text=None, fallback=None):
         self.text            = text
-        self.callback_id     = callback_id
         self.fallback        = fallback
         self.attachments     = []
         self.blocks          = []
@@ -70,17 +69,17 @@ class API_Slack_Blocks:
     def add_layout_actions(self, action_id=None, block_id=None):
         return Layout_Actions(action_id, self.blocks,block_id)
 
-    def add_layout_context(self, block_id):
-        return Layout_Context(block_id, self.blocks)
+    def add_layout_context(self, block_id=None):
+        return Layout_Context(self.blocks,block_id)
 
     def add_layout_image(self, block_id, image_url, title=None, alt_text=None):
         return Layout_Image(block_id, self.blocks, image_url, title, alt_text)
 
-    def add_layout_section(self, block_id=None):
-        return Layout_Section(block_id, self.blocks)
+    def add_layout_section(self, action_id=None, block_id=None):
+        return Layout_Section(self.blocks, action_id, block_id)
 
 
-    # add element blocks
+    # add element blocks (which in most cases are simplified version of layout elements
 
 
     def add_divider(self):
@@ -93,4 +92,6 @@ class API_Slack_Blocks:
     def add_attachment(self,attachment):
         self.attachments.append(attachment)
         return self
-    #def add_text
+
+    def add_text(self,text):
+        self.add_layout_section().add_text(text).render()

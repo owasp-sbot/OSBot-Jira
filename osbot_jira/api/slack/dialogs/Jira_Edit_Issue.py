@@ -1,22 +1,29 @@
 from pbx_gs_python_utils.utils.slack.API_Slack_Dialog import API_Slack_Dialog
 
+from osbot_jira.api.API_Issues import API_Issues
+
 
 class Jira_Edit_Issue(API_Slack_Dialog):
 
-    def __init__(self, project='SEC', issue_type='Task', summary='New issue', description=''):
-        self.project = project
-        self.issue_type = issue_type
-        self.description = description
-        self.summary = summary
+    def __init__(self, issue_id, field):
         super().__init__()
+        self.issue_id     = issue_id
+        self.field        = field
+        self.issue        = None
+        self.api_issues   = API_Issues()
+        self.submit_label = 'Saves'
 
     def setup(self):
         self.callback_id = 'jira_edit_issue'
-        self.title       = 'Edit issue'
-        self.add_element_select  ("Project", 'project', [('SEC','SEC'),('VULN','VULN'),('RISK','RISK'),('GSCS','GSCS')],value=self.project)
-        self.add_element_select  ("Issue Type", 'issue_type', [('Task','Task'),('Meeting','Meeting'),('Vulnerability','Vulnerability'),('Risk','Risk')], value=self.issue_type)
-        self.add_element_text    ("Summary", "summary", value=self.summary, optional= False , hint="This is the issue's summary")
-        self.add_element_textarea("Description", "description",value=self.description, optional= True)
+        self.title       = 'Edit field `{1}` from issue `{1}`'.format(self.field,self.issue_id)
+        self.issue       = self.api_issues.issue(self.issue_id)
+        if not self.issue:
+            self.add_element_text('ERROR - Issue not found: {0}'.format(self.issue_id))
+        else:
+            value = self.issue.get(self.field)
+            #todo: add different type of edit fields based on field name
+            self.add_element_textarea(self.field, self.issue_id, value)
+
 
         return self
 

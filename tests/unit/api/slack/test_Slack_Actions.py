@@ -34,3 +34,10 @@ class test_Slack_Actions(TestCase):
 
     def test__update_lambda_slack_actions(self):
         Deploy('osbot_jira.lambdas.slack_actions').deploy()
+
+
+    def test_handle_block_action_(self):
+        event = {'actions': [{'action_id': 'class_method::Jira_View_Issue::issue_links'}],
+                 'team': {'id': 'asd'}}
+        self.result = self.slack_actions.handle_block_action(event)
+

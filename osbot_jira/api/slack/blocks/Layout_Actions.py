@@ -11,12 +11,14 @@ class Layout_Actions:
 
     def resolve_action_id(self,text):
         method = text.replace(' ','_').lower()
-        return "{0}::{1}".format(self.action_id, method)
+        return "class_method::{0}::{1}".format(self.action_id, method)
 
-    def add_button(self, text, value=None, url=None, style=None,confirm=None):
-        button = {'type'     : "button"                              ,
+    def add_button(self, text, value=None, action_id=None,url=None, style=None,confirm=None):
+        if action_id is None:
+            action_id=text
+        button = {'type'     : "button"                                 ,
                   'text'     : {"type": 'plain_text', "text": text } ,
-                  'action_id': self.resolve_action_id(text)          }
+                  'action_id': self.resolve_action_id(action_id)             }
         if url      : button['url'      ] = url
         if style    : button['style'    ] = style
         if value    : button['value'    ] = value
@@ -54,7 +56,8 @@ class Layout_Actions:
         select = { "type"       : "static_select"                      ,
                    "placeholder": { "type": "plain_text","text": text }}
 
-        if action_id : select['action_id'] = action_id
+        if action_id : select['action_id'] = self.resolve_action_id(action_id)
+
         if confirm   : select['confirm'  ] = confirm
 
         if options:

@@ -3,7 +3,7 @@ from pbx_gs_python_utils.utils.Lambdas_Helpers  import slack_message, log_to_elk
 
 
 def run(event, context):
-    load_dependencies(["elastic-slack", 'requests'])
+    load_dependencies(["elastic-slack", 'requests','jira'])
     try:
         from osbot_jira.api.GS_Bot_Jira import GS_Bot_Jira
         result = GS_Bot_Jira().handle_request(event)                         # invoke lambda main handler method
