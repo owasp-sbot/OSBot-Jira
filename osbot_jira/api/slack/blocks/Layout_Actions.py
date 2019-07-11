@@ -13,12 +13,12 @@ class Layout_Actions:
         method = text.replace(' ','_').lower()
         return "class_method::{0}::{1}".format(self.action_id, method)
 
-    def add_button(self, text, value=None, action_id=None,url=None, style=None,confirm=None):
+    def add_button(self, text, value=None, action_id=None, url=None, style=None,confirm=None):
         if action_id is None:
-            action_id=text
-        button = {'type'     : "button"                                 ,
+            action_id = text
+        button = {'type'     : "button"                              ,
                   'text'     : {"type": 'plain_text', "text": text } ,
-                  'action_id': self.resolve_action_id(action_id)             }
+                  'action_id': self.resolve_action_id(action_id)     }
         if url      : button['url'      ] = url
         if style    : button['style'    ] = style
         if value    : button['value'    ] = value
@@ -52,11 +52,12 @@ class Layout_Actions:
         self.elements.append(select)
         return self
 
-    def add_select(self, text, options=None, option_groups=None, action_id=None, initial_option=None, confirm=None):
-        select = { "type"       : "static_select"                      ,
-                   "placeholder": { "type": "plain_text","text": text }}
+    def add_select(self, text, options=None, option_groups=None, initial_option=None, confirm=None):
 
-        if action_id : select['action_id'] = self.resolve_action_id(action_id)
+        select = { "type"       : "static_select"                      ,
+                   "placeholder": { "type": "plain_text","text": text  },
+                   'action_id'  : self.resolve_action_id(text         )}
+
 
         if confirm   : select['confirm'  ] = confirm
 

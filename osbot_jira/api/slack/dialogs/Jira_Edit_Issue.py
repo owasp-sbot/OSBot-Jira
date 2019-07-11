@@ -11,18 +11,19 @@ class Jira_Edit_Issue(API_Slack_Dialog):
         self.field        = field
         self.issue        = None
         self.api_issues   = API_Issues()
-        self.submit_label = 'Saves'
+        self.submit_label = 'Save'
 
     def setup(self):
         self.callback_id = 'jira_edit_issue'
-        self.title       = 'Edit field `{1}` from issue `{1}`'.format(self.field,self.issue_id)
+        self.title       = 'Edit {0}'.format(self.issue_id)
         self.issue       = self.api_issues.issue(self.issue_id)
         if not self.issue:
             self.add_element_text('ERROR - Issue not found: {0}'.format(self.issue_id))
         else:
-            value = self.issue.get(self.field)
+            key   = "{0}::{1}".format(self.issue_id, self.field)
+            value =self.issue.get(self.field)
             #todo: add different type of edit fields based on field name
-            self.add_element_textarea(self.field, self.issue_id, value)
+            self.add_element_textarea(self.field, key, value)
 
 
         return self

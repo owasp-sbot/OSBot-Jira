@@ -22,13 +22,29 @@ class Slack_Dialog_Submissions:
             try:
                 target = getattr(self,action)
             except:
-                return self.send_message(':red_circle: Sorry, action not recognized : {0}'.format(action))
+                return self.send_message(':red_circle: Sorry, action not recognized (in Dialog Submissions): {0}'.format(action))
             try:
                 response = target()
                 return self.send_message(':point_right: {0}'.format(response))
             except Exception as error:
                 return self.send_message(':red_circle: Sorry, there was an error executing the requested action: {0}'.format(error))
         return "no data : {0}".format(self.data)
+
+    def jira_edit_issue(self):
+        try:
+            for key, value in self.submission.items():
+                key_split = key.split('::')
+                issue_id = key_split.pop(0)
+                field    = key_split.pop(0)
+                from osbot_jira.api.jira_server.API_Jira_Rest import API_Jira_Rest
+                api_jira_rest = API_Jira_Rest()
+                result = api_jira_rest.issue_update_field(issue_id, field, value)
+                if result:
+                    return 'Field `{0}` updated'.format(field)
+                else:
+                    return ':red_circle: data not saved ok'.format(result)
+        except Exception as error:
+            self.send_message(':red_circle: error in jira_edit_issue: {0}'.format(error))
 
     def jira_create_issue(self):
         project     = self.submission.get('project')

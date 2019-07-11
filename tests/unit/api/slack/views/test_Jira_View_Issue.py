@@ -18,11 +18,19 @@ class test_Jira_View_Issue(TestCase):
         if self.result is not None:
             Dev.pprint(self.result)
 
+    def test__update_lambda_all(self):
+        self.test__update_lambda_elastic_jira()
+        self.test__update_lambda_slack_actions()
+        self.test_updata_lambda_slack_jira_actions()
+
     def test__update_lambda_elastic_jira(self):
         Deploy('osbot_jira.lambdas.elastic_jira').deploy()             # update the main jira lambda
 
     def test__update_lambda_slack_actions(self):
         Deploy(self.lambda_name_jira_actions).deploy()            # update the lambda that handles the callbacks
+
+    def test_updata_lambda_slack_jira_actions(self):
+        Deploy('osbot_jira.lambdas.slack_jira_actions').deploy()    # used for dialog submissions
 
     def test_create_and_send(self):
         self.test__update_lambda_slack_actions()
@@ -32,14 +40,28 @@ class test_Jira_View_Issue(TestCase):
         self.result = self.jira_view_issue.create_and_send()
 
 
-    def test_issue_links(self):
-        self.test__update_lambda_slack_actions()
-        self.jira_view_issue.channel = 'DDKUZTK6X'
+    def test_add_select_with_issue_links(self):
+        #self.test__update_lambda_slack_actions()
+        issue_id = 'GSCS-372'
+        issue_id = 'GSCS-1'
+        #self.jira_view_issue.channel = 'DDKUZTK6X'
         self.jira_view_issue.team_id = 'T7F3AUXGV'
-        self.result = self.jira_view_issue.issue_links({'value':'GSCS-372'})
+        self.jira_view_issue.load_issue(issue_id).add_select_with_issue_links()
+        #self.result = self.jira_view_issue.send()
 
-    def test_add_actions_with_transitions(self):
-        self.jira_view_issue.issue_id = 'GSCS-372'
+        #self.result = self.jira_view_issue.issue_links({'value':'GSCS-372'})
+
+    def test_create_ui_actions_with_transitions(self):
+        issue_id       = 'GSCS-372'
+        current_status = 'Backlog'
         self.jira_view_issue.channel  = 'DDKUZTK6X'
         self.jira_view_issue.team_id  = 'T7F3AUXGV'
-        self.result = self.jira_view_issue.add_actions_with_transitions()
+        self.result = self.jira_view_issue.create_ui_actions_with_transitions(issue_id, current_status)
+
+    def test_create_ui_edit_issue_field(self):
+        self.test__update_lambda_slack_actions()
+        self.test_updata_lambda_slack_jira_actions()
+        self.jira_view_issue.issue_id = 'GSCS-372'
+        self.jira_view_issue.channel = 'DDKUZTK6X'
+        self.jira_view_issue.team_id = 'T7F3AUXGV'
+        self.result = self.jira_view_issue.create_ui_edit_issue_field()

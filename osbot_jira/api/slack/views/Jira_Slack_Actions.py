@@ -33,7 +33,7 @@ class Jira_Slack_Actions:
         return self
 
     def message_not_supported_action(self, action=''):
-        return {"text": ':red_circle: Sorry, action not recognized : {0}'.format(action), "attachments": [], 'replace_original': False}
+        return {"text": ':red_circle: Sorry, action not recognized (in Jira_Slack_Actions) : {0}'.format(action), "attachments": [], 'replace_original': False}
 
     def message_execution_error(self, error):
         return {"text": ':red_circle: Sorry, there was an error executing the requested action: {0}'.format(error), "attachments": [], 'replace_original': False}

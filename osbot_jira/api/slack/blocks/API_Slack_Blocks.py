@@ -94,4 +94,11 @@ class API_Slack_Blocks:
         return self
 
     def add_text(self,text):
-        self.add_layout_section().add_text(text).render()
+        return self.add_layout_section().add_text(text).render()
+
+    def add_select(self,action_id, text, values):
+        options = []
+        for value in values:
+                options.append((value, value))
+        return self.add_layout_actions(action_id=action_id).add_select(text,options=options).render()
+

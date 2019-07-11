@@ -6,6 +6,7 @@ from pbx_gs_python_utils.utils.Misc import Misc
 from osbot_jira.api.API_Issues import API_Issues
 from osbot_jira.api.jira_server.API_Jira import API_Jira
 from osbot_jira.api.slack.blocks.API_Slack_Blocks import API_Slack_Blocks
+from osbot_jira.api.slack.dialogs.Jira_Edit_Issue import Jira_Edit_Issue
 
 
 class Jira_View_Issue():
@@ -47,9 +48,14 @@ class Jira_View_Issue():
         except Exception as error:
             return self.message_execution_error(error)
 
+    def load_issue(self, issue_id=None):
+        if issue_id:
+            self.issue_id = issue_id
+        self.issue = self.api_issues.issue(self.issue_id)
+        return self
 
     def create(self):
-        self.issue = self.api_issues.issue(self.issue_id)
+        self.load_issue()
         if self.issue:
             key         = self.issue.get('Key')
             summary     = self.issue.get('Summary')
@@ -60,7 +66,7 @@ class Jira_View_Issue():
 
             add_layout  = self.slack_blocks.add_layout_section
 
-            text = "*{0}*: <{1}|{2} - {3}>".format(issue_type,key_link,key, summary)
+            text = "*{0}*:\n<{1}|{2} - {3}>".format(issue_type,key_link,key, summary)
 
             add_layout(self.issue_id).add_text(text).render()
             if latest_info:
@@ -71,19 +77,20 @@ class Jira_View_Issue():
             actions_section = self.slack_blocks.add_layout_actions(self.action_id)
             footer_section  = self.slack_blocks.add_layout_context()
 
-            self.add_select_with_issue_links()
-
-            #actions_section.add_button('Edit Issue' , self.issue_id) \
-            actions_section.add_button('Screenshot'   , self.issue_id) \
-                           .add_button('Raw Data'     , self.issue_id) \
-                           #.add_button('Change Status', self.issue_id)
+            actions_section.add_button('Edit Issue' , self.issue_id) \
+                           .add_button('Screenshot', self.issue_id) \
+                           .add_button('Raw Data', self.issue_id) \
+                        # .add_button('Change Status', self.issue_id)
 
             actions_section.render()
 
 
-            #self.slack_blocks.blocks.append(self.block_select_with_issue_links(self.issue).blocks.pop())
+            self.add_block_actions_with_transitions(self.slack_blocks)
 
-            footer_items = [ 'Status: {0}'    .format(self.issue.get('Status')),
+            self.add_select_with_issue_links()
+
+            self.slack_blocks.add_divider()
+            footer_items = [ #'Status: {0}'    .format(self.issue.get('Status')),
                              'Rating: {0}'    .format(self.issue.get('Rating')),
                              'Priority: {0}'  .format(self.issue.get('Priority')),
                              'Issue Type: {0}'.format(self.issue.get('Issue Type')),
@@ -97,6 +104,7 @@ class Jira_View_Issue():
 
 
 
+
             #issue_data = "```{0}```".format(json.dumps(self.issue,indent=4))
             #self.slack_blocks.add_layout_section().add_text(issue_data).render()
 
@@ -104,19 +112,24 @@ class Jira_View_Issue():
             #self.add_overflow('abc', 'chose one' ,[('aaaa','aaaa_1'),('bbbb','bbbb_2')])
             #self.add_button('Edit Issue')
             #self.add_button('An Replay')
+
+            self.slack_blocks.add_attachment({'text':'Issue *{0}* Status: `{1}`'.format(self.issue_id, self.issue.get('Status')),'color':'good'})
         else:
             self.slack_blocks.add_layout_section().add_text(':red_circle: Issue not found: `{0}`'.format(self.issue_id)).render()
         return self
 
     def send(self):
-        return self.slack_blocks.send_message(self.channel, self.team_id)
+        result = self.slack_blocks.send_message(self.channel, self.team_id)
+        if type(result) == dict and result.get('ok') is False:
+            error_messages = result.get('response_metadata').get('messages')
+            self.send_message(':red_circle: Error in `Jira_View_Issue.send`; ```{0}```'.format(error_messages))
+        return result
 
 
     def create_and_send(self):
-        self.send_message(':point_right: Loading data for issue: {0}'.format(self.issue_id))
+        self.send_message(':point_right: *Loading data for issue: `{0}`* :point_left:'.format(self.issue_id))
         self.create()
-        self.send()
-        self.create_actions_with_transitions() # for now also add this?
+        return self.send()
 
     # def an_replay(self, event):
     #     original_message = event.get('original_message')
@@ -127,40 +140,65 @@ class Jira_View_Issue():
     #     }
 
     def add_select_with_issue_links(self):
-        issue_id = self.issue.get('Key')
         issue_links = self.issue.get('Issue Links')
-        # view = API_Slack_Blocks()
-        # view.add_text(':point_right: Here are the links for *{0}*: `{1}`'.format(issue_id, issue.get('Summary')))
+        if issue_links:
+            self.slack_blocks.add_text(':link: View Linked issue')
+            actions = self.slack_blocks.add_layout_actions(action_id='Jira_View_Issue')
+            option_groups = []
+            for issue_type, links in issue_links.items():
+                options = []
+                for link_issue_id in links:
+                    link_issue = self.api_issues.issue(link_issue_id)
+                    if link_issue:
+                        link_summary    = link_issue.get('Summary')
+                        link_issue_type = link_issue.get('Issue Type')
+                        text            = "{0} - {1}".format(link_issue_type, link_summary)[0:75]
 
-        actions = self.slack_blocks.add_layout_actions(action_id='Jira_View_Issue')
-        option_groups = []
-        for issue_type, links in issue_links.items():
-            options = []
-            for link_issue_id in links:
-                link_issue = self.api_issues.issue(link_issue_id)
-                if link_issue:
-                    link_summary = link_issue.get('Summary')
-                    options.append((link_summary, link_issue_id))
-            option_groups.append((issue_type, options))
+                        options.append((text , link_issue_id))
+                options = []
+                print(options)
+                option_groups.append((issue_type, options))
 
-        actions.add_select('Issue Links', option_groups=option_groups, action_id='view_issue')
+            actions.add_select('Issue Links', option_groups=option_groups)#, action_id='view_issue')
 
+            return actions.render()
+
+    def create_ui_actions_with_transitions(self ,issue_id=None,current_status=None):
+        if issue_id:
+            self.issue_id = issue_id
+        view = API_Slack_Blocks()
+        self.add_block_actions_with_transitions(view, current_status)
+        return view.send_message(self.channel, self.team_id)
+
+    def add_block_actions_with_transitions(self,view,current_status=None):
+        if self.issue is None:
+            self.issue = self.api_issues.issue(self.issue_id)
+        if current_status is None:                                              # this helps with the situation when the issue has just been updated but the data has not reached out to ELK
+            current_status = self.issue.get('Status')
+        transitions = self.api_jira.issue_next_transitions(self.issue_id)
+        view.add_text(":arrow_right: Change issue status to:")
+        actions = view.add_layout_actions(action_id='Jira_View_Issue')
+        for key, value in transitions.items():
+            if key != current_status:
+                action_id = "transition_to::{0}".format(value)
+                value = "{0}::{1}::{2}".format(self.issue_id, value, key)
+                actions.add_button(key, value=value, action_id=action_id)
         return actions.render()
 
 
-    def create_actions_with_transitions(self):
-        view = API_Slack_Blocks()
 
-        transitions = self.api_jira.issue_next_transitions(self.issue_id)
-        view.add_text(":arrow_right: `{0}` issue transitions available:".format(self.issue_id))
-        actions = view.add_layout_actions(action_id='Jira_View_Issue')
-        for key,value in transitions.items():
-            action_id = "transition_to::{0}".format(value)
-            value     = "{0}::{1}::{2}".format(self.issue_id,value,key)
-            actions.add_button(key,action_id=action_id, value=value)
-        actions.render()
+    def create_ui_edit_issue_field(self):
+        view = API_Slack_Blocks()
+        self.add_block_edit_issue_field(view)
         return view.send_message(self.channel, self.team_id)
 
+    def add_block_edit_issue_field(self,view):
+        view.add_text(":arrow_right: which field to edit from {0}`".format(self.issue_id))
+        self.issue = self.api_issues.issue(self.issue_id)
+        if self.issue:
+            fields = set(self.issue)
+            action_id = 'Jira_View_Issue::edit_field::{0}'.format(self.issue_id)
+            view.add_select(action_id, 'Field to edit', fields)
 
     # callback methods
 
@@ -170,15 +208,24 @@ class Jira_View_Issue():
         else:
             return message
 
-    def edit_issue(self,action):
-        return self.send_message(':point_right: In edit issue:{0}'.format(action))
+    def edit_field(self,action):
 
-    def issue_links(self, action):
-        issue_id = action.get('value')
-        issue = self.api_issues.issue(issue_id)
-        if issue:
-            view = self.block_select_with_issue_links(issue)
-            return view.send_message(self.channel,self.team_id)
+        selected_option = action.get('selected_option')
+        field           = selected_option.get('text').get('text')
+        issue_id        = action.get('action_id').split('::').pop(3)
+        trigger_id      = self.event.get('trigger_id')
+
+
+        from pbx_gs_python_utils.utils.slack.API_Slack import API_Slack
+
+        slack_dialog = Jira_Edit_Issue(issue_id, field).setup().render()
+        API_Slack().slack.api_call("dialog.open", trigger_id=trigger_id, dialog=slack_dialog)
+        #return self.send_message(':point_right: result {0}'.format(result))
+        #result
+        #return self.send_message(':point_right: ...In edit field: {0} : :{1}  {2}'.format(issue_id,field,trigger_id))
+
+    def issue_links(self,action):
+        self.view_issue(action)
 
     def screenshot(self, action):
         issue_id = action.get('value')
@@ -207,7 +254,14 @@ class Jira_View_Issue():
     def change_status(self, action):
         try:
             self.issue_id = action.get('value')
-            self.create_actions_with_transitions()
+            self.create_ui_actions_with_transitions()
+        except Exception as error:
+            self.send_message(':red_circle: Error in change_status: {0}'.format(error))
+
+    def edit_issue(self,action):
+        try:
+            self.issue_id = action.get('value')
+            self.create_ui_edit_issue_field()
         except Exception as error:
             self.send_message(':red_circle: Error in change_status: {0}'.format(error))
 
@@ -216,12 +270,10 @@ class Jira_View_Issue():
         issue_id        = Misc.array_pop(value_split,0)
         transition_to   = Misc.array_pop(value_split,0)
         transition_name = Misc.array_pop(value_split, 0)
-        #self.send_message('Changing status of `{0}` to `{1}`'.format(issue_id, transition_name))
         try:
             self.api_jira.issue_transition_to_id(issue_id, transition_to)
-            self.send_message(':white_check_mark: Changed `{0}` status to: {1}'.format(issue_id, transition_name))
-            self.issue_id = issue_id
-            self.create_actions_with_transitions()
+            self.send_message(':white_check_mark: Changed `{0}` status to: *{1}*. Here are the new transitions available '.format(issue_id, transition_name))
+            self.create_ui_actions_with_transitions(issue_id, transition_name)
         except Exception as error:
             self.send_message(':red_circle: Error in transition_to: {0}'.format(error))
 
