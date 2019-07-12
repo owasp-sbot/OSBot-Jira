@@ -191,8 +191,8 @@ class Jira_View_Issue():
             current_status = self.issue.get('Status')
         transitions = self.api_jira.issue_next_transitions(self.issue_id)
         view.add_text("*Change issue status to*: (click to change)")
-        actions = view.add_layout_actions(action_id='Jira_View_Issue')
         if len(transitions) > 0:
+            actions = view.add_layout_actions(action_id='Jira_View_Issue')
             for key, value in transitions.items():
                 if key != current_status:
                     action_id = "transition_to::{0}".format(value)
@@ -200,6 +200,7 @@ class Jira_View_Issue():
                     actions.add_button(key, value=value, action_id=action_id)
 
             return actions.render()
+        view.add_text('...no Transitions available...')
 
 
 
@@ -209,7 +210,7 @@ class Jira_View_Issue():
         return view.send_message(self.channel, self.team_id)
 
     def add_block_edit_issue_field(self,view):
-        view.add_text("*Edit Issue Field:* (select to edit)`".format(self.issue_id))
+        view.add_text("*Edit Issue Field:* (select to edit)".format(self.issue_id))
         self.issue = self.api_issues.issue(self.issue_id)
         if self.issue:
             #fields = set(self.issue)
@@ -248,7 +249,7 @@ class Jira_View_Issue():
 
     def screenshot(self, action):
         issue_id = action.get('value')
-        payload = {'params': [issue_id], 'channel': self.channel, 'team_id': self.team_id}
+        payload = {'params': ['screenshot', issue_id], 'channel': self.channel, 'team_id': self.team_id}
         Lambda('osbot_jira.lambdas.elastic_jira').invoke_async(payload)
 
     def raw_issue_data(self, action):
