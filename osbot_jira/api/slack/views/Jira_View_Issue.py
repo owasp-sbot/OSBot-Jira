@@ -29,6 +29,7 @@ class Jira_View_Issue():
         return {"text": ':red_circle: Sorry, there was an error executing the requested action: {0}'.format(error), "attachments": [], 'replace_original': False}
 
     def handle_action(self,event):
+        self.send_message('aaaa')
         action       = Misc.array_pop(event.get('actions'), 0)
         action_value = Misc.get_value(action,'value')
         try:
@@ -67,6 +68,7 @@ class Jira_View_Issue():
             add_layout  = self.slack_blocks.add_layout_section
 
             text = "*{0}*:\n<{1}|{2} - {3}>".format(issue_type,key_link,key, summary)
+            text = "*Key - Summary*:\n<{1}|{2} - {3}>".format(issue_type, key_link, key, summary)
 
             add_layout(self.issue_id).add_text(text).render()
             if latest_info:
@@ -77,17 +79,23 @@ class Jira_View_Issue():
             actions_section = self.slack_blocks.add_layout_actions(self.action_id)
             footer_section  = self.slack_blocks.add_layout_context()
 
-            actions_section.add_button('Edit Issue' , self.issue_id) \
-                           .add_button('Screenshot', self.issue_id) \
-                           .add_button('Raw Data', self.issue_id) \
-                        # .add_button('Change Status', self.issue_id)
+            #actions_section.add_button('Edit Issue Field', self.issue_id) \
+            actions_section.add_button('View Links'      , self.issue_id) \
+                           .add_button('Screenshot'      , self.issue_id) \
+                           .add_button('Reload Issue'    , self.issue_id) \
+                           .add_button('Raw Issue Data'  , self.issue_id)
+                # .add_button('Change Status', self.issue_id)
 
-            actions_section.render()
 
 
             self.add_block_actions_with_transitions(self.slack_blocks)
 
             self.add_select_with_issue_links()
+
+            self.add_block_edit_issue_field(self.slack_blocks)
+
+            self.slack_blocks.add_text('*Actions*')
+            actions_section.render()
 
             self.slack_blocks.add_divider()
             footer_items = [ #'Status: {0}'    .format(self.issue.get('Status')),
@@ -142,23 +150,29 @@ class Jira_View_Issue():
     def add_select_with_issue_links(self):
         issue_links = self.issue.get('Issue Links')
         if issue_links:
-            self.slack_blocks.add_text(':link: View Linked issue')
             actions = self.slack_blocks.add_layout_actions(action_id='Jira_View_Issue')
             option_groups = []
+            size          = 0
             for issue_type, links in issue_links.items():
-                options = []
+                options = {}
                 for link_issue_id in links:
                     link_issue = self.api_issues.issue(link_issue_id)
                     if link_issue:
                         link_summary    = link_issue.get('Summary')
                         link_issue_type = link_issue.get('Issue Type')
                         text            = "{0} - {1}".format(link_issue_type, link_summary)[0:75]
+                        if options.get(link_issue_type) is None: options[link_issue_type] = []         # use this to sort by link_issue_type
+                        options[link_issue_type].append((text , link_issue_id))
+                        #options.append((text , link_issue_id))
 
-                        options.append((text , link_issue_id))
-                options = []
-                print(options)
-                option_groups.append((issue_type, options))
+                options_sorted = []
+                for key,values in options.items():
+                    for value in values:
+                        options_sorted.append(value)
+                        size +=1
+                option_groups.append((issue_type, options_sorted))
 
+            self.slack_blocks.add_text('*{0} Linked issues* (select to view)'.format(size))
             actions.add_select('Issue Links', option_groups=option_groups)#, action_id='view_issue')
 
             return actions.render()
@@ -176,14 +190,16 @@ class Jira_View_Issue():
         if current_status is None:                                              # this helps with the situation when the issue has just been updated but the data has not reached out to ELK
             current_status = self.issue.get('Status')
         transitions = self.api_jira.issue_next_transitions(self.issue_id)
-        view.add_text(":arrow_right: Change issue status to:")
+        view.add_text("*Change issue status to*: (click to change)")
         actions = view.add_layout_actions(action_id='Jira_View_Issue')
-        for key, value in transitions.items():
-            if key != current_status:
-                action_id = "transition_to::{0}".format(value)
-                value = "{0}::{1}::{2}".format(self.issue_id, value, key)
-                actions.add_button(key, value=value, action_id=action_id)
-        return actions.render()
+        if len(transitions) > 0:
+            for key, value in transitions.items():
+                if key != current_status:
+                    action_id = "transition_to::{0}".format(value)
+                    value = "{0}::{1}::{2}".format(self.issue_id, value, key)
+                    actions.add_button(key, value=value, action_id=action_id)
+
+            return actions.render()
 
 
 
@@ -193,10 +209,13 @@ class Jira_View_Issue():
         return view.send_message(self.channel, self.team_id)
 
     def add_block_edit_issue_field(self,view):
-        view.add_text(":arrow_right: which field to edit from {0}`".format(self.issue_id))
+        view.add_text("*Edit Issue Field:* (select to edit)`".format(self.issue_id))
         self.issue = self.api_issues.issue(self.issue_id)
         if self.issue:
-            fields = set(self.issue)
+            #fields = set(self.issue)
+            fields = ['Assignee','Description', 'Labels', 'Latest Information','Summary',
+                      #'Priority','Rating','Email', 'Slack ID','Image_Url'
+                      ]
             action_id = 'Jira_View_Issue::edit_field::{0}'.format(self.issue_id)
             view.add_select(action_id, 'Field to edit', fields)
 
@@ -224,15 +243,15 @@ class Jira_View_Issue():
         #result
         #return self.send_message(':point_right: ...In edit field: {0} : :{1}  {2}'.format(issue_id,field,trigger_id))
 
-    def issue_links(self,action):
-        self.view_issue(action)
+    def issue_links (self,action): self.view_issue(action)
+    def reload_issue(self,action): self.view_issue(action)
 
     def screenshot(self, action):
         issue_id = action.get('value')
         payload = {'params': [issue_id], 'channel': self.channel, 'team_id': self.team_id}
         Lambda('osbot_jira.lambdas.elastic_jira').invoke_async(payload)
 
-    def raw_data(self, action):
+    def raw_issue_data(self, action):
         issue_id = action.get('value')
         issue = API_Issues().issue(issue_id)
         if issue:
@@ -251,6 +270,15 @@ class Jira_View_Issue():
         else:
             self.send_message(':red_circle: Error in View Issue, no issue id found in action :{0}'.format(action))
 
+    def view_links(self, action):
+        try:
+            issue_id = action.get('value')
+            self.send_message(':point_right: Viewing all links for issue: `{0}`'.format(issue_id))
+            payload = {'params': ['links', issue_id, 'all', '1'], 'channel': self.channel, 'team_id': self.team_id}
+            Lambda('osbot_jira.lambdas.elastic_jira').invoke_async(payload)
+        except Exception as error:
+            self.send_message(':red_circle: Error in View Links for issue with id `{0}`: {1}'.format(issue_id, error))
+
     def change_status(self, action):
         try:
             self.issue_id = action.get('value')
@@ -258,7 +286,7 @@ class Jira_View_Issue():
         except Exception as error:
             self.send_message(':red_circle: Error in change_status: {0}'.format(error))
 
-    def edit_issue(self,action):
+    def edit_issue_field(self,action):
         try:
             self.issue_id = action.get('value')
             self.create_ui_edit_issue_field()

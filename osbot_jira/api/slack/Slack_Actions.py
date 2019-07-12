@@ -241,6 +241,8 @@ class Slack_Actions:
         channel = event['channel']['id']
         team_id = event['team']['id']
 
+        #slack_message('in handle request',[] , channel, team_id)
+
         event_type = event.get('type')
 
         if   event_type == 'interactive_message' : return self.handle_interactive_message (event)

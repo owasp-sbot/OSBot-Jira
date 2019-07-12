@@ -27,7 +27,7 @@ class test_Jira_View_Issue(TestCase):
         Deploy('osbot_jira.lambdas.elastic_jira').deploy()             # update the main jira lambda
 
     def test__update_lambda_slack_actions(self):
-        Deploy(self.lambda_name_jira_actions).deploy()            # update the lambda that handles the callbacks
+        Deploy('osbot_jira.lambdas.slack_actions').deploy()            # update the lambda that handles the callbacks
 
     def test_updata_lambda_slack_jira_actions(self):
         Deploy('osbot_jira.lambdas.slack_jira_actions').deploy()    # used for dialog submissions
@@ -44,15 +44,16 @@ class test_Jira_View_Issue(TestCase):
         #self.test__update_lambda_slack_actions()
         issue_id = 'GSCS-372'
         issue_id = 'GSCS-1'
-        #self.jira_view_issue.channel = 'DDKUZTK6X'
+        self.jira_view_issue.channel = 'DDKUZTK6X'
         self.jira_view_issue.team_id = 'T7F3AUXGV'
         self.jira_view_issue.load_issue(issue_id).add_select_with_issue_links()
-        #self.result = self.jira_view_issue.send()
+        self.result                 = self.jira_view_issue.send()
 
         #self.result = self.jira_view_issue.issue_links({'value':'GSCS-372'})
 
     def test_create_ui_actions_with_transitions(self):
         issue_id       = 'GSCS-372'
+        #issue_id       = 'SEC-9892'
         current_status = 'Backlog'
         self.jira_view_issue.channel  = 'DDKUZTK6X'
         self.jira_view_issue.team_id  = 'T7F3AUXGV'
@@ -65,3 +66,8 @@ class test_Jira_View_Issue(TestCase):
         self.jira_view_issue.channel = 'DDKUZTK6X'
         self.jira_view_issue.team_id = 'T7F3AUXGV'
         self.result = self.jira_view_issue.create_ui_edit_issue_field()
+
+    def test_view_links(self):
+        self.jira_view_issue.channel = 'DDKUZTK6X'
+        self.jira_view_issue.team_id = 'T7F3AUXGV'
+        self.result = self.jira_view_issue.view_links({'value':'GSCS-32'})
