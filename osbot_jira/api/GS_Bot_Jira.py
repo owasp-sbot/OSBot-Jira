@@ -19,6 +19,24 @@ class GS_Bot_Jira:
     def __init__(self):
         self.version = "v0.42 (GSBot)"
 
+    def cmd_add_link(self, params, team_id=None, channel=None):
+            if len(params) < 4:
+                text = ":exclamation: Hi, to add a link, You must provide 3 params: `{from ID}` `{to ID}` `{link type}`"
+                return {"text": text, "attachments": []}
+            else:
+                params.pop(0)           # position 0 is the 'issue' command
+                from_key  = params.pop(0)
+                to_key    = params.pop(0)
+                link_type = " ".join(params)
+
+                try:
+                    from osbot_jira.api.jira_server.API_Jira import API_Jira
+                    API_Jira().issue_add_link(from_key, link_type, to_key)
+                    text = ':point_right: Added link: *{0}* `{1}` *{2}*'.format(from_key,link_type,to_key)
+                except Exception as error:
+                    text = ':red_circle: Error in `add_link`:  {0}'.format(error)
+                return {"text": text, "attachments": []}
+
     def cmd_actions(self, params, team_id=None, channel=None):
         text, attachments = Jira_Slack_Actions().get_actions_ui()
         return {"text": text, "attachments": attachments}
@@ -403,10 +421,11 @@ class GS_Bot_Jira:
         user        = event.get('user')
         attachments = []
         if params is None or len(params) < 1:
-            text   = ":point_right: no command received, see `jira help` for a list of available commands`"
+            text   = ":point_right: no command received, see `jira help` for a list of available commands"
         else:
             command = params[0]
             try:
+                if command == 'add_link'           : return self.cmd_add_link       (params, team_id, channel)
                 if command == 'help'               : return self.cmd_help           ()
                 if command == 'actions'            : return self.cmd_actions        (params, team_id, channel)
                 if command == 'create'             : return self.cmd_create         (params, team_id, channel)

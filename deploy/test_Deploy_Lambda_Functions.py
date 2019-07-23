@@ -40,5 +40,8 @@ class test_Deploy_Lambda_Functions(TestCase):
     def test_deploy_slack_actions(self):
         Lambda_Package('osbot_jira.lambdas.slack_actions').update_code() #  GS_Bot_Jira
 
+    def test__update_lambda(self):
+        Deploy('osbot_jira.lambdas.slack_jira_actions').deploy()  # update the jira actions
+
 if __name__ == '__main__':
     unittest.main()

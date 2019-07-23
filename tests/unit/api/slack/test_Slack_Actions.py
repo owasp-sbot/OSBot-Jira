@@ -26,7 +26,7 @@ class test_Slack_Actions(TestCase):
         self.result = target({'callback_id': 'jira-slack-actions'})
 
     def test_handle_dialogue_suggestions(self):
-        self.test__update_lambda_slack_actions()
+        #self.test__update_lambda_slack_actions()
         channel            = 'DDKUZTK6X'
         (text,attachments) = Slack_Jira_Search().get_drop_box_ui()
         slack_message(text, attachments, channel)

@@ -57,7 +57,8 @@ class Jira_Slack_Actions:
         team       = event.get('team'   ).get('id')
         slack_dialog = Jira_Create_Issue().setup().render()
         API_Slack(channel,team).slack.api_call("dialog.open", trigger_id=trigger_id, dialog=slack_dialog)
-        return {"text": "Opening Create issue pop up dialog in {0} and {1}".format(channel, team), "attachments": [], 'replace_original': False}
+
+        return {"text": ":point_right: Opening `Create Issue` dialog".format(channel, team), "attachments": [], 'replace_original': False}
 
 
 

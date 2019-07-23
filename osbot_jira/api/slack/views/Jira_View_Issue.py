@@ -38,7 +38,6 @@ class Jira_View_Issue():
             channel = event.get('channel').get('id')
             team_id = event.get('team').get('id')
             # temp code (refactor when adding full support for blocks)
-            from osbot_jira.api.slack.blocks.API_Slack_Blocks import API_Slack_Blocks
             text = ':point_right: message not recognised: {0}'.format(action)
             API_Slack_Blocks().set_text(text).send_message(channel, team_id)
 
@@ -67,8 +66,8 @@ class Jira_View_Issue():
 
             add_layout  = self.slack_blocks.add_layout_section
 
-            text = "*{0}*:\n<{1}|{2} - {3}>".format(issue_type,key_link,key, summary)
-            text = "*Key - Summary*:\n<{1}|{2} - {3}>".format(issue_type, key_link, key, summary)
+            #text = "*{0}*:\n<{1}|{2} - {3}>".format(issue_type,key_link,key, summary)
+            text = ":point_right: *Issue*: <{1}|{2} - {3}>".format(issue_type, key_link, key, summary)
 
             add_layout(self.issue_id).add_text(text).render()
             if latest_info:
@@ -177,20 +176,21 @@ class Jira_View_Issue():
 
             return actions.render()
 
-    def create_ui_actions_with_transitions(self ,issue_id=None,current_status=None):
+    def create_ui_actions_with_transitions(self ,issue_id=None,current_status=None,show_intro=True):
         if issue_id:
             self.issue_id = issue_id
         view = API_Slack_Blocks()
-        self.add_block_actions_with_transitions(view, current_status)
+        self.add_block_actions_with_transitions(view, current_status,show_intro)
         return view.send_message(self.channel, self.team_id)
 
-    def add_block_actions_with_transitions(self,view,current_status=None):
+    def add_block_actions_with_transitions(self,view,current_status=None, show_intro=True):
         if self.issue is None:
             self.issue = self.api_issues.issue(self.issue_id)
         if current_status is None:                                              # this helps with the situation when the issue has just been updated but the data has not reached out to ELK
             current_status = self.issue.get('Status')
         transitions = self.api_jira.issue_next_transitions(self.issue_id)
-        view.add_text("*Change issue status to*: (click to change)")
+        if show_intro:
+            view.add_text("*Change issue status to*: (click to change)")
         if len(transitions) > 0:
             actions = view.add_layout_actions(action_id='Jira_View_Issue')
             for key, value in transitions.items():
@@ -229,27 +229,23 @@ class Jira_View_Issue():
             return message
 
     def edit_field(self,action):
-
-        selected_option = action.get('selected_option')
-        field           = selected_option.get('text').get('text')
-        issue_id        = action.get('action_id').split('::').pop(3)
-        trigger_id      = self.event.get('trigger_id')
-
-
-        from pbx_gs_python_utils.utils.slack.API_Slack import API_Slack
-
-        slack_dialog = Jira_Edit_Issue(issue_id, field).setup().render()
-        API_Slack().slack.api_call("dialog.open", trigger_id=trigger_id, dialog=slack_dialog)
-        #return self.send_message(':point_right: result {0}'.format(result))
-        #result
-        #return self.send_message(':point_right: ...In edit field: {0} : :{1}  {2}'.format(issue_id,field,trigger_id))
+        try:
+            from pbx_gs_python_utils.utils.slack.API_Slack import API_Slack   # todo: check if this needs to be done here (or can be done at the top level)
+            selected_option = action.get('selected_option')
+            field           = selected_option.get('text').get('text')
+            issue_id        = action.get('action_id').split('::').pop(3)
+            trigger_id      = self.event.get('trigger_id')
+            slack_dialog = Jira_Edit_Issue(issue_id, field).setup().render()
+            API_Slack(self.channel, self.team_id).slack.api_call("dialog.open", trigger_id=trigger_id, dialog=slack_dialog)
+        except Exception as error:
+            self.send_message(':red_circle: Error in edit_field: {0}'.format(error))
 
     def issue_links (self,action): self.view_issue(action)
     def reload_issue(self,action): self.view_issue(action)
 
     def screenshot(self, action):
         issue_id = action.get('value')
-        payload = {'params': ['screenshot', issue_id], 'channel': self.channel, 'team_id': self.team_id}
+        payload  = {'params': ['screenshot', issue_id], 'channel': self.channel, 'team_id': self.team_id}
         Lambda('osbot_jira.lambdas.elastic_jira').invoke_async(payload)
 
     def raw_issue_data(self, action):
@@ -266,7 +262,7 @@ class Jira_View_Issue():
             if selected_option:
                 issue_id = selected_option.get('value')
         if issue_id:
-            payload = {'params': ['issue_new', issue_id], 'channel': self.channel, 'team_id': self.team_id}
+            payload = {'params': ['issue', issue_id], 'channel': self.channel, 'team_id': self.team_id}
             Lambda('osbot_jira.lambdas.elastic_jira').invoke_async(payload)
         else:
             self.send_message(':red_circle: Error in View Issue, no issue id found in action :{0}'.format(action))
@@ -302,7 +298,7 @@ class Jira_View_Issue():
         try:
             self.api_jira.issue_transition_to_id(issue_id, transition_to)
             self.send_message(':white_check_mark: Changed `{0}` status to: *{1}*. Here are the new transitions available '.format(issue_id, transition_name))
-            self.create_ui_actions_with_transitions(issue_id, transition_name)
+            self.create_ui_actions_with_transitions(issue_id, transition_name, show_intro=False)
         except Exception as error:
             self.send_message(':red_circle: Error in transition_to: {0}'.format(error))
 

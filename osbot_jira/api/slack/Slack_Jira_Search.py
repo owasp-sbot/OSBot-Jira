@@ -13,16 +13,16 @@ class Slack_Jira_Search():
         if data.get('actions'):                                 # happens when the user selected an issue
             return self.handle_actions(data)
 
+        #channel = data['channel']['id']
+        #team_id = data['team']['id']
+        #slack_message('in handle actions for: {0}'.format(data), [], channel, team_id)
+
         return self.return_search_results(data.get('value'))    # happens when user types on dropdown
 
     def return_search_results(self,query):
         query = query.replace('+', ' ')
         max_show  = 100
-        max_query = 500
         issues = ELK_to_Slack().cmd_search(query.split(' '))
-        #api_issues = API_Issues()
-        #query = self.get_search_query(params)
-        #issues = api_issues.search_using_lucene(query,max_query)
 
         count = len(issues)
         options = []
@@ -46,11 +46,11 @@ class Slack_Jira_Search():
         channel = data['channel']['id']
         team_id = data['team']['id']
         actions = data.get('actions')
+
         issue_id = actions[0].get('selected_options')[0].get('value')
         payload = {'params': [issue_id], 'channel': channel, 'team_id': team_id}
         Lambda('osbot_jira.lambdas.elastic_jira').invoke_async(payload)
-        return {"text": ":information_source: Issue selected: {0}".format(issue_id), "attachments": [],
-                'replace_original': False}
+        return {"text": ":information_source: Issue selected: {0}".format(issue_id), "attachments": [], 'replace_original': False}
 
 
     def get_drop_box_ui(self):
@@ -59,7 +59,7 @@ class Slack_Jira_Search():
         # attachment = dialog.render()
 
         text        = ''
-        attachments = [ {    "text": "Search jira",
+        attachments = [ {   "text": "Search jira (type to trigger search)",
                             "color": "#3AA3E3",
                             "attachment_type": "default",
                             "callback_id": "jira_search_select_box",
@@ -71,7 +71,7 @@ class Slack_Jira_Search():
                                     "value": "",
                                     "type": "select",
                                     "data_source": "external",
-                                    "min_query_length": 1,
+                                    "min_query_length": 2,
                                 }
                             ]
                         }]

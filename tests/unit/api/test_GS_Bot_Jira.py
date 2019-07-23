@@ -54,6 +54,11 @@ class test_GS_Bot_Jira(unittest.TestCase):
                             '*<https://jira.photobox.com/browse/AAAA|AAAA>* _from index:_ *jira*'}
 
 
+    def test_cmd_add_link(self):
+        params = ['issue','SEC-12104','SEC-12103', 'is parent of']
+        self.result = self.api.cmd_add_link(params)
+
+
     def test_cmd_create(self):
         params = ['create','Task', 'an','task']
         #self.result = self.api.cmd_create(params)
