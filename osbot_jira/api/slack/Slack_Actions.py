@@ -45,8 +45,10 @@ class Slack_Actions:
         # todo: refactor to handler method
         if callback_id == 'gs_detect_slack':
             try:
-                text = Lambda('gs_detect.lambdas.alerting_slack_callbacks').invoke(data)
-                return {'text': text,  'attachments': [], 'replace_original': replace_original}
+                #text = Lambda('gs_detect.lambdas.alerting_slack_callbacks').invoke(data)
+                #return {'text': text,  'attachments': [], 'replace_original': replace_original}
+                Lambda('gs_detect.lambdas.alerting_slack_callbacks').invoke_async(data)
+                return {}
             except Exception as error:
                 return {'text': "Execution error: {0}".format(error), 'attachments': [], 'replace_original': replace_original}
 
