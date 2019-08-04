@@ -1,7 +1,0 @@
-Person,edge_1,Role,edge_2,Team,edge_3,Function,edge_4,Business Unit
-Peter Smith,has role,SVP - Special Projects,is funded by,Data Science,is funded by,Project Management,is function within,Digicorp
-Alan Lee,has role,CEO,is funded by,Executive,is funded by,Executive function,is function within,Digicorp
-Bruno Lyon,has role,Lead Engineer,is funded by,Software Engineering,is funded by,IT,is function within,Digicorp
-Alan Champion,has role,Engineer,is funded by,Software Engineering,is funded by,IT,is function within,Digicorp
-Sophia Berlin,has role,Engineer,is funded by,Data Engineering,is funded by,IT,is function within,Digicorp
-Norman Ligos,has role,Platform Specialist,is funded by,Platform Engineering,is funded by,IT,is function within,Digicorp

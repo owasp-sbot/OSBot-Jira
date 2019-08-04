@@ -3,7 +3,7 @@ from unittest import TestCase
 from pbx_gs_python_utils.utils.Dev import Dev
 from pbx_gs_python_utils.utils.Files import Files
 
-from osbot_graphdb.Demo_Data import Demo_Data
+from osbot_graphdb.demo.Demo_Data import Demo_Data
 
 
 class test_Demo_Data(TestCase):

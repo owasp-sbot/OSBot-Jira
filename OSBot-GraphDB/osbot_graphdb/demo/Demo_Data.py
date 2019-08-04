@@ -4,7 +4,7 @@ from pbx_gs_python_utils.utils.Files import Files
 
 class Demo_Data:
     def __init__(self):
-        self.data_folder = Files.path_combine(__file__,'../../db/csv-data')
+        self.data_folder = Files.path_combine(__file__,'../../../db/csv-data')
 
     # helper methods
     def file_lines(self, title):

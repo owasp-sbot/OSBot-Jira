@@ -1,7 +1,0 @@
-Person,edge_1,Role,edge_2,Role
-Peter Smith,has role,SVP - Special Projects,reports to,CEO
-Alan Lee,has role,CEO,,
-Bruno Lyon,has role,Lead Engineer,reports to,SVP - Special Projects
-Alan Champion,has role,Engineer,reports to,Lead Engineer
-Sophia Berlin,has role,Engineer,reports to ,Lead Engineer
-Norman Ligos,has role,Platform Specialist,reports to,SVP - Special Projects
