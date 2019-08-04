@@ -1,10 +1,14 @@
 import csv
 from pbx_gs_python_utils.utils.Files import Files
 
+from osbot_graphsv.api.Graph_SV import Graph_SV
+
 
 class Demo_Data:
     def __init__(self):
-        self.data_folder = Files.path_combine(__file__,'../../../db/csv-data')
+        self.root_folder = Files.path_combine(__file__        , '../../../GraphSV-demo-data')
+        self.data_folder = Files.path_combine(self.root_folder,'csv-demo-data'              )
+        self.graph_sv    = Graph_SV(self.root_folder)
 
     # helper methods
     def file_lines(self, title):
