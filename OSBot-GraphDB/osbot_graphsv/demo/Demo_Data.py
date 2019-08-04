@@ -10,6 +10,10 @@ class Demo_Data:
         self.data_folder = Files.path_combine(self.root_folder,'csv-demo-data'              )
         self.graph_sv    = Graph_SV(self.root_folder)
 
+
+    def file_system(self):
+        return self.graph_sv.file_system
+
     # helper methods
     def file_lines(self, title):
         lines = []

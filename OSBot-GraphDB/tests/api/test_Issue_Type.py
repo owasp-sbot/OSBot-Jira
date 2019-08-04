@@ -20,6 +20,8 @@ class test_Issue_Type(TestCase):
     def test_issue_type_path(self):
         assert 'GraphSV-demo-data/data/AAAA'     in self.file_system.issue_type('AAAA'    ).path()
         assert 'GraphSV-demo-data/data/AAAA.aaa' in self.file_system.issue_type('AAAA.aaa').path()
+        self.file_system.issue_type('AAAA'    ).delete()
+        self.file_system.issue_type('AAAA.aaa').delete()
 
     def test_issue_add(self):
         name = 'To Add Tests'
@@ -30,7 +32,7 @@ class test_Issue_Type(TestCase):
         result = issue_type.issue_add(data)
         assert result.get('status') == 'ok'
         issue_key = result.get('issue_key')
-        self.result = issue_type.issue_get(issue_key)
+        assert issue_type.issue_get(issue_key) == {'Issue Type': 'To Add Tests', 'Key': 'To_Add_Tests-1', 'the_answer': 'is 42'}
 
         issue_type.delete()
 

@@ -12,6 +12,8 @@ class test_Demo_Data_Import(TestCase):
         self.demo_data_import = Demo_Data_Import()
         self.result    = None
 
+        self.demo_data_import.indexes.rebuild()
+
     def tearDown(self):
         if self.result is not None:
             Dev.pprint(self.result)
@@ -21,3 +23,6 @@ class test_Demo_Data_Import(TestCase):
 
     def test_import_Sample_Database_extracts__HR_Database(self):
         self.result = self.demo_data_import.import_Sample_Database_extracts__HR_Database()
+        #assert len(self.demo_data_import.import_Sample_Database_extracts__HR_Database()) > 0
+
+        #assert result.get('data') == 'Issue added ok'

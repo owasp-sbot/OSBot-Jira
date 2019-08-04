@@ -9,14 +9,12 @@ class Issue_Type:
         self.filename_metadata = 'metadata.json'
 
     def issue_add(self,data):
-        if self.exists() is False:
-            self.create()
-        metadata   = self.metadata()
-        issue_key   = "{0}-{1}".format(metadata.get('Key Id'),metadata.get('Next Key'))
-        issue_path = self.path_issue(issue_key)
+        metadata             = self.metadata()
+        issue_key            = "{0}-{1}".format(metadata.get('Key Id'),metadata.get('Next Key'))
+        issue_path           = self.path_issue(issue_key)
         metadata['Next Key'] += 1
-        data['Key'       ] = issue_key
-        data['Issue Type'] = self.name
+        data['Key'         ] = issue_key
+        data['Issue Type'  ] = self.name
         Json.save_json_pretty(issue_path, data)
         Json.save_json_pretty(self.path_metadata(), metadata)
         if Files.exists(issue_path):
@@ -27,6 +25,14 @@ class Issue_Type:
         issue_path = self.path_issue(issue_key)
         if Files.exists(issue_path):
             return Json.load_json(issue_path)
+
+    def issues(self):
+        data = []
+        path_metadata = self.path_metadata()
+        for path in Files.find(Files.path_combine(self.path(), '*.json')):
+            if path != path_metadata:
+                data.append(Json.load_json(path))
+        return data
 
     def create(self):
         if self.exists() is True:
@@ -51,7 +57,7 @@ class Issue_Type:
         :return: Bool
         """
         if self.exists():
-            return Files.folder_delete_all(self.path()) 
+            return Files.folder_delete_all(self.path())
         return False
 
     def exists(self):
@@ -76,3 +82,8 @@ class Issue_Type:
 
     def __repr__(self):
         return self.__str__()
+
+    def setup(self):
+        if self.exists() is False:
+            self.create()
+        return self
