@@ -1,0 +1,24 @@
+Device,edge_1,Person,edge_2,Account,edge_3,Business Asset
+XLXN2A-046,is owned by,Peter Smith,owns,peter.smith@digicorp.com,,
+VALAPONT,is owned by,Alan Lee,owns,alee@digicorp.com,represents critical business asset,VIP and Superuser identity
+XLXN2A-047,is owned by,Bruno Lyon,owns,bruno.lyon@digicorp.com,represents critical business asset,VIP and Superuser identity
+FR-APW-1404,is owned by,Alan Champion,owns,alan.champion@digicorp.com,represents critical business asset,VIP and Superuser identity
+PC-PSMIT-49873,is owned by,Sophia Berlin,owns,sophia.berlin@digicorp.com,,
+PC-NLIGO-49321,is owned by,Norman Ligos,owns,nligos@digicorp.com,,
+,,,,,,
+,,,,,,
+Person,edge_1,Account,edge_2,Application,edge_3,Business Asset
+Peter Smith,owns,cypher9@digi-inc.com,is user account for,Sunways,represents critical business asset,Trade Secrets
+Alan Lee,owns,cypher1@digi-inc.com,is user account for,Sunways,represents critical business asset,Trade Secrets
+Bruno Lyon,owns,admin@digi-inc.com,is admin account for,Sunways,represents critical business asset,Trade Secrets
+Alan Champion,owns,admin@digi-inc.com,is admin account for,Sunways,represents critical business asset,Trade Secrets
+Sophia Berlin,owns,cypher10@digi-inc.com,is user account for,Sunways,represents critical business asset,Trade Secrets
+Norman Ligos,owns,cypher2@digi-inc.corp,is user account for,Sunways,represents critical business asset,Trade Secrets
+,,,,,,
+Account,edge_1,Business Asset,,,,
+cypher9@digi-inc.com,represents critical business asset,,,,,
+cypher1@digi-inc.com,represents critical business asset,VIP and Superuser identity,,,,
+admin@digi-inc.com,represents critical business asset,VIP and Superuser identity,,,,
+admin@digi-inc.com,represents critical business asset,VIP and Superuser identity,,,,
+cypher10@digi-inc.com,represents critical business asset,,,,,
+cypher2@digi-inc.corp,represents critical business asset,,,,,
