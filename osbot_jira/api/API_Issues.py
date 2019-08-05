@@ -190,7 +190,7 @@ class API_Issues:
     #         del issue.get('Issue Links')['_all']
     #         data[summary] = {
     #             'Key'           : key                      ,
-    #             'Labels'        : issue.get('Summary')     ,
+    #              'Labels'        : issue.get('Summary')     ,
     #             'Issue Links'   : issue.get('Issue Links')
     #         }
     #     return data

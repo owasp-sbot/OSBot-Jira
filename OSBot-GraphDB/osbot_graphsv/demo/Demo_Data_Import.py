@@ -72,6 +72,57 @@ class Demo_Data_Import:
                             for role_id_2 in roles_2:
                                 self.graph_sv.link_add(role_id_1, edge_2, role_id_2)
 
+    def import_Role_Team_Function_Business(self):
+        data      = self.demo_data.dataset__Role_Team_Function_Business()
+        teams     = []
+        functions = []
+        biz_units = []
+
+        for item in data:
+            teams    .append(item.get('Team'         ).strip())
+            functions.append(item.get('Function'     ).strip())
+            biz_units.append(item.get('Business Unit').strip())
 
 
-        #return persons
+        teams     = list(set(teams))
+        functions = list(set(functions))
+        biz_units = list(set(biz_units))
+
+        for team in teams:
+            item = {'Summary': team}
+            self.add_if_new('Team', item)
+
+        for function in functions:
+            item = {'Summary': function}
+            self.add_if_new('Function', item)
+
+        for biz_unit in biz_units:
+            item = {'Summary': biz_unit}
+            self.add_if_new('Business Unit', item)
+
+        all_roles = self.issues.roles()
+        all_persons = self.issues.persons()
+        all_teams          = self.issues.teams()
+        all_functions      = self.issues.functions()
+        all_business_units = self.issues.business_units()
+
+        for item in data:
+            persons        = all_persons.get(item.get('Person'))
+            roles          = all_roles.get(item.get('Role'))
+            teams          = all_teams.get(item.get('Team'))
+            functions      = all_functions.get(item.get('Function'))
+            business_units = all_business_units.get(item.get('Business Unit'))
+            edge_1         = item.get('edge_1')
+            edge_2         = item.get('edge_2')
+            edge_3         = item.get('edge_3')
+            edge_4         = item.get('edge_4')
+
+            for person_id in persons:
+                for role_id in roles:
+                    self.graph_sv.link_add(person_id, edge_1, role_id)
+                    for team_id in teams:
+                        self.graph_sv.link_add(role_id, edge_2, team_id)
+                        for function_id in functions:
+                            self.graph_sv.link_add(team_id, edge_3, function_id)
+                            for business_unit_id in business_units:
+                                self.graph_sv.link_add(function_id, edge_4, business_unit_id)

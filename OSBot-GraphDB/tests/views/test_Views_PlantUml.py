@@ -16,6 +16,9 @@ class test_Views_PlantUml(TestCase):
         self.views_plantuml = Views_PlantUml()
         self.result = None
 
+        self.demo_data.graph_sv.indexes.rebuild()
+
+
     def tearDown(self):
         if self.result is not None:
             Dev.pprint(self.result)
@@ -40,6 +43,10 @@ class test_Views_PlantUml(TestCase):
         link_types  = ['has role','is manager of']
         issue_id = 'Role-2'
         link_types = [ 'reports to','is role of']
+
+        issue_id = 'Business_Unit-1'
+        link_types = ['has function', 'funds','is role of']
+
         depth       = 5
 
         graph = GS_Graph_SV(self.demo_data.graph_sv)

@@ -6,8 +6,10 @@ class Links:
     def __init__(self, file_system):
         self.file_system = file_system
         self.link_pairs = {
-            'has role'   : 'is role of'   , 'is role of'    : 'has role'  ,
-            'reports to' : 'is manager of', 'is manager of' :'reports to'
+            'has role'           : 'is role of'   , 'is role of'    : 'has role'          ,
+            'reports to'         : 'is manager of', 'is manager of' : 'reports to'        ,
+            'is funded by'       : 'funds'        , 'funds'         : 'is funded by'      ,
+            'is function within' : 'has function' , 'has function'  : 'is function within'
         }
 
     def all(self):

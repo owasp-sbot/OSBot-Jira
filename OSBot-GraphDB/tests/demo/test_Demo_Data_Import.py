@@ -30,3 +30,6 @@ class test_Demo_Data_Import(TestCase):
 
     def test_dataset__People_Role_Reporting_line(self):
         self.result = self.demo_data_import.import_People_Role_Reporting_line()
+
+    def test_import_Role_Team_Function_Business(self):
+        self.result = self.demo_data_import.import_Role_Team_Function_Business()
