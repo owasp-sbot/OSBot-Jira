@@ -29,8 +29,8 @@ class test_Indexes_Build(TestCase):
     def test_create_all(self):
         self.indexes_build.create_all()
 
-    # def test_create__by_key(self):
-    #     assert len(self.indexes_build.create__by_key()) > 50
+    def test_create__by_key(self):
+        self.result = self.indexes_build.create__by_key()
 
     # def test_create__by_fields_and_values(self):
     #     self.name = 'AAA BBB'

@@ -2,6 +2,7 @@ from pbx_gs_python_utils.utils.Files import Files
 from pbx_gs_python_utils.utils.Json import Json
 
 from osbot_graphsv.api.Issues import Issues
+from osbot_graphsv.api.Links import Links
 
 
 class Indexes_Build:
@@ -9,6 +10,7 @@ class Indexes_Build:
         self.file_system       = file_system
         self.folder_indexes    = self.file_system.folder_indexes
         self.issues            = Issues(self.file_system)
+        self.links             = Links(self.file_system)
         self.filename_metadata = 'metadata.json'
 
     def create_all(self):
@@ -24,7 +26,20 @@ class Indexes_Build:
                 data = Json.load_json(path)
                 key  = data.get('Key')
                 all_data[key] = { 'path': path.replace(self.file_system.folder_data,'')[1:],
-                                  'data': data                                             }
+                                  'links': {}                                              ,
+                                  'data': data                                             ,}
+
+        for link in self.links.all():
+            from_key  = link[0]
+            link_type = link[1]
+            to_key    = link[2]
+            issue = all_data.get(from_key)
+            if issue:
+                links = issue.get('links')
+                if links.get(link_type) is None: links[link_type]=[]
+                links[link_type].append(to_key)
+
+
         Json.save_json_pretty(self.path__by_key(),all_data)
         return all_data
 

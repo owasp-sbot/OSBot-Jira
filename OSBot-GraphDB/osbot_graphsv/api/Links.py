@@ -9,6 +9,7 @@ class Links:
             'has role'   : 'is role of'   , 'is role of'    : 'has role'  ,
             'reports to' : 'is manager of', 'is manager of' :'reports to'
         }
+
     def all(self):
         path = self.path_links()
         if Files.exists(path):
