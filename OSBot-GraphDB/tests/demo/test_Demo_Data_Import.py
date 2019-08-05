@@ -21,8 +21,12 @@ class test_Demo_Data_Import(TestCase):
     def test__init__(self):
         assert Files.folder_exists(self.demo_data_import.demo_data.data_folder) is True
 
-    def test_import_Sample_Database_extracts__HR_Database(self):
-        self.result = self.demo_data_import.import_Sample_Database_extracts__HR_Database()
-        #assert len(self.demo_data_import.import_Sample_Database_extracts__HR_Database()) > 0
+    def test_import_all(self):
+        self.demo_data_import.import_all()
 
-        #assert result.get('data') == 'Issue added ok'
+    def test_import_Sample_Database_extracts(self):
+        self.demo_data_import.import_Sample_Database_extracts__HR_Database()
+        self.demo_data_import.import_Sample_Database_extracts__Sunways_application_user_extract()
+
+    def test_dataset__People_Role_Reporting_line(self):
+        self.result = self.demo_data_import.import_People_Role_Reporting_line()
