@@ -34,6 +34,13 @@ class test_Views_PlantUml(TestCase):
         graph = self.views_plantuml.graph_expand(issue_id, depth, link_types)
         graph.render_puml_and_save_tmp()
 
+
+    def test_graph_with_schema(self):
+
+        graph = self.views_plantuml.graph_with_schema()
+        graph.render_puml_and_save_tmp()
+
+        #graph_schema_from_graph
     # def test_graph_links(self):
     #
     #     graph = GS_Graph_SV(self.demo_data.graph_sv)
