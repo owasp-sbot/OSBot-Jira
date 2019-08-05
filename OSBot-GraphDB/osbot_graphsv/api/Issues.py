@@ -41,8 +41,6 @@ class Issues:
         return self.by_issue_type('Person', indexed_by)
 
 
-
-
     # def all(self):
     #     data = []
     #     file_filter = Files.path_combine(self.file_system.folder_data, '**/*.json')
