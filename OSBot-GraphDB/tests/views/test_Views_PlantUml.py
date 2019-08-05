@@ -25,19 +25,17 @@ class test_Views_PlantUml(TestCase):
 
     def test_graph_all_nodes(self):
         graph = self.views_plantuml.graph_all_nodes()
-        #graph.render_puml_and_save_tmp()
-
-    def test_graph_expand(self):
-        issue_id    = 'Person-2'
-        link_types = ['has role', 'is manager of']
-        depth      = 2
-        graph = self.views_plantuml.graph_expand(issue_id, depth, link_types)
         graph.render_puml_and_save_tmp()
 
-
     def test_graph_with_schema(self):
-
         graph = self.views_plantuml.graph_with_schema()
+        graph.render_puml_and_save_tmp()
+
+    def test_graph_expand(self):
+        issue_id = 'Person-2'
+        link_types = ['has role', 'is manager of']
+        depth = 2
+        graph = self.views_plantuml.graph_expand(issue_id, depth, link_types)
         graph.render_puml_and_save_tmp()
 
         #graph_schema_from_graph

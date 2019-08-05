@@ -6,10 +6,16 @@ class Links:
     def __init__(self, file_system):
         self.file_system = file_system
         self.link_pairs = {
-            'has role'           : 'is role of'   , 'is role of'    : 'has role'          ,
-            'reports to'         : 'is manager of', 'is manager of' : 'reports to'        ,
-            'is funded by'       : 'funds'        , 'funds'         : 'is funded by'      ,
-            'is function within' : 'has function' , 'has function'  : 'is function within'
+            'has role'            : 'is role of'        , 'is role of'       : 'has role'            ,
+            'reports to'          : 'is manager of'     , 'is manager of'    : 'reports to'          ,
+            'is funded by'        : 'funds'             , 'funds'            : 'is funded by'        ,
+            'is function within'  : 'has function'      , 'has function'     : 'is function within'  ,
+            'is owned by'         : 'owns'              , 'owns'             : 'is owned by'         ,
+            'is user account for' : 'has user account'  , 'has user account' : 'is user account for' ,
+            'is admin account for': 'has admin account' , 'has admin account': 'is admin account for',
+            'represents critical business asset' : 'has critical business asset'          ,
+            'has critical business asset'        : 'represents critical business asset'   ,
+
         }
 
     def all(self):

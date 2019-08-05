@@ -25,20 +25,14 @@ class Issues:
                 indexed_data[index][key] = item
         return indexed_data
 
-    def business_units(self, indexed_by='Summary'):
-        return self.by_issue_type('Business_Unit', indexed_by)
-
-    def functions(self, indexed_by='Summary'):
-        return self.by_issue_type('Function', indexed_by)
-
-    def teams(self, indexed_by='Summary'):
-        return self.by_issue_type('Team', indexed_by)
-
-    def roles(self, indexed_by='Summary'):
-        return self.by_issue_type('Role', indexed_by)
-
-    def persons(self, indexed_by='Summary'):
-        return self.by_issue_type('Person', indexed_by)
+    def accounts       (self, indexed_by='Summary'): return self.by_issue_type('Account'       , indexed_by)
+    def business_assets(self, indexed_by='Summary'): return self.by_issue_type('Business_Asset', indexed_by)
+    def business_units (self, indexed_by='Summary'): return self.by_issue_type('Business_Unit' , indexed_by)
+    def devices        (self, indexed_by='Summary'): return self.by_issue_type('Device'        , indexed_by)
+    def functions      (self, indexed_by='Summary'): return self.by_issue_type('Function'      , indexed_by)
+    def teams          (self, indexed_by='Summary'): return self.by_issue_type('Team'          , indexed_by)
+    def roles          (self, indexed_by='Summary'): return self.by_issue_type('Role'          , indexed_by)
+    def persons        (self, indexed_by='Summary'): return self.by_issue_type('Person'        , indexed_by)
 
 
     # def all(self):

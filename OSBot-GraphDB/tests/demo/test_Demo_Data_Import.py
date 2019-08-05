@@ -33,3 +33,6 @@ class test_Demo_Data_Import(TestCase):
 
     def test_import_Role_Team_Function_Business(self):
         self.result = self.demo_data_import.import_Role_Team_Function_Business()
+
+    def test_import_Device_Person_Account_Application__by_Device(self):
+        self.result = self.demo_data_import.import_Device_Person_Account_Application__by_Device()

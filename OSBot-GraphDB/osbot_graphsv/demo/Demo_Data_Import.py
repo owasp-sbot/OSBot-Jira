@@ -31,7 +31,10 @@ class Demo_Data_Import:
     def import_all(self):
         self.import_Sample_Database_extracts__HR_Database()
         self.import_Sample_Database_extracts__Sunways_application_user_extract()
+        self.indexes.rebuild()
         self.import_People_Role_Reporting_line()
+        self.import_Role_Team_Function_Business()
+        self.indexes.rebuild()
 
     def import_Sample_Database_extracts__HR_Database(self):
         data = self.demo_data.dataset__Sample_Database_extracts__HR_Database()
@@ -100,8 +103,8 @@ class Demo_Data_Import:
             item = {'Summary': biz_unit}
             self.add_if_new('Business Unit', item)
 
-        all_roles = self.issues.roles()
-        all_persons = self.issues.persons()
+        all_roles          = self.issues.roles()
+        all_persons        = self.issues.persons()
         all_teams          = self.issues.teams()
         all_functions      = self.issues.functions()
         all_business_units = self.issues.business_units()
@@ -126,3 +129,61 @@ class Demo_Data_Import:
                             self.graph_sv.link_add(team_id, edge_3, function_id)
                             for business_unit_id in business_units:
                                 self.graph_sv.link_add(function_id, edge_4, business_unit_id)
+
+    def import_Device_Person_Account_Application__by_Device(self):
+        data = self.demo_data.dataset__Device_Person_Account_Application__by_Device()
+        devices         = []
+        persons         = []
+        accounts        = []
+        business_assets = []
+        for item in data:
+            devices        .append(item.get('Device'        ).strip())
+            persons        .append(item.get('Person'        ).strip())
+            accounts       .append(item.get('Account'       ).strip())
+            business_assets.append(item.get('Business Asset').strip())
+
+        devices = list(set(devices))
+        persons = list(set(persons))
+        accounts = list(set(accounts))
+        business_assets = list(set(business_assets))[1:]
+
+        for device in devices:
+            item = {'Summary': device}
+            self.add_if_new('Device', item)
+
+        for account in accounts:
+            item = {'Summary': account}
+            self.add_if_new('Account', item)
+
+        for business_asset in business_assets:
+            item = {'Summary': business_asset}
+            self.add_if_new('Business Asset', item)
+
+        all_accounts        = self.issues.accounts()
+        all_business_assets = self.issues.business_assets()
+        all_devices         = self.issues.devices()
+        all_persons         = self.issues.persons()
+
+        for item in data:
+            devices         = all_devices .get(item.get('Device' ))
+            persons         = all_persons .get(item.get('Person' ))
+            accounts        = all_accounts.get(item.get('Account'))
+            business_assets = all_business_assets.get(item.get('Business Asset'))
+
+
+            edge_1 = item.get('edge_1')
+            edge_2 = item.get('edge_2')
+            edge_3 = item.get('edge_3')
+
+            for device_id in devices:
+                for person_id in persons:
+                    self.graph_sv.link_add(device_id, edge_1, person_id)
+                    for account_id in accounts:
+                        self.graph_sv.link_add(person_id, edge_2, account_id)
+                        if edge_3:
+                            for business_asset_id in business_assets:
+                                self.graph_sv.link_add(account_id, edge_3, business_asset_id)
+
+
+
+
