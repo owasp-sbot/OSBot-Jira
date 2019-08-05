@@ -32,7 +32,11 @@ class test_Indexes_Build(TestCase):
     def test_create__by_key(self):
         self.result = self.indexes_build.create__by_key()
 
-    # def test_create__by_fields_and_values(self):
+    def test_create__by_link_type(self):
+        self.indexes_build.create__by_link_type()
+        self.result = self.indexes_build.get__by_link_type()
+
+        # def test_create__by_fields_and_values(self):
     #     self.name = 'AAA BBB'
     #     self.issue_type = Issue_Type(self.file_system, self.name).setup()
     #

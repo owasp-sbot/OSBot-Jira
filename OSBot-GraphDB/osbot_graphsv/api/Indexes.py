@@ -9,6 +9,7 @@ class Indexes:
     def by_fields_and_values(self): return self.indexes_build.get__by_fields_and_values()
     def by_key              (self): return self.indexes_build.get__by_key()
     def by_values           (self): return self.indexes_build.get__by_values()
+    def by_link_types       (self): return self.indexes_build.get__by_link_type()
 
     def rebuild(self):
         self.indexes_build.create_all()

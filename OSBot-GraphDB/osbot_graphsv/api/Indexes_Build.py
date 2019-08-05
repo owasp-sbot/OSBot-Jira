@@ -17,9 +17,10 @@ class Indexes_Build:
         self.create__by_key()
         self.create__by_fields_and_values()
         self.create__by_values()
+        self.create__by_link_type()
 
     def create__by_key(self):
-        all_data = {}
+        all_data   = {}
         file_filter = Files.path_combine(self.file_system.folder_data, '**/*.json')
         for path in Files.find(file_filter):
             if self.filename_metadata not in path:  # don't load metadata file
@@ -68,6 +69,17 @@ class Indexes_Build:
         Json.save_json_pretty(self.path__by_values(), data)
         return data
 
+    def create__by_link_type(self):
+        data = {}
+        for link in self.links.all():
+            (from_key, link_type, to_key) = link
+            if data.get(link_type)           is None: data[link_type] = {}
+            if data[link_type].get(from_key) is None: data[link_type][from_key] = []
+
+            data[link_type][from_key].append(to_key)
+            Json.save_json_pretty(self.path__by_link_type(), data)
+        return data
+
     def get_data_for(self,file_type):
         return Json.load_json(self.path_for(file_type))
 
@@ -77,9 +89,14 @@ class Indexes_Build:
     def get__by_fields_and_values(self): return self.get_data_for('by_fields_and_values')
     def get__by_key              (self): return self.get_data_for('by_key')
     def get__by_values           (self): return self.get_data_for('by_values')
+    def get__by_link_type           (self): return self.get_data_for('by_link_type')
 
     def path__by_fields_and_values(self): return self.path_for('by_fields_and_values')
     def path__by_key              (self): return self.path_for('by_key')
     def path__by_values           (self): return self.path_for('by_values')
+    def path__by_link_type        (self): return self.path_for('by_link_type')
 
 
+    # def get_issues(self, issues_ids):
+    #     issues = {}
+    #     return issues
