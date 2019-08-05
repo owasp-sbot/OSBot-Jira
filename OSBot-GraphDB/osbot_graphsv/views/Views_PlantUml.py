@@ -53,7 +53,7 @@ class Views_PlantUml:
 
         return new_graph
 
-        def graph_with_schema(self):
-            graph_with_all_nodes = self.graph_all_nodes()
-            graph_with_schema    = self.views_plantuml.graph_schema_from_graph(graph_with_all_nodes)
-            return graph_with_schema
+    def graph_with_schema(self):
+        graph_with_all_nodes = self.graph_all_nodes()
+        graph_with_schema    = self.graph_schema_from_graph(graph_with_all_nodes)
+        return graph_with_schema
