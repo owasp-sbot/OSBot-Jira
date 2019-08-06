@@ -48,3 +48,6 @@ class test_Demo_Data_Import(TestCase):
 
     def test_import_dataset__Control_Capabilities_Role_People(self):
         self.result = self.demo_data_import.import_dataset__Control_Capabilities_Role_People()
+
+    def test_import_Impacts(self):
+        self.result = self.demo_data_import.import_Impacts()

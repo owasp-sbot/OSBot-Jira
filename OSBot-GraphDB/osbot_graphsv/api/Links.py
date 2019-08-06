@@ -17,6 +17,7 @@ class Links:
             'detected by'         : 'detected'          , 'detected'         : 'detected by'         ,
             'delivers'            : 'is delivered by'   , 'is delivered by'  : 'delivers'            ,
             'role is assigned to' : 'has role assigned' , 'has role assigned': 'role is assigned to' ,
+            'can escalate to'     : 'escalated by'      , 'escalated by'     :  'can escalate to'    ,
             'represents critical business asset' : 'has critical business asset'          ,
             'has critical business asset'        : 'represents critical business asset'   ,
 

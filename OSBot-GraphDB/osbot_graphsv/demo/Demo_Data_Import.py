@@ -27,6 +27,8 @@ class Demo_Data_Import:
     def summary_not_exists(self, item):
         return item.get('Summary') not in self.summaries()
 
+
+
     # import methods
     def import_all(self):
         self.import_Sample_Database_extracts__HR_Database()
@@ -39,7 +41,9 @@ class Demo_Data_Import:
         self.import__Device_Person_Account_Application__by_Account()
         self.import_dataset__Device_Detections()
         self.import_dataset__Control_Capabilities_Role_People()
+        self.import_Impacts()
         self.indexes.rebuild()
+
 
     def import_Sample_Database_extracts__HR_Database(self):
         data = self.demo_data.dataset__Sample_Database_extracts__HR_Database()
@@ -370,3 +374,34 @@ class Demo_Data_Import:
                         self.graph_sv.link_add(capability_id,edge_2, role_id)
                         for person_id in persons:
                             self.graph_sv.link_add(role_id, edge_3, person_id)
+
+    def import_Impacts(self):
+        data = self.demo_data.dataset__Impacts()
+
+        security_impacts = []
+        for item in data:
+            security_impacts.append(item.get('Security Impact_1').strip())
+            security_impacts.append(item.get('Security Impact_2').strip())
+            security_impacts.append(item.get('Security Impact_3').strip())
+
+        security_impacts = list(set(security_impacts))
+
+        for security_impact in security_impacts:
+            item = {'Summary': security_impact}
+            self.add_if_new('Security Impact', item)
+
+        all_security_impacts = self.issues.security_impacts()
+
+        for item in data:
+            security_impacts_1 = all_security_impacts.get(item.get('Security Impact_1').strip())
+            security_impacts_2 = all_security_impacts.get(item.get('Security Impact_2').strip())
+            security_impacts_3 = all_security_impacts.get(item.get('Security Impact_3').strip())
+
+            edge_1 = item.get('edge_1')
+            edge_2 = item.get('edge_2')
+
+            for security_impact_1 in security_impacts_1:
+                for security_impact_2 in security_impacts_2:
+                    self.graph_sv.link_add(security_impact_1, edge_1, security_impact_2)
+                    for security_impact_3 in security_impacts_3:
+                        self.graph_sv.link_add(security_impact_2, edge_2, security_impact_3)
