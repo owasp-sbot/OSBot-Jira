@@ -43,6 +43,7 @@ class Demo_Data_Import:
         self.import_dataset__Control_Capabilities_Role_People()
         self.import_Impacts()
         self.import_Impact_Vulnerability_Incident_Fact_Control()
+        self.import_Incident()
         self.indexes.rebuild()
 
 
@@ -412,7 +413,7 @@ class Demo_Data_Import:
         data = self.demo_data.dataset__Impact_Vulnerability_Incident_Fact_Control()
 
         security_impacts = []
-        vulnerabilities   = []
+        vulnerabilities  = []
         incident_facts   = []
         capabilities     = []
 
@@ -423,7 +424,7 @@ class Demo_Data_Import:
             capabilities.append(item.get('Capability').strip())
 
         security_impacts = list(set(security_impacts))[1:]
-        vulnerabilities   = list(set(vulnerabilities))[1:]
+        vulnerabilities  = list(set(vulnerabilities))[1:]
         incident_facts   = list(set(incident_facts))
         capabilities     = list(set(capabilities))
 
@@ -478,3 +479,79 @@ class Demo_Data_Import:
                     for incident_fact_id in incident_facts:
                         for capability_id in capabilities:
                             self.graph_sv.link_add(incident_fact_id, edge_3, capability_id)
+
+
+    def import_Incident(self):
+        data = self.demo_data.dataset__Incident()
+
+
+        incidents             = []
+        investigation_threads = []
+        incident_tasks        = []
+        incident_fact         = []
+        timeline_fact         = []
+
+        for item in data:
+            incidents            .append(item.get('Incident'            ).strip())
+            investigation_threads.append(item.get('Investigation Thread').strip())
+            incident_tasks       .append(item.get('Incident Task'       ).strip())
+            incident_fact        .append(item.get('Incident Fact'       ).strip())
+            timeline_fact        .append(item.get('Timeline Fact'       ).strip())
+
+        incidents             = sorted(list(set(incidents)))
+        investigation_threads = sorted(list(set(investigation_threads)))
+        incident_tasks        = sorted(list(set(incident_tasks)))[1:]
+        incident_facts        = sorted(list(set(incident_fact)))[1:]
+        timeline_facts        = sorted(list(set(timeline_fact)))[1:]
+
+        for incident in incidents:
+            item = { 'Summary': incident }
+            self.add_if_new('Incident', item)
+
+        for investigation_thread in investigation_threads:
+            item = { 'Summary': investigation_thread }
+            self.add_if_new('Investigation Thread', item)
+
+        for incident_task in incident_tasks:
+            item = { 'Summary': incident_task }
+            self.add_if_new('Incident Task', item)
+
+        for incident_fact in incident_facts:
+            item = { 'Summary': incident_fact }
+            self.add_if_new('Incident Fact', item)
+
+        for timeline_fact in timeline_facts:
+            item = { 'Summary': timeline_fact }
+            self.add_if_new('Timeline Fact', item)
+
+        all_incidents             = self.issues.incidents()
+        all_investigation_threads = self.issues.investigation_threads()
+        all_incident_tasks        = self.issues.incident_tasks()
+        all_incident_facts        = self.issues.incident_facts()
+        all_timeline_facts        = self.issues.timeline_facts()
+
+        for item in data:
+            incidents               = all_incidents             .get(item.get('Incident'            ).strip())
+            investigation_threads   = all_investigation_threads .get(item.get('Investigation Thread').strip())
+            incident_tasks          = all_incident_tasks        .get(item.get('Incident Task'       ).strip())
+            incident_facts          = all_incident_facts        .get(item.get('Incident Fact'       ).strip())
+            timeline_facts          = all_timeline_facts        .get(item.get('Timeline Fact'       ).strip())
+
+            edge_1 = item.get('edge_1')
+            edge_2 = item.get('edge_2')
+            edge_3 = item.get('edge_3')
+            edge_4 = item.get('edge_4')
+
+            for incident_id in incidents:
+                for investigation_thread_id in investigation_threads:
+                    self.graph_sv.link_add(incident_id, edge_1, investigation_thread_id)
+                    if incident_tasks:
+                        for incident_task_id in incident_tasks:
+                            self.graph_sv.link_add(investigation_thread_id ,edge_2, incident_task_id)
+                            if incident_facts:
+                                for incident_fact_id in incident_facts:
+                                    self.graph_sv.link_add(incident_task_id,edge_3, incident_fact_id)
+                                    if timeline_facts:
+                                        for timeline_fact_id in timeline_facts:
+                                            self.graph_sv.link_add(incident_fact_id, edge_4, timeline_fact_id)
+

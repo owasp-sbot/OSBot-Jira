@@ -20,7 +20,10 @@ class Links:
             'can escalate to'     : 'escalated by'      , 'escalated by'     : 'can escalate to'     ,
             'is supported by'     : 'supports'          , 'supports'         : 'is supported by'     ,
             'indicates failure of': 'failure causes'    , 'failure causes'   : 'indicates failure of',
+            'causes'              : 'is caused by'      , 'is caused by'     : 'causes'              ,
+            'establishes'         : 'is established by' , 'is established by': 'establishes'         ,
             
+
             'can arise due to exploit of'        : 'expoit causes'                        ,
             'expoit causes'                      : 'can arise due to exploit of'          ,
             'represents critical business asset' : 'has critical business asset'          ,

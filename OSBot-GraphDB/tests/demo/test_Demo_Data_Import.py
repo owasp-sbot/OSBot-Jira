@@ -55,3 +55,5 @@ class test_Demo_Data_Import(TestCase):
     def test_import_Impact_Vulnerability_Incident_Fact_Control(self):
         self.result = self.demo_data_import.import_Impact_Vulnerability_Incident_Fact_Control()
 
+    def test_import_Incident(self):
+        self.result = self.demo_data_import.import_Incident()
