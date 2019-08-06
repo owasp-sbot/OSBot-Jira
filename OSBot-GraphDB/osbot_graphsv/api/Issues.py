@@ -38,6 +38,7 @@ class Issues:
     def incidents            (self, indexed_by='Summary'): return self.by_issue_type('Incident'            , indexed_by)
     def investigation_threads(self, indexed_by='Summary'): return self.by_issue_type('Investigation_Thread', indexed_by)
     def teams                (self, indexed_by='Summary'): return self.by_issue_type('Team'                , indexed_by)
+    def risks                (self, indexed_by='Summary'): return self.by_issue_type('Risk'                , indexed_by)
     def roles                (self, indexed_by='Summary'): return self.by_issue_type('Role'                , indexed_by)
     def persons              (self, indexed_by='Summary'): return self.by_issue_type('Person'              , indexed_by)
     def pillars              (self, indexed_by='Summary'): return self.by_issue_type('Pillar'              , indexed_by)

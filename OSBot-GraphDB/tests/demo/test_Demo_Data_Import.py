@@ -57,3 +57,6 @@ class test_Demo_Data_Import(TestCase):
 
     def test_import_Incident(self):
         self.result = self.demo_data_import.import_Incident()
+
+    def test_import_Vulnerability_Risk_Role(self):
+        self.result = self.demo_data_import.import_Vulnerability_Risk_Role()

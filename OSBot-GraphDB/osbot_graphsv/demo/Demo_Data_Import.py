@@ -33,8 +33,11 @@ class Demo_Data_Import:
     def import_all(self):
         self.import_Sample_Database_extracts__HR_Database()
         self.import_Sample_Database_extracts__Sunways_application_user_extract()
+
         self.indexes.rebuild()
         self.import_People_Role_Reporting_line()
+
+        self.indexes.rebuild()
         self.import_Role_Team_Function_Business()
         self.import_Device_Person_Account_Application__by_Device()
         self.import_Device_Person_Account_Application__by_Person()
@@ -42,9 +45,17 @@ class Demo_Data_Import:
         self.import_dataset__Device_Detections()
         self.import_dataset__Control_Capabilities_Role_People()
         self.import_Impacts()
-        self.import_Impact_Vulnerability_Incident_Fact_Control()
-        self.import_Incident()
+
         self.indexes.rebuild()
+        self.import_Impact_Vulnerability_Incident_Fact_Control()
+
+        self.indexes.rebuild()
+        #self.import_Incident()
+
+        #self.indexes.rebuild()
+        #self.import_Vulnerability_Risk_Role()
+
+        #self.indexes.rebuild()
 
 
     def import_Sample_Database_extracts__HR_Database(self):
@@ -423,10 +434,10 @@ class Demo_Data_Import:
             incident_facts.append(item.get('Incident Fact').strip())
             capabilities.append(item.get('Capability').strip())
 
-        security_impacts = list(set(security_impacts))[1:]
-        vulnerabilities  = list(set(vulnerabilities))[1:]
-        incident_facts   = list(set(incident_facts))
-        capabilities     = list(set(capabilities))
+        security_impacts = sorted(list(set(security_impacts)))[1:]
+        vulnerabilities  = sorted(list(set(vulnerabilities)))[1:]
+        incident_facts   = sorted(list(set(incident_facts)))
+        capabilities     = sorted(list(set(capabilities)))
 
         for security_impact in security_impacts:
             item = { 'Summary': security_impact }
@@ -555,3 +566,51 @@ class Demo_Data_Import:
                                         for timeline_fact_id in timeline_facts:
                                             self.graph_sv.link_add(incident_fact_id, edge_4, timeline_fact_id)
 
+    def import_Vulnerability_Risk_Role(self):
+        data = self.demo_data.dataset__Vulnerability_Risk_Role()
+
+        vulnerabilities = []
+        risks           = []
+        roles           = []
+
+        for item in data:
+            vulnerabilities.append(item.get('Vulnerability').strip())
+            risks          .append(item.get('Risk ').strip())
+            roles          .append(item.get('Role').strip())
+
+        vulnerabilities = sorted(list(set(vulnerabilities)))
+        risks           = sorted(list(set(risks)))[1:]
+        roles           = sorted(list(set(roles)))[1:]
+
+        for vulnerability in vulnerabilities:
+            item = { 'Summary': vulnerability }
+            self.add_if_new('Vulnerability', item)
+
+        for risk in risks:
+            item = { 'Summary': risk }
+            self.add_if_new('Risk', item)
+
+        for role in roles:
+            item = { 'Summary': role }
+            self.add_if_new('Role', item)
+
+        all_vulnerabilities = self.issues.vulnerabilities()
+        all_risks           = self.issues.risks()
+        all_roles           = self.issues.roles()
+
+
+        for item in data:
+            vulnerabilities = all_vulnerabilities.get(item.get('Vulnerability').strip())
+            risks           = all_risks          .get(item.get('Risk '        ).strip())
+            roles           = all_roles          .get(item.get('Role'         ).strip())
+
+            edge_1 = item.get('edge_1')
+            edge_2 = item.get('edge_2')
+
+            for vulnerability_id in vulnerabilities:
+                if risks:
+                    for risk_id in risks:
+                        self.graph_sv.link_add(vulnerability_id, edge_1, risk_id)
+                    if roles:
+                        for role_id in roles:
+                            self.graph_sv.link_add(risk_id, edge_2, role_id)
