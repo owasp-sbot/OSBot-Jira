@@ -42,3 +42,9 @@ class test_Demo_Data_Import(TestCase):
 
     def test_import__Device_Person_Account_Application__by_Account(self):
         self.result = self.demo_data_import.import__Device_Person_Account_Application__by_Account()
+
+    def test_import_dataset__Device_Detections(self):
+        self.result = self.demo_data_import.import_dataset__Device_Detections()
+
+    def test_import_dataset__Control_Capabilities_Role_People(self):
+        self.result = self.demo_data_import.import_dataset__Control_Capabilities_Role_People()

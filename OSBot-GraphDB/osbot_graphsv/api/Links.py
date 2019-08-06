@@ -13,6 +13,10 @@ class Links:
             'is owned by'         : 'owns'              , 'owns'             : 'is owned by'         ,
             'is user account for' : 'has user account'  , 'has user account' : 'is user account for' ,
             'is admin account for': 'has admin account' , 'has admin account': 'is admin account for',
+            'has detection'       : 'is detection of'   , 'is detection of'  : 'has detection'       ,
+            'detected by'         : 'detected'          , 'detected'         : 'detected by'         ,
+            'delivers'            : 'is delivered by'   , 'is delivered by'  : 'delivers'            ,
+            'role is assigned to' : 'has role assigned' , 'has role assigned': 'role is assigned to' ,
             'represents critical business asset' : 'has critical business asset'          ,
             'has critical business asset'        : 'represents critical business asset'   ,
 

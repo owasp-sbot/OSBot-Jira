@@ -36,6 +36,9 @@ class Demo_Data_Import:
         self.import_Role_Team_Function_Business()
         self.import_Device_Person_Account_Application__by_Device()
         self.import_Device_Person_Account_Application__by_Person()
+        self.import__Device_Person_Account_Application__by_Account()
+        self.import_dataset__Device_Detections()
+        self.import_dataset__Control_Capabilities_Role_People()
         self.indexes.rebuild()
 
     def import_Sample_Database_extracts__HR_Database(self):
@@ -64,7 +67,8 @@ class Demo_Data_Import:
         all_persons = self.issues.persons()
 
         for item in data:
-            persons = all_persons.get(item.get('Person'))
+            persons = all_persons.get(item.
+                                      get('Person'))
             roles_1 = all_roles.get(item.get('Role_1'))
             roles_2 = all_roles.get(item.get('Role_2'))
             edge_1  = item.get('edge_1')
@@ -241,4 +245,128 @@ class Demo_Data_Import:
 
     def import__Device_Person_Account_Application__by_Account(self):
         data = self.demo_data.dataset__Device_Person_Account_Application__by_Account()
-        return data
+        accounts = []
+        business_assets = []
+
+        for item in data:
+            accounts       .append(item.get('Account').strip())
+            business_assets.append(item.get('Business Asset').strip())
+
+        accounts = list(set(accounts))
+        business_assets = list(set(business_assets))[1:]
+
+        all_accounts = self.issues.accounts()
+        all_business_assets = self.issues.business_assets()
+
+        for item in data:
+            accounts        = all_accounts.get(item.get('Account'))
+            business_assets = all_business_assets.get(item.get('Business Asset'))
+
+            edge_1 = item.get('edge_1')
+
+            if business_assets:
+                for account_id in accounts:
+                    for business_asset_id in business_assets:
+                        self.graph_sv.link_add(account_id, edge_1, business_asset_id)
+
+    def import_dataset__Device_Detections(self):
+        data = self.demo_data.dataset__Device_Detections()
+        #devices = []
+        detections = []
+        applications = []
+
+        for item in data:
+            #devices        .append(item.get('Device Name').strip())
+            detections     .append(item.get('Detection').strip())
+            applications   .append(item.get('Application').strip())
+
+        #devices      = list(set(devices))
+        detections   = list(set(detections))
+        applications = list(set(applications))
+
+
+        for detection in detections:
+            item = {'Summary': detection}
+            self.add_if_new('Detection', item)
+
+        for application in applications:
+            item = {'Summary': application}
+            self.add_if_new('Application', item)
+
+        all_devices      = self.issues.devices()
+        all_detections   = self.issues.detections()
+        all_applications = self.issues.applications()
+
+        for item in data:
+            devices         = all_devices.get(item.get('Device Name').strip())
+            detections      = all_detections.get(item.get('Detection').strip())
+            applications    = all_applications .get(item.get('Application').strip())
+
+            edge_1 = item.get('edge_1')
+            edge_2 = item.get('edge_2')
+
+            for device_id in devices:
+                for detection_id in detections:
+                    self.graph_sv.link_add(device_id, edge_1, detection_id)
+                    for application_id in applications:
+                        self.graph_sv.link_add(detection_id, edge_2, application_id)
+
+        #return all_applications
+
+    def import_dataset__Control_Capabilities_Role_People(self):
+        data = self.demo_data.dataset__Control_Capabilities_Role_People()
+
+        pillars      = []
+        capabilities = []
+        roles        = []
+        persons      = []
+
+        for item in data:
+            pillars        .append(item.get('Pillar').strip())
+            capabilities   .append(item.get('Capability').strip())
+            roles          .append(item.get('Role').strip())
+            persons        .append(item.get('Person').strip())
+
+        pillars = list(set(pillars))
+        capabilities = list(set(capabilities))
+        roles = list(set(roles))
+        persons = list(set(persons))
+
+        for pillar in pillars:
+            item = {'Summary': pillar}
+            self.add_if_new('Pillar', item)
+
+        for capability in capabilities:
+            item = {'Summary': capability}
+            self.add_if_new('Capability', item)
+
+        for role in roles:
+            item = {'Summary': role}
+            self.add_if_new('Role', item)
+
+        for person in persons:
+            item = {'Summary': person}
+            self.add_if_new('Person', item)
+
+        all_pillars      = self.issues.pillars()
+        all_capabilities = self.issues.capabilities()
+        all_roles        = self.issues.roles()
+        all_persons      = self.issues.persons()
+
+        for item in data:
+            pillars        = all_pillars.get(item.get('Pillar').strip())
+            capabilities   = all_capabilities.get(item.get('Capability').strip())
+            roles          = all_roles.get(item.get('Role'))
+            persons        = all_persons.get(item.get('Person').strip())
+
+            edge_1 = item.get('edge_1')
+            edge_2 = item.get('edge_2')
+            edge_3 = item.get('edge_3')
+
+            for pillar_id in pillars:
+                for capability_id in capabilities:
+                    self.graph_sv.link_add(pillar_id, edge_1, capability_id)
+                    for role_id in roles:
+                        self.graph_sv.link_add(capability_id,edge_2, role_id)
+                        for person_id in persons:
+                            self.graph_sv.link_add(role_id, edge_3, person_id)

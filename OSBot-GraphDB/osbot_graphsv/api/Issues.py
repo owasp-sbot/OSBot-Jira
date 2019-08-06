@@ -27,13 +27,16 @@ class Issues:
 
     def accounts       (self, indexed_by='Summary'): return self.by_issue_type('Account'       , indexed_by)
     def applications   (self, indexed_by='Summary'): return self.by_issue_type('Application'   , indexed_by)
+    def capabilities   (self, indexed_by='Summary'): return self.by_issue_type('Capability'   , indexed_by)
     def business_assets(self, indexed_by='Summary'): return self.by_issue_type('Business_Asset', indexed_by)
     def business_units (self, indexed_by='Summary'): return self.by_issue_type('Business_Unit' , indexed_by)
+    def detections     (self, indexed_by='Summary'): return self.by_issue_type('Detection'     , indexed_by)
     def devices        (self, indexed_by='Summary'): return self.by_issue_type('Device'        , indexed_by)
     def functions      (self, indexed_by='Summary'): return self.by_issue_type('Function'      , indexed_by)
     def teams          (self, indexed_by='Summary'): return self.by_issue_type('Team'          , indexed_by)
     def roles          (self, indexed_by='Summary'): return self.by_issue_type('Role'          , indexed_by)
     def persons        (self, indexed_by='Summary'): return self.by_issue_type('Person'        , indexed_by)
+    def pillars        (self, indexed_by='Summary'): return self.by_issue_type('Pillar'          , indexed_by)
 
 
     # def all(self):
