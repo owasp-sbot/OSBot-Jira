@@ -17,7 +17,12 @@ class Links:
             'detected by'         : 'detected'          , 'detected'         : 'detected by'         ,
             'delivers'            : 'is delivered by'   , 'is delivered by'  : 'delivers'            ,
             'role is assigned to' : 'has role assigned' , 'has role assigned': 'role is assigned to' ,
-            'can escalate to'     : 'escalated by'      , 'escalated by'     :  'can escalate to'    ,
+            'can escalate to'     : 'escalated by'      , 'escalated by'     : 'can escalate to'     ,
+            'is supported by'     : 'supports'          , 'supports'         : 'is supported by'     ,
+            'indicates failure of': 'failure causes'    , 'failure causes'   : 'indicates failure of',
+            
+            'can arise due to exploit of'        : 'expoit causes'                        ,
+            'expoit causes'                      : 'can arise due to exploit of'          ,
             'represents critical business asset' : 'has critical business asset'          ,
             'has critical business asset'        : 'represents critical business asset'   ,
 

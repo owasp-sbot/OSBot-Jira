@@ -33,11 +33,15 @@ class Issues:
     def detections      (self, indexed_by='Summary'): return self.by_issue_type('Detection'      , indexed_by)
     def devices         (self, indexed_by='Summary'): return self.by_issue_type('Device'         , indexed_by)
     def functions       (self, indexed_by='Summary'): return self.by_issue_type('Function'       , indexed_by)
+    def incident_facts  (self, indexed_by='Summary'): return self.by_issue_type('Incident_Fact'  , indexed_by)
     def teams           (self, indexed_by='Summary'): return self.by_issue_type('Team'           , indexed_by)
     def roles           (self, indexed_by='Summary'): return self.by_issue_type('Role'           , indexed_by)
     def persons         (self, indexed_by='Summary'): return self.by_issue_type('Person'         , indexed_by)
     def pillars         (self, indexed_by='Summary'): return self.by_issue_type('Pillar'         , indexed_by)
     def security_impacts(self, indexed_by='Summary'): return self.by_issue_type('Security_Impact', indexed_by)
+    def vulnerabilities (self, indexed_by='Summary'): return self.by_issue_type('Vulnerability'  , indexed_by)
+
+
 
 
 

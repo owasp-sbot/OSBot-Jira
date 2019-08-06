@@ -42,6 +42,7 @@ class Demo_Data_Import:
         self.import_dataset__Device_Detections()
         self.import_dataset__Control_Capabilities_Role_People()
         self.import_Impacts()
+        self.import_Impact_Vulnerability_Incident_Fact_Control()
         self.indexes.rebuild()
 
 
@@ -405,3 +406,75 @@ class Demo_Data_Import:
                     self.graph_sv.link_add(security_impact_1, edge_1, security_impact_2)
                     for security_impact_3 in security_impacts_3:
                         self.graph_sv.link_add(security_impact_2, edge_2, security_impact_3)
+
+    def import_Impact_Vulnerability_Incident_Fact_Control(self):
+
+        data = self.demo_data.dataset__Impact_Vulnerability_Incident_Fact_Control()
+
+        security_impacts = []
+        vulnerabilities   = []
+        incident_facts   = []
+        capabilities     = []
+
+        for item in data:
+            security_impacts.append(item.get('Security Impact').strip())
+            vulnerabilities.append(item.get('Vulnerability').strip())
+            incident_facts.append(item.get('Incident Fact').strip())
+            capabilities.append(item.get('Capability').strip())
+
+        security_impacts = list(set(security_impacts))[1:]
+        vulnerabilities   = list(set(vulnerabilities))[1:]
+        incident_facts   = list(set(incident_facts))
+        capabilities     = list(set(capabilities))
+
+        for security_impact in security_impacts:
+            item = { 'Summary': security_impact }
+            self.add_if_new('Security Impact', item)
+
+        for vulnerability in vulnerabilities:
+            item = { 'Summary': vulnerability }
+            self.add_if_new('Vulnerability', item)
+
+        for incident_fact in incident_facts:
+            item = { 'Summary': incident_fact }
+            self.add_if_new('Incident Fact', item)
+
+        for capability in capabilities:
+            item = { 'Summary': capability }
+            self.add_if_new('Capability', item)
+
+
+        all_security_impacts = self.issues.security_impacts()
+        all_vulnerabilities = self.issues.vulnerabilities()
+        all_incident_facts = self.issues.incident_facts()
+        all_capabilities = self.issues.capabilities()
+
+        for item in data:
+            security_impacts = all_security_impacts.get(item.get('Security Impact').strip())
+            vulnerabilities  = all_vulnerabilities .get(item.get('Vulnerability'  ).strip())
+            incident_facts   = all_incident_facts  .get(item.get('Incident Fact'  ).strip())
+            capabilities     = all_capabilities    .get(item.get('Capability'     ).strip())
+
+            edge_1 = item.get('edge_1')
+            edge_2 = item.get('edge_2')
+            edge_3 = item.get('edge_3')
+            if security_impacts:
+                for security_impact_id in security_impacts:
+                    for vulnerability_id in vulnerabilities:
+                        self.graph_sv.link_add(security_impact_id, edge_1, vulnerability_id)
+                        for incident_fact_id in incident_facts:
+                            self.graph_sv.link_add(vulnerability_id, edge_2,incident_fact_id)
+                            for capability_id in capabilities:
+                                self.graph_sv.link_add(incident_fact_id, edge_3, capability_id)
+            else:
+                if vulnerabilities:
+                    for vulnerability_id in vulnerabilities:
+                        for incident_fact_id in incident_facts:
+                            self.graph_sv.link_add(vulnerability_id, edge_2,incident_fact_id)
+                            for capability_id in capabilities:
+                                self.graph_sv.link_add(incident_fact_id, edge_3, capability_id)
+
+                else:
+                    for incident_fact_id in incident_facts:
+                        for capability_id in capabilities:
+                            self.graph_sv.link_add(incident_fact_id, edge_3, capability_id)
