@@ -34,6 +34,8 @@ class Demo_Data_Import:
         self.indexes.rebuild()
         self.import_People_Role_Reporting_line()
         self.import_Role_Team_Function_Business()
+        self.import_Device_Person_Account_Application__by_Device()
+        self.import_Device_Person_Account_Application__by_Person()
         self.indexes.rebuild()
 
     def import_Sample_Database_extracts__HR_Database(self):
@@ -143,7 +145,7 @@ class Demo_Data_Import:
             business_assets.append(item.get('Business Asset').strip())
 
         devices = list(set(devices))
-        persons = list(set(persons))
+        #persons = list(set(persons))
         accounts = list(set(accounts))
         business_assets = list(set(business_assets))[1:]
 
@@ -186,4 +188,57 @@ class Demo_Data_Import:
 
 
 
+    def import_Device_Person_Account_Application__by_Person(self):
+        data = self.demo_data.dataset__Device_Person_Account_Application__by_Person()
+        persons         = []
+        accounts        = []
+        applications    = []
+        business_assets = []
+        for item in data:
+            persons        .append(item.get('Person').strip())
+            accounts       .append(item.get('Account').strip())
+            applications   .append(item.get('Application').strip())
+            business_assets.append(item.get('Business Asset').strip())
 
+        accounts = list(set(accounts))
+        applications = list(set(applications))
+        business_assets = list(set(business_assets))
+
+        for account in accounts:
+            item = {'Summary': account}
+            self.add_if_new('Account', item)
+
+        for application in applications:
+            item = {'Summary': application}
+            self.add_if_new('Application', item)
+
+        for business_asset in business_assets:
+            item = {'Summary': business_asset}
+            self.add_if_new('Business Asset', item)
+
+        all_persons = self.issues.persons()
+        all_applications = self.issues.applications()
+        all_accounts = self.issues.accounts()
+        all_business_assets = self.issues.business_assets()
+
+        for item in data:
+            persons         = all_persons.get(item.get('Person'))
+            accounts        = all_accounts.get(item.get('Account'))
+            applications    = all_applications .get(item.get('Application' ))
+            business_assets = all_business_assets.get(item.get('Business Asset'))
+
+            edge_1 = item.get('edge_1')
+            edge_2 = item.get('edge_2')
+            edge_3 = item.get('edge_3')
+
+            for person_id in persons:
+                for account_id in accounts:
+                    self.graph_sv.link_add(person_id, edge_1, account_id)
+                    for application_id in applications:
+                        self.graph_sv.link_add(account_id, edge_2, application_id)
+                        for business_asset_id in business_assets:
+                            self.graph_sv.link_add(application_id, edge_3, business_asset_id)
+
+    def import__Device_Person_Account_Application__by_Account(self):
+        data = self.demo_data.dataset__Device_Person_Account_Application__by_Account()
+        return data

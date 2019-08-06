@@ -33,7 +33,8 @@ class test_Views_PlantUml(TestCase):
 
     def test_graph_expand(self):
         issue_id = 'Person-2'
-        link_types = ['has role', 'is manager of']
+        #link_types = ['has role', 'is manager of']
+        link_types = ['owns']
         depth = 2
         graph = self.views_plantuml.graph_expand(issue_id, depth, link_types)
         graph.render_puml_and_save_tmp()

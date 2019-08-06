@@ -36,3 +36,9 @@ class test_Demo_Data_Import(TestCase):
 
     def test_import_Device_Person_Account_Application__by_Device(self):
         self.result = self.demo_data_import.import_Device_Person_Account_Application__by_Device()
+
+    def test_import_Device_Person_Account_Application__by_Person(self):
+        self.result = self.demo_data_import.import_Device_Person_Account_Application__by_Person()
+
+    def test_import__Device_Person_Account_Application__by_Account(self):
+        self.result = self.demo_data_import.import__Device_Person_Account_Application__by_Account()

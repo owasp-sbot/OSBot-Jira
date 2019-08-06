@@ -26,6 +26,7 @@ class Issues:
         return indexed_data
 
     def accounts       (self, indexed_by='Summary'): return self.by_issue_type('Account'       , indexed_by)
+    def applications   (self, indexed_by='Summary'): return self.by_issue_type('Application'   , indexed_by)
     def business_assets(self, indexed_by='Summary'): return self.by_issue_type('Business_Asset', indexed_by)
     def business_units (self, indexed_by='Summary'): return self.by_issue_type('Business_Unit' , indexed_by)
     def devices        (self, indexed_by='Summary'): return self.by_issue_type('Device'        , indexed_by)
