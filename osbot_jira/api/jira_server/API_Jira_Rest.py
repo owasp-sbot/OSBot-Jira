@@ -19,11 +19,18 @@ class API_Jira_Rest:
             self._config = (data.get('server'), data.get('username'), data.get('password'))
         return self._config
 
+    def set_public_jira(self, server):
+        self._config = (server, "", "")
+        return self
+
     def request_get(self,path):
         (server, username, password)= self.config()
         path = '{0}/rest/api/2/{1}'.format(server, path)
         if self.log_requests: Dev.pprint('get', path)
-        response = requests.get(path, auth=(username, password))
+        if username and password:
+            response = requests.get(path, auth=(username, password))
+        else:
+            response = requests.get(path)
         if response.status_code == 200:
             return response.text
         Dev.pprint('[Error][request_get]: {0}'.format(response.text))
