@@ -23,6 +23,9 @@ class API_Jira:
     #    return self
 
     # helper methods
+    def set_public_jira(self, server):
+        self._jira = JIRA(server)
+        return self
 
     def jira(self):
         if self._jira is None:

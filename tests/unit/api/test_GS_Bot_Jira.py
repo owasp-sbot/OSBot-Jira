@@ -21,10 +21,6 @@ class test_GS_Bot_Jira(unittest.TestCase):
         if self.result is not None:
             Dev.pprint(self.result)
 
-    # def test_update_dependency(self):
-    #     upload_dependency('jira')
-    #
-
     def test__update_lambda_elastic_jira(self):
         Deploy('osbot_jira.lambdas.elastic_jira').deploy()             # update the main jira lambda
 
