@@ -23,10 +23,9 @@ class test_sow(Test_Helper):
 
 
     def test_invoke_in_lambda(self):
-        #self.test_update_lambda()
-        payload = {"issue_id": "ROLE-38"}
-        #self.result = self.aws_lambda.invoke(payload)
-        self.aws_lambda.invoke(payload)
+        self.test_update_lambda()
+        payload = {"issue_id": "SOW-121"}
+        self.result = self.aws_lambda.invoke(payload)
 
 
 
