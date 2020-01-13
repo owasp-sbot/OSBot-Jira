@@ -73,6 +73,11 @@ class API_Jira_Rest:
             data = self.request_get(path)
             return Misc.json_load(data)
 
+    def map_issue_links(self, issue, issue_links_raw):
+        if issue_links_raw:
+            for item in issue_links_raw:
+                Dev.pprint(item)
+
     def issue(self,issue_id,fields='*all'):
         issue_raw = self.issue_raw(issue_id,fields)
         if issue_raw:
@@ -86,6 +91,7 @@ class API_Jira_Rest:
                 issue  = {'Key' : issue_id}
                 fields = self.fields_by_id()
                 fields_values = issue_raw.get('fields')
+                self.map_issue_links(issue, fields_values.get('issuelinks'))
                 if fields_values:
                     for field_id,value in fields_values.items():
                         if value and field_id not in skip_fields:

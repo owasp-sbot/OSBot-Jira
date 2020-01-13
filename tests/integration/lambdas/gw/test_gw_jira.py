@@ -18,12 +18,13 @@ class test_sow(Test_Helper):
         Deploy().setup().deploy_lambda__jira(self.lambda_name)
 
     def test_invoke_directly(self):
-        payload = {"server" : 'https://ubuntu-policy.atlassian.net/' , "issue_id": "Map-1"}
+        payload = { "issue_id": "ROLE-38"}
         self.result = run(payload, None)
 
+
     def test_invoke_in_lambda(self):
-        self.test_update_lambda()
-        payload = {"server" : 'https://ubuntu-policy.atlassian.net/' , "issue_id": "Map-1"}
+        #self.test_update_lambda()
+        payload = {"issue_id": "ROLE-38"}
         self.result = self.aws_lambda.invoke(payload)
 
 
