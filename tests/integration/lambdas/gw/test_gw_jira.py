@@ -18,15 +18,15 @@ class test_sow(Test_Helper):
         Deploy().setup().deploy_lambda__jira(self.lambda_name)
 
     def test_invoke_directly(self):
-        payload = { "issue_id": "ROLE-38"}
+        payload = { "issue_id": "PERSON-1"}
         self.result = run(payload, None)
 
 
     def test_invoke_in_lambda(self):
         #self.test_update_lambda()
         payload = {"issue_id": "ROLE-38"}
-        self.result = self.aws_lambda.invoke(payload)
-
+        #self.result = self.aws_lambda.invoke(payload)
+        self.aws_lambda.invoke(payload)
 
 
 

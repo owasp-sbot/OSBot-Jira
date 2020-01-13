@@ -74,9 +74,22 @@ class API_Jira_Rest:
             return Misc.json_load(data)
 
     def map_issue_links(self, issue, issue_links_raw):
+        issue_links = {}
         if issue_links_raw:
             for item in issue_links_raw:
-                Dev.pprint(item)
+                if item.get('outwardIssue'):
+                    link_key  = item.get('outwardIssue').get('key')
+                    link_type = item.get('type').get('outward')
+                else:
+                    link_key  = item.get('inwardIssue').get('key')
+                    link_type = item.get('type').get('inward')
+                if issue_links.get(link_type) is None:
+                    issue_links[link_type] = []
+                issue_links[link_type].append(link_key)
+
+        issue['Issue Links'] = issue_links
+        return self
+
 
     def issue(self,issue_id,fields='*all'):
         issue_raw = self.issue_raw(issue_id,fields)
