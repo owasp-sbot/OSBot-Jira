@@ -3,28 +3,36 @@ import  unittest
 from    osbot_aws.apis.Lambda import Lambda
 from    pbx_gs_python_utils.utils.Dev         import Dev
 
+from gw_bot.Deploy import Deploy
+from gw_bot.helpers.Test_Helper import Test_Helper
 from osbot_jira.api.GS_Bot_Jira import GS_Bot_Jira
 from osbot_jira.lambdas.elastic_jira import run
 
-class test_lambda_elastic_jira(unittest.TestCase):
+class test_lambda_elastic_jira(Test_Helper):
     def setUp(self):
+        super().setUp()
         self.jira_issues = Lambda('osbot_jira.lambdas.elastic_jira')
 
-        #from osbot_jira.Deploy import Deploy
-        #Deploy('osbot_jira.lambdas.elastic_jira').deploy()
+    def test_update_lambda(self):
+        Deploy().deploy_lambda__jira('osbot_jira.lambdas.elastic_jira')
 
     def test_invoke_directly(self):
         response = run({},{})
-        assert response == { 'attachments': [],
-                             'text': ':point_right: no command received, see `jira help` for a list of '
-                                      'available commands`'}
+        self.result = response
+        # assert response == { 'attachments': [],
+        #                      'text': ':point_right: no command received, see `jira help` for a list of '
+        #                               'available commands`'}
 
     def test_invoke_directly__version(self):
         response = run({'params':['version']},{})
         assert response == GS_Bot_Jira().version
 
 
-    def test_update_invoke(self):
+    def test_invoke_help(self):
+        self.test_update_lambda()
+        self.result = self.jira_issues.invoke({"params": []})
+
+    def test_invoke_issue(self):
         key = 'RISK-424'
         issue = self.jira_issues.invoke({"params": ['issue', key], "channel": 'GDL2EC3EE'})
         assert issue.get('text') == '....._fetching data for *<https://jira.photobox.com/browse/RISK-424|RISK-424>* _from index:_ *jira*'

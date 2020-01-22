@@ -2,14 +2,13 @@
 from jira import JIRA
 from osbot_aws.apis.Secrets import Secrets
 
-from pbx_gs_python_utils.utils.Lambdas_Helpers import log_info, log_error
-
 # to add
 #  jira().groups
 #  jira(),group_members
 #  jira().search_users
 #       users = jira._jira.search_users("%", maxResults = 1000)  # works in cloud server
 #       users = jira._jira.search_users(".", maxResults = 1000)  # works in hosted server
+from gw_bot.helpers.Lambda_Helpers import log_info, log_error
 
 
 class API_Jira:

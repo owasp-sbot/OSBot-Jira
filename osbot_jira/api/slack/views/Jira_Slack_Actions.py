@@ -1,7 +1,7 @@
 from pbx_gs_python_utils.utils.Misc import Misc
-from pbx_gs_python_utils.utils.slack.API_Slack import API_Slack
 from pbx_gs_python_utils.utils.slack.API_Slack_Attachment import API_Slack_Attachment
 
+from gw_bot.api.API_Slack import API_Slack
 from osbot_jira.api.slack.Slack_Jira_Search import Slack_Jira_Search
 from osbot_jira.api.slack.dialogs.Jira_Create_Issue import Jira_Create_Issue
 

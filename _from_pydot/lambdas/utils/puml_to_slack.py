@@ -1,13 +1,12 @@
 import base64
 import tempfile
-import requests
-
-from pbx_gs_python_utils.utils.Lambdas_Helpers import log_to_elk
-from   utils.aws.secrets        import Secrets
-from   utils.aws.Lambdas        import Lambdas
+from osbot_aws.apis.Lambda import Lambda
+from osbot_aws.apis.Secrets import Secrets
 
 
 def upload_png_file(team_id, channel_id, file):
+    import requests
+    from pbx_gs_python_utils.utils.Lambdas_Helpers import log_to_elk
     log_to_elk("[upload_png_file]: {0} {1} {2}".format(team_id,channel_id,file))
     bot_token = resolve_bot_token(team_id)
     my_file = {

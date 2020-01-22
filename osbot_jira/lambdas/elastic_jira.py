@@ -1,9 +1,9 @@
-from osbot_aws.apis.Lambda import load_dependencies
-from pbx_gs_python_utils.utils.Lambdas_Helpers  import slack_message, log_to_elk
+from gw_bot.helpers.Lambda_Helpers import log_to_elk, slack_message
+from gw_bot.lambdas.png_to_slack import load_dependency, load_dependencies
 
 
 def run(event, context):
-    load_dependencies(["elastic-slack", 'requests','jira'])
+    load_dependencies('elastic,slack,requests,jira')
     try:
         from osbot_jira.api.GS_Bot_Jira import GS_Bot_Jira
         result = GS_Bot_Jira().handle_request(event)                         # invoke lambda main handler method

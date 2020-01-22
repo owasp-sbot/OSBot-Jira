@@ -1,18 +1,17 @@
-import sys;
 
-from osbot_jira.Deploy import Deploy
-
-sys.path.append('..')
 import unittest
 
+from gw_bot.Deploy import Deploy
+from gw_bot.helpers.Lambda_Helpers import slack_message
+from gw_bot.helpers.Test_Helper import Test_Helper
 from osbot_jira.api.GS_Bot_Jira                 import GS_Bot_Jira
 from pbx_gs_python_utils.utils.Dev              import Dev
-from pbx_gs_python_utils.utils.Lambdas_Helpers  import slack_message
 from osbot_aws.apis.Lambda import Lambda, upload_dependency
 
 
-class test_GS_Bot_Jira(unittest.TestCase):
+class test_GS_Bot_Jira(Test_Helper):
     def setUp(self):
+        super().setUp()
         self.api     = GS_Bot_Jira()
         self.channel = 'DDKUZTK6X'                  # gsbot
         self.result = None
@@ -21,11 +20,13 @@ class test_GS_Bot_Jira(unittest.TestCase):
         if self.result is not None:
             Dev.pprint(self.result)
 
-    def test__update_lambda_elastic_jira(self):
-        Deploy('osbot_jira.lambdas.elastic_jira').deploy()             # update the main jira lambda
-
-    def test__update_lambda_slack_actions(self):
-        Deploy('osbot_jira.lambdas.slack_actions').deploy()            # update the lambda that handles the callbacks
+    def test_update_lambda(self):
+        Deploy().deploy_lambda__jira('osbot_jira.lambdas.elastic_jira')
+    # def test__update_lambda_elastic_jira(self):
+    #     Deploy('osbot_jira.lambdas.elastic_jira').deploy()             # update the main jira lambda
+    #
+    # def test__update_lambda_slack_actions(self):
+    #     Deploy('osbot_jira.lambdas.slack_actions').deploy()            # update the lambda that handles the callbacks
 
     def test_handle_request(self):
         event = {}
@@ -75,12 +76,11 @@ class test_GS_Bot_Jira(unittest.TestCase):
 
     def test_cmd_issue(self):
         #self.test__update_lambda_elastic_jira()
-        self.test__update_lambda_slack_actions()
-        self.result = self.api.cmd_issue(['issue', 'SEC-11961'])
-        slack_message(self.result.get('text'), self.result.get('attachments'),'DDKUZTK6X', 'T7F3AUXGV')
+        #self.test__update_lambda_slack_actions()
+        self.result = self.api.cmd_issue(['issue', 'PERSON-1'], channel='DRE51D4EM')
+        #slack_message(self.result.get('text'), self.result.get('attachments'),'DDKUZTK6X', 'T7F3AUXGV')
 
     def test_cmd_issue_new(self):
-        self.test__update_lambda_elastic_jira()
         #self.test__update_lambda_slack_actions()
         self.result = self.api.cmd_issue_new(['issue', 'SEC-11961'],'T7F3AUXGV','DDKUZTK6X')
         #slack_message(self.result.get('text'), self.result.get('attachments'),'DDKUZTK6X', 'T7F3AUXGV')
@@ -92,8 +92,9 @@ class test_GS_Bot_Jira(unittest.TestCase):
         Dev.pprint(result.get('text'))
 
     def test_cmd_links(self):
-        result = self.api.cmd_links(['links', 'SEC-10965', 'all', '1'])
-        assert ' "target": "SEC-10965",\n' in result.get('text')
+        self.result = self.api.cmd_links(['links', 'PERSON-1', 'all', '1'], channel='DRE51D4EM')
+
+        #assert ' "target": "SEC-10965",\n' in result.get('text')
 
     def test_cmd_links_Save_Graph_False(self):
         graph = self.api.cmd_links(['links', 'SEC-10965', 'all', '1'],save_graph=False)

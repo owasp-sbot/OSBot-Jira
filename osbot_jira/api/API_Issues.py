@@ -1,16 +1,13 @@
-import json
-
-from osbot_aws.apis.Secrets                     import Secrets
-from pbx_gs_python_utils.utils.Lambdas_Helpers  import log_error
-
 from pbx_gs_python_utils.plantuml.Puml          import Puml
 from pbx_gs_python_utils.plantuml.Puml_Table    import Puml_Table
-from pbx_gs_python_utils.utils.Elastic_Search   import Elastic_Search
-from pbx_gs_python_utils.utils.Http             import current_host_online
+
+from gw_bot.elastic.Elastic_Search import Elastic_Search
+from gw_bot.helpers.Lambda_Helpers import log_error
+
 
 class API_Issues:
     def __init__(self, index = 'jira,it_assets,sec_project'):
-        self.secrets_id = 'elastic-jira-dev-2'
+        self.secrets_id = 'gw-elastic-server-1'
         self.index      = index
         self._elastic   = None
 
@@ -114,8 +111,8 @@ class API_Issues:
         original_index = self.elastic().get_index()
         results = []
         if index == "all":
-            results += self.elastic().set_index('it_assets'  ).search_using_query(query)
-            results += self.elastic().set_index('sec_project').search_using_query(query)
+            #results += self.elastic().set_index('it_assets'  ).search_using_query(query)
+            #results += self.elastic().set_index('sec_project').search_using_query(query)
             results += self.elastic().set_index('jira'       ).search_using_query(query)
         else:
             results += self.elastic().set_index(index).search_using_query(query)
