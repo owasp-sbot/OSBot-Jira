@@ -4,11 +4,14 @@ from unittest import TestCase
 from osbot_aws.helpers.Lambda_Package import Lambda_Package
 from    pbx_gs_python_utils.utils.Dev              import Dev
 
+from gw_bot.Deploy import Deploy
+from gw_bot.helpers.Test_Helper import Test_Helper
 from osbot_jira.lambdas.graph import run
 
 
-class test_lambda_gsbot_graph(TestCase):
+class test_lambda_gsbot_graph(Test_Helper):
     def setUp(self):
+        super().setUp()
         self.lambda_graph = Lambda_Package('osbot_jira.lambdas.graph')
         self.result       = None
 
@@ -16,18 +19,19 @@ class test_lambda_gsbot_graph(TestCase):
         if self.result is not None:
             Dev.pprint(self.result)
 
+
     def test_invoke_directly(self):
         response = run({},{})
         Dev.pprint(response)
 
-    # def test_update_code(self):
-    #    self.lambda_graph.update_code()
+    def test_update_lambda(self):
+        Deploy().deploy_lambda__jira('osbot_jira.lambdas.graph')
 
     def invoke(self, command):
         payload = {
             "params": command.split(' '),
             #"data" : {}
-            "data": {"channel": "GDL2EC3EE", 'team_id' : 'T7F3AUXGV'}
+            "data": {"channel": "DRE51D4EM" }
         }
         return self.lambda_graph.invoke(payload)
 

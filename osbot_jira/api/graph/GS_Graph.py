@@ -374,7 +374,7 @@ class GS_Graph:
         return self.puml.save_tmp()
 
     def reset_puml(self):
-        self.puml = Puml().startuml()
+        self.puml.puml = "@startuml\n"
         return self
 
     def to_json(self, puml_config=True, store_issues=False):

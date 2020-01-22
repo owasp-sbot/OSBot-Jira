@@ -1,22 +1,27 @@
 import json
 import unittest
 
+from gw_bot.Deploy import Deploy
+from gw_bot.helpers.Test_Helper import Test_Helper
 from osbot_jira.api.graph.Lambda_Graph_Commands import Lambda_Graph_Commands
 from pbx_gs_python_utils.utils.Dev   import Dev
 from osbot_aws.apis.Lambda           import Lambda
 
 
-class Test_Lambda_Graph_Commands(unittest.TestCase):
+class Test_Lambda_Graph_Commands(Test_Helper):
 
     def setUp(self):
-        self.channel = 'DDKUZTK6X'
-        self.team_id = 'T7F3AUXGV'
+        super().setUp()
+        self.channel = 'DRE51D4EM'
+        #self.team_id = 'T7F3AUXGV'
         self.result = None
 
     def tearDown(self):
         if self.result is not None:
             Dev.pprint(self.result)
 
+    def test_update_lambda(self):
+        Deploy().deploy_lambda__jira('osbot_jira.lambdas.graph')
 
     # def test___update_lambda_function(self):
     #     Lambda('lambdas.gsbot.gsbot_graph').update_with_src()
@@ -88,8 +93,8 @@ class Test_Lambda_Graph_Commands(unittest.TestCase):
     #     params = ['babel-admin-vuln', 'stakeholder', 'GSP-4', '2']
     #     Lambda_Graph_Commands().story(self.channel, params, None)
 
-    def test_view(self):
-        params = ['graph_ZOT', 'links']
+    def test_view_links(self):
+        params = ['graph_3XW', 'links']
         Lambda_Graph_Commands().view(None,None, params, None)
 
     def test_view_only_one_param(self):

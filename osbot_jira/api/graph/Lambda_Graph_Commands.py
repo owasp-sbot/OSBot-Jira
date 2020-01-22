@@ -449,7 +449,8 @@ class Lambda_Graph_Commands:
 
     @staticmethod
     def view(team_id, channel, params, data):
-        from pbx_gs_python_utils.gs_elk.Graph_View import Graph_View  # has to be done locally
+
+        from osbot_jira.api.graph.Graph_View import Graph_View # check if it needs to be done locally
 
         if len(params) < 1:
             text = ':red_circle: Hi, for the `view` command, you need to provide a graph name (use `graph last` to see a list of graphs names you can use)'
@@ -457,6 +458,7 @@ class Lambda_Graph_Commands:
             return
 
         if len(params) == 1:
+
             text = Graph_View().bad_params_message()
             slack_message(text, [], channel, team_id)
             return
