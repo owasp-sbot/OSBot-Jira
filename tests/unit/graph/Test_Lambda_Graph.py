@@ -2,12 +2,14 @@ from unittest import TestCase
 
 from pbx_gs_python_utils.utils.Dev import Dev
 
+from gw_bot.helpers.Test_Helper import Test_Helper
 from osbot_jira.api.graph.GS_Graph import GS_Graph
 from osbot_jira.api.graph.Lambda_Graph import Lambda_Graph
 
 
-class Test_Lambda_Graph(TestCase):
+class Test_Lambda_Graph(Test_Helper):
     def setUp(self):
+        super().setUp()
         self.lambda_graph = Lambda_Graph()
 
     def test_get_gs_graph_by_name(self):
@@ -45,6 +47,11 @@ class Test_Lambda_Graph(TestCase):
             "data": {"channel": "DDKUZTK6X"}
         }
         self.lambda_graph.handle_lambda_event(payload)
+
+    def test_handle_lambda_event_raw_data(self):
+        graph_name = 'graph_J2O'
+        payload ={'params': ['raw_data', graph_name, 'details'], 'data': {}}
+        self.result = self.lambda_graph.handle_lambda_event(payload)
 
     def test_send_graph_to_slack___by_type(self):
         result = self.lambda_graph.send_graph_to_slack___by_type("keys___['FACT-47']__up___depth_3", "DDKUZTK6X")

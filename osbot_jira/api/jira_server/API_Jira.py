@@ -352,6 +352,7 @@ class API_Jira:
             print('searching JIRA server for {0} , starting at {1} (for a max of {2})'.format(jql, count, max))
             log_info('searching JIRA server for {0} , starting at {1} (for a max of {2})'.format(jql, count, max))
             data = self.jira().search_issues(jql, startAt=count, maxResults=max_per_query)                           # use the max we can fetch
+            total = data.total
             log_info('received {0} results from server'.format(len(data)))
             if len(data) == 0:                                                                                       # when we have received all files
                 break                                                                                                # break from the while true
@@ -361,8 +362,10 @@ class API_Jira:
                 count += 1                                                                                           # keep track of how many requests we have note (note: check if len(set(issues)) will produce the same thing)
             if max != -1 and max <= count:
                 break
-            if len(data) < max_per_query:                                                                            # also end if we didn't received max_per_query items
-                break
+            #if len(data) < max_per_query:                                                                            # also end if we didn't received max_per_query items
+            #    break
+            if len(data) == total:
+                break;
         return issues
 
     def search_just_return_keys(self, jql, start_at = 0, max = -1):

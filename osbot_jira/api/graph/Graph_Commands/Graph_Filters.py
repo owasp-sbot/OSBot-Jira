@@ -1,11 +1,9 @@
 from time import sleep
 
-from pbx_gs_python_utils.utils.Lambdas_Helpers  import slack_message
-from pbx_gs_python_utils.utils.Misc             import Misc
 from osbot_aws.apis.Lambda           import Lambda
 
+from gw_bot.helpers.Lambda_Helpers import slack_message
 from osbot_jira.api.graph.Filters import Filters
-from osbot_jira.api.graph.GS_Graph import GS_Graph
 from osbot_jira.api.graph.Lambda_Graph import Lambda_Graph
 
 
@@ -43,14 +41,14 @@ class Graph_Filters:
 
     @staticmethod
     def _save_graph_and_send_slack_message(team_id, channel, graph, graph_name):
-        if channel and team_id:
+        if channel:
             new_graph_name = Graph_Filters._save_graph(graph)
             text = ':point_right: Created new graph called `{0}` with `{1}` nodes and `{2}` edges (based on data from graph `{3}`) ' \
                         .format(new_graph_name, len(graph.nodes), len(graph.edges), graph_name)
 
             slack_message(text, [], channel, team_id)
             sleep(1)
-            Lambda('lambdas.gsbot.gsbot_graph').invoke_async({"params": ["show", new_graph_name, "plantuml"], "data": {"channel": channel, "team_id": team_id}})
+            Lambda('osbot_jira.lambdas.graph').invoke_async({"params": ["show", new_graph_name, "plantuml"], "data": {"channel": channel, "team_id": team_id}})
         return graph
 
     @staticmethod
@@ -173,12 +171,15 @@ class Graph_Filters:
         graph_name = params.pop(0)
         field_name = ' '.join(params)
 
-        slack_message(":point_right: Creating new graph using the `group_by_field` filter on the `{0}` field of the `{1}` graph".format(field_name,graph_name),[], channel, team_id)
+        slack_message(":point_right: ....Creating new graph using the `group_by_field` filter on the `{0}` field of the `{1}` graph".format(field_name,graph_name),[], channel, team_id)
 
         graph  = Graph_Filters._get_graph(graph_name)
         if graph:
             Filters().setup(graph).group_by_field(graph_name, field_name)
             return Graph_Filters._save_graph_and_send_slack_message(team_id, channel, graph, graph_name)
+        else:
+            slack_message(f':red_circle: graph *{graph_name}* not found', [], channel)
+
 
     @staticmethod
     def search_by_field(team_id=None, channel=None, params=None):

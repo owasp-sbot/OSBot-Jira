@@ -41,4 +41,4 @@ class Commands_Helper():
             else:
                 (text,attachments) = self.help(':red_circle: command not found `{0}`\n\n'.format(command))
 
-        slack_message(text, attachments, channel, team_id)
+        return slack_message(text, attachments, channel, team_id)

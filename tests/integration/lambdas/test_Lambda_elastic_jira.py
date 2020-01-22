@@ -35,7 +35,7 @@ class test_lambda_elastic_jira(Test_Helper):
     def test_invoke_issue(self):
         key = 'RISK-424'
         issue = self.jira_issues.invoke({"params": ['issue', key], "channel": 'GDL2EC3EE'})
-        assert issue.get('text') == '....._fetching data for *<https://jira.photobox.com/browse/RISK-424|RISK-424>* _from index:_ *jira*'
+        assert issue.get('text') == '....._fetching data for *<https://glasswall.atlassian.net/browse/RISK-424|RISK-424>* _from index:_ *jira*'
 
     def test_update_invoke__link_links(self):
         id = 'RISK-1'

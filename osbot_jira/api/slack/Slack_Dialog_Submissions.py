@@ -64,7 +64,7 @@ class Slack_Dialog_Submissions:
                 new_issue_id = "{0}".format(result)
                 self.submission['issue_id'] = new_issue_id
                 self.show_issue_screnshot()
-                jira_link = "https://jira.photobox.com/browse/{0}".format(new_issue_id)
+                jira_link = "https://glasswall.atlassian.net/browse/{0}".format(new_issue_id)
                 return 'Created issue: <{0}|{1}>'.format(jira_link,new_issue_id)
             except Exception as error:
                 return ':red_circle: Error creating issue: {0}'.format(error)

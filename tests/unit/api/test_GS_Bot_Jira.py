@@ -48,7 +48,7 @@ class test_GS_Bot_Jira(Test_Helper):
         result = self.api.handle_request( { "params" : ["issue", "AAAA"] } )
         assert result == {  'attachments': [],
                             'text': '....._fetching data for '
-                            '*<https://jira.photobox.com/browse/AAAA|AAAA>* _from index:_ *jira*'}
+                            '*<https://glasswall.atlassian.net/browse/AAAA|AAAA>* _from index:_ *jira*'}
 
 
     def test_cmd_add_link(self):
@@ -150,6 +150,14 @@ class test_GS_Bot_Jira(Test_Helper):
         result = self.api.cmd_sync_sheet(['', file_id], team_id='T7F3AUXGV', channel='GDL2EC3EE')
         Dev.pprint(result)
 
+
+
+    def test_cmd_search(self):
+        params = ['']
+        self.result = self.api.cmd_search(params)
+
+
+
     # test via lambda
 
     @unittest.skip('fix lambda target location')
@@ -172,6 +180,9 @@ class test_GS_Bot_Jira(Test_Helper):
 
         result = elastic_jira.invoke(payload)
         assert result == {'attachments': [], 'text': '{\n    "status": "OK 12345"\n}\n'}
+
+
+
 
     # Regression tests
 

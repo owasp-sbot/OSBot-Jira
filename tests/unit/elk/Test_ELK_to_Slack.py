@@ -10,7 +10,7 @@ from osbot_jira.api.elk.Elk_To_Slack import ELK_to_Slack
 class Test_ELK_to_Slack(TestCase):
     def setUp(self):
         self.elk_to_slack = ELK_to_Slack()
-        self._lambda      = Lambda("gs.elk_to_slack")
+        self._lambda      = Lambda("osbot_jira.lambdas.elk_to_slack")
 
     # def test_update_lambda(self):
     #     Lambda("lambdas.gs.elk_to_slack").update_with_src()

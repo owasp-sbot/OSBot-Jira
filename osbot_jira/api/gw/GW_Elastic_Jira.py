@@ -57,7 +57,11 @@ class GW_Elastic_Jira:
         return issue
 
     def send_data_from_project(self, project,start_at=0, max = -1):
-        issues = self.api_Jira.search('project={0}'.format(project),start_at, max).values()
+        if project:
+            query = 'project={0}'.format(project)
+        else:
+            query = ''
+        issues = self.api_Jira.search(query,start_at, max).values()
         fixed_issues = []
         for issue in issues:                                    # need to fix the data so that it looks/indexes better in ELK
             fixed_issues.append(self.fix_issue_for_elk(issue))

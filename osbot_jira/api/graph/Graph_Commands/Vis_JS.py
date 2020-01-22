@@ -9,13 +9,13 @@ class Vis_JS:
 
     @staticmethod
     def _render_graph(data, team_id, channel):
-        lambda_browser = Lambda('lambdas.browser.lambda_browser')
+        lambda_browser = Lambda('osbot_jira.lambdas.graph')
         payload = {"params": ['vis_js', json.dumps(data)]}
 
         #print(payload)
         png_data = lambda_browser.invoke(payload)
 
-        if channel and team_id:
+        if channel:
             png_to_slack = Lambda('utils.png_to_slack')
             payload = {'png_data': png_data, 'team_id': team_id, 'channel': channel}
             png_to_slack.invoke(payload)
@@ -77,10 +77,10 @@ class Vis_JS:
 
         #params = [json.dumps(data)]
 
-        lambda_browser = Lambda('lambdas.browser.lambda_browser')
+        lambda_browser = Lambda('osbot_jira.lambdas.graph')
         payload = {"params": ['vis_js', json.dumps(data)]}
         png_data = lambda_browser.invoke(payload)
-        if channel and team_id:
+        if channel:
             png_to_slack = Lambda('utils.png_to_slack')
             payload = {'png_data':png_data, 'team_id': team_id, 'channel': channel }
             png_to_slack.invoke(payload)

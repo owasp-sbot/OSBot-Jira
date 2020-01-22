@@ -1,6 +1,7 @@
 import sys
 from unittest import TestCase
 
+from osbot_aws.apis.Lambda import Lambda
 from osbot_aws.helpers.Lambda_Package import Lambda_Package
 from    pbx_gs_python_utils.utils.Dev              import Dev
 
@@ -24,6 +25,13 @@ class test_lambda_gsbot_graph(Test_Helper):
         response = run({},{})
         Dev.pprint(response)
 
+    def test_invoke_directly_raw_data(self):
+        graph_name = 'graph_J2O'
+        payload = {'params': ['raw_data', graph_name, 'details'], 'data': {}}
+        # data = Lambda('lambdas.gsbot.gsbot_graph').invoke(params)
+        self.result = run(payload,{})
+        #self.results = Lambda('osbot_jira.lambdas.graph').invoke(params)
+
     def test_update_lambda(self):
         Deploy().deploy_lambda__jira('osbot_jira.lambdas.graph')
 
@@ -37,6 +45,12 @@ class test_lambda_gsbot_graph(Test_Helper):
 
     def test_invoke(self):
         assert self.invoke('')[0] == '*Here are the `graph` commands available:*'
+
+
+    def test_invoke_raw_data(self):
+        graph_name = 'graph_J2O'
+        payload = {'params': ['raw_data', graph_name, 'details'], 'data': {}}
+        self.result = Lambda('osbot_jira.lambdas.graph').invoke(payload)
 
     def test_invoke___last(self):
 
@@ -69,7 +83,7 @@ class test_lambda_gsbot_graph(Test_Helper):
         Dev.print(self.invoke('expand abc'))
 
     def test_raw_data(self):
-        result = self.invoke('raw_data graph_MKF details')
+        result = self.invoke('raw_data graph_J2O details')
         Dev.print(result)
 
     def test_raw_data__details(self):

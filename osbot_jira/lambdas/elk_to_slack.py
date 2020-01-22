@@ -1,5 +1,5 @@
-from pbx_gs_python_utils.utils.Lambdas_Helpers import log_to_elk
-from osbot_aws.apis.Lambda import load_dependency
+from gw_bot.helpers.Lambda_Helpers import log_to_elk
+from gw_bot.lambdas.png_to_slack import load_dependency
 
 
 def run(event, context):

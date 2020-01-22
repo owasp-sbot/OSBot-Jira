@@ -3,12 +3,12 @@ import pprint
 
 from osbot_aws.apis.S3 import S3
 from pbx_gs_python_utils.utils.slack.API_Slack_Attachment import API_Slack_Attachment
-from pbx_gs_python_utils.utils.Lambdas_Helpers       import slack_message
 from pbx_gs_python_utils.utils.Misc                  import Misc
 from pbx_gs_python_utils.utils.Save_To_ELK           import Save_To_ELK
-from pbx_gs_python_utils.utils.slack.Slack_Commands_Helper import Slack_Commands_Helper
 from osbot_aws.apis.Lambda           import Lambda
 
+from gw_bot.api.Slack_Commands_Helper import Slack_Commands_Helper
+from gw_bot.helpers.Lambda_Helpers import slack_message
 from osbot_jira.api.graph.GS_Graph import GS_Graph
 from osbot_jira.api.graph.Graph_Commands.Commands_Helper import Commands_Helper
 from osbot_jira.api.graph.Graph_Commands.Graph_Filters import Graph_Filters
@@ -16,7 +16,7 @@ from osbot_jira.api.graph.Graph_Commands.Nodes import Nodes
 from osbot_jira.api.graph.Graph_Commands.Vis_JS import Vis_JS
 from osbot_jira.api.graph.Lambda_Graph import Lambda_Graph
 
-Lambda_Graph_Commands_version = "v0.32"
+Lambda_Graph_Commands_version = "v0.33 (GW)"
 
 class Lambda_Graph_Commands:
 
@@ -28,7 +28,8 @@ class Lambda_Graph_Commands:
                 .format(graph_name, graph_or_key, depth, link_types_to_add,
                         len(graph.nodes), len(graph.edges))
             slack_message(text, [], channel, team_id)
-            Lambda('lambdas.browser.lambda_browser').invoke_async({ "data": {"team_id": team_id,"channel":channel},"params" :['viva_graph', graph_name ,'default']})
+            Lambda('osbot_jira.lambdas.graph').invoke_async({ "data": {"team_id": team_id,"channel":channel},"params" :['viva_graph', graph_name ,'default']})
+            #'lambdas.browser.lambda_browser'
         else:
             return graph
 
@@ -218,17 +219,17 @@ class Lambda_Graph_Commands:
             if 'vis_js' in engines:
                 slack_message('...using `vis_js`', [], channel, team_id)
                 params = ['graph', graph_name, 'default']
-                Lambda('lambdas.browser.lambda_browser').invoke_async({"params": params, 'data': {'team_id': team_id, 'channel': channel}})
+                Lambda('osbot_browser.lambdas.lambda_browser').invoke_async({"params": params, 'data': {'team_id': team_id, 'channel': channel}})
 
             if 'viva_graph' in engines:
                 slack_message('...using `viva_graph`', [], channel, team_id)
                 params = ['viva_graph',graph_name,'default']
-                Lambda('lambdas.browser.lambda_browser').invoke_async({"params": params, 'data': {'team_id': team_id, 'channel': channel}})
+                Lambda('osbot_browser.lambdas.lambda_browser').invoke_async({"params": params, 'data': {'team_id': team_id, 'channel': channel}})
 
             if 'go_js' in engines:
                 slack_message('...using `go_js`', [], channel, team_id)
                 params = ['go_js', graph_name, 'circular']
-                Lambda('lambdas.browser.lambda_browser').invoke_async({"params": params, 'data': {'team_id': team_id, 'channel': channel}})
+                Lambda('osbot_browser.lambdas.lambda_browser').invoke_async({"params": params, 'data': {'team_id': team_id, 'channel': channel}})
 
 
         # if len(params) !=1:
@@ -263,7 +264,7 @@ class Lambda_Graph_Commands:
             action = 'mindmap'
         graph_params = ['go_js', graph_name, action]
         graph_params.extend(params)
-        Lambda('lambdas.browser.lambda_browser').invoke_async({"params": graph_params, 'data': {'team_id': team_id, 'channel': channel}})
+        Lambda('osbot_browser.lambdas.lambda_browser').invoke_async({"params": graph_params, 'data': {'team_id': team_id, 'channel': channel}})
 
 
     # @staticmethod
@@ -403,7 +404,7 @@ class Lambda_Graph_Commands:
                 }
                 if len(params) == 1 and params.pop(0)=='details':
                     data['nodes'] = graph.get_nodes_issues()
-                    s3_bucket = 'gs-lambda-tests'
+                    s3_bucket = 'gw-bot-lambdas'
                     import tempfile
                     with tempfile.NamedTemporaryFile(suffix='.json') as temp:
                         temp.write(str.encode(json.dumps(data)))

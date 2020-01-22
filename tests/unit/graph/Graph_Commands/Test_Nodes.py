@@ -1,6 +1,7 @@
 from unittest import TestCase
 
 from gs_elk.Graph_Commands.Nodes import Nodes
+from osbot_aws.apis.Lambda import Lambda
 from utils.Dev import Dev
 
 
@@ -10,7 +11,7 @@ class Test_Nodes(TestCase):
         self.nodes = Nodes()
 
     def test___update_lambda_function(self):
-        Lambda('lambdas.gsbot.gsbot_graph').update_with_src()
+        Lambda('osbot_jira.lambdas.graph').update_with_src()
 
     def test_add_edge(self):
         (text, attachments) = self.nodes.add_edge(["graph_WLA","GSP-1", "creates_RISK","GSP-95"])
@@ -45,5 +46,5 @@ class Test_Nodes(TestCase):
 
 
 
-    def test_update_lambda_vis_js(self):
-        Lambda('lambdas.gsbot.gsbot_graph').update_with_src()
+    # def test_update_lambda_vis_js(self):
+    #     Lambda('lambdas.gsbot.gsbot_graph').update_with_src()

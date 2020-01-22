@@ -3,9 +3,10 @@ import unittest
 
 from gw_bot.Deploy import Deploy
 from gw_bot.helpers.Test_Helper import Test_Helper
-from osbot_jira.api.graph.Lambda_Graph_Commands import Lambda_Graph_Commands
 from pbx_gs_python_utils.utils.Dev   import Dev
 from osbot_aws.apis.Lambda           import Lambda
+
+from osbot_jira.api.graph.Lambda_Graph_Commands import Lambda_Graph_Commands
 
 
 class Test_Lambda_Graph_Commands(Test_Helper):
@@ -13,7 +14,7 @@ class Test_Lambda_Graph_Commands(Test_Helper):
     def setUp(self):
         super().setUp()
         self.channel = 'DRE51D4EM'
-        #self.team_id = 'T7F3AUXGV'
+        self.team_id = None
         self.result = None
 
     def tearDown(self):
@@ -107,13 +108,13 @@ class Test_Lambda_Graph_Commands(Test_Helper):
         Lambda_Graph_Commands().plantuml(self.team_id, self.channel, params, None)
 
     def test_raw_data(self):
-        params = ['graph_MKF', 'details']
+        params = ['graph_J2O', 'details']
         self.team_id = None
         self.channel = None
         results = Lambda_Graph_Commands().raw_data(self.team_id, self.channel, params, None)
         Dev.pprint(results)
         #results = Lambda_Graph_Commands().raw_data(self.team_id, self.channel, ['aaa'], None)
-        Dev.print(results)
+        #Dev.print(results)
 
     def test_raw_data__issue_id(self):
         params = ['GSSP-111', 'details']        # when an issue ID is passed we should get the value as the first node
@@ -122,5 +123,9 @@ class Test_Lambda_Graph_Commands(Test_Helper):
         results = Lambda_Graph_Commands().raw_data(params=params)
         assert results['nodes']['GSSP-111']['Creator'] == 'dinis.cruz'
 
-
+    def test_filter(self):
+        params = ['group_by_field', 'graph_8SX', 'Issue Type']
+        self.team_id = None
+        self.channel = None
+        self.result = Lambda_Graph_Commands().filter(self.team_id, self.channel, params, None)
 

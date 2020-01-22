@@ -66,7 +66,7 @@ class GS_Bot_Jira:
             Lambda('osbot_browser.lambdas.jira_web').invoke_async(payload)
 
             # show link of new issue to user
-            jira_link = "https://jira.photobox.com/browse/{0}".format(issue_id)
+            jira_link = "https://glasswall.atlassian.net/browse/{0}".format(issue_id)
             text = ':point_right: New issue created with id <{0}|{1}>'.format(jira_link, issue_id)
         return {"text": text, "attachments": []}
 
@@ -177,7 +177,7 @@ class GS_Bot_Jira:
                       }
             Lambda('osbot_browser.lambdas.jira_web').invoke_async(payload)
             # previews version (that showed a plantuml table
-            # jira_link   = "https://jira.photobox.com/browse/{0}".format(key)
+            # jira_link   = "https://glasswall.atlassian.net/browse/{0}".format(key)
             # api_issues = API_Issues()
             # es_index   = api_issues.resolve_es_index(key)
             # if es_index:
@@ -276,7 +276,7 @@ class GS_Bot_Jira:
         return {"text": text, "attachments": attachments}
 
     def cmd_search(self, event):
-        Lambda('gs.elk_to_slack').invoke_async(event)
+        Lambda('osbot_jira.lambdas.elk_to_slack').invoke_async(event)
         return None
 
     def cmd_table(self, params, team_id=None, channel=None):

@@ -1,7 +1,4 @@
-from utils.Json import Json
-from utils.aws.Lambdas import load_dependency, Lambdas
-from utils.aws.s3 import S3
-
+from osbot_aws.apis.Lambda import Lambda
 
 def get_graph_data(graph_name):
     params = {'params': ['raw_data', graph_name, 'details'], 'data': {}}

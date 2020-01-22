@@ -6,7 +6,7 @@ from gw_bot.helpers.Lambda_Helpers import log_error
 
 
 class API_Issues:
-    def __init__(self, index = 'jira,it_assets,sec_project'):
+    def __init__(self, index = 'jira'):
         self.secrets_id = 'gw-elastic-server-1'
         self.index      = index
         self._elastic   = None
@@ -194,25 +194,26 @@ class API_Issues:
 
 
     def resolve_es_index(self, key):
-        if key:
-            if "SEC-"   in key:  return 'sec_project'
-            if "GSP-"   in key:  return 'it_assets'
-            if "IA-"    in key:  return 'it_assets'
-            if "TM-"    in key:  return 'it_assets'
-            if "GDPR-"  in key:  return 'it_assets'
-            if "GSOKR-" in key:  return 'it_assets'
-            if "SC-"    in key:  return 'it_assets'
-            if "GSSP-"  in key:  return 'it_assets'
-            if "RT-"    in key:  return 'it_assets'
-            if "SL-"    in key:  return 'it_assets'
-            if 'GSOS-'  in key:  return 'it_assets'
-            if 'GSCS-'  in key:  return 'it_assets'
-            if 'GSBOT-' in key:  return 'it_assets'
-            if 'GSED-'  in key:  return 'it_assets'
-            return "jira"
+        return 'jira'
+        # if key:
+        #     if "SEC-"   in key:  return 'sec_project'
+        #     if "GSP-"   in key:  return 'it_assets'
+        #     if "IA-"    in key:  return 'it_assets'
+        #     if "TM-"    in key:  return 'it_assets'
+        #     if "GDPR-"  in key:  return 'it_assets'
+        #     if "GSOKR-" in key:  return 'it_assets'
+        #     if "SC-"    in key:  return 'it_assets'
+        #     if "GSSP-"  in key:  return 'it_assets'
+        #     if "RT-"    in key:  return 'it_assets'
+        #     if "SL-"    in key:  return 'it_assets'
+        #     if 'GSOS-'  in key:  return 'it_assets'
+        #     if 'GSCS-'  in key:  return 'it_assets'
+        #     if 'GSBOT-' in key:  return 'it_assets'
+        #     if 'GSED-'  in key:  return 'it_assets'
+        #    return "jira"
 
     def set_default_indexes(self):
-        self.elastic().index = 'jira,it_assets,sec_project'
+        self.elastic().index = 'jira'
 
     ### move these to separate analysis file
 
@@ -268,7 +269,7 @@ class API_Issues:
 
     def server_url(self):
         host = self.elastic().host
-        if '5766d93460d' in host: return "https://jira.photobox.com"
+        if '5766d93460d' in host: return "https://glasswall.atlassian.net"
         return host
 
 
