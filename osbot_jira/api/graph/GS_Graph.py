@@ -50,11 +50,16 @@ class GS_Graph:
                                              'stakeholders_down': ['is Technical Owner' , 'is Management Owner' , 'is Business Owner' , 'is Stakeholder' , 'is manager of']}
 
 
+    def add_issue(self, key, issue):
+        if issue:
+            if self.issues is None:
+                self.issues = {}
+            self.issues[key] = issue
 
-
-    def add_node(self, key):
+    def add_node(self, key,issue=None):
         if key not in self.nodes:
             self.nodes.append(key)
+            self.add_issue(key,issue)
         return self
 
     def add_nodes(self, keys):
@@ -278,7 +283,8 @@ class GS_Graph:
                 (from_key, link_type, to_key) = edge
                 if from_key == key or to_key == key:
                     self.edges.remove(edge)
-        self.issues = None                              # reset this value since we modified the issues list
+        if self.issues and self.issues.get(key) is not None:
+            del self.issues[key]
         return self
 
     def remove_nodes(self, keys):
@@ -443,6 +449,37 @@ class GS_Graph:
     def filter(self):
         from osbot_jira.api.graph.Filters import Filters
         return Filters().setup(graph=self)
+
+    # view
+
+    def view_nodes(self,label_key=None,show_key=False, key_id='id', label_id='label'):
+        nodes = []
+        issues = self.issues or {}
+        # if issues is None:
+        #     issues = {}
+        for key in self.nodes:
+            issue = issues.get(key)
+            if issue and label_key is not None:
+                label = issue.get(label_key)
+                if label is None:
+                    label = key
+                if show_key:
+                    label = f'{key} - {label}'
+            else:
+                label = key
+            nodes.append({key_id: key, label_id: label})
+        return nodes
+
+    def view_nodes_and_edges(self,label_key=None,show_key=False):
+
+        nodes = self.view_nodes(label_key, show_key)
+        edges = []
+
+        for edge in self.edges:
+            edges.append({'from': edge[0], 'to': edge[2]})
+
+        return nodes,edges
+
 
     # LEGACY (Check and delete)
 
