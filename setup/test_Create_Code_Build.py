@@ -8,8 +8,7 @@ class test_Create_Code_Build(TestCase):
 
     def setUp(self):
         self.project_name    = 'OSBot-jira'
-        self.account_id      = IAM().account_id()
-        self.api             = Create_Code_Build(account_id=self.account_id, project_name=self.project_name)
+        self.api             = Create_Code_Build(project_name=self.project_name)
 
     def test_create(self):
         policies = self.api.policies__with_ecr_and_3_secrets()
