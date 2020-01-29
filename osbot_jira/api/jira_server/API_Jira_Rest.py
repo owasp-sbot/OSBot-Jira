@@ -1,3 +1,5 @@
+import json
+
 import requests
 from osbot_aws.apis.Secrets import Secrets
 
@@ -90,9 +92,7 @@ class API_Jira_Rest:
         issue['Issue Links'] = issue_links
         return self
 
-
-    def issue(self,issue_id,fields='*all'):
-        issue_raw = self.issue_raw(issue_id,fields)
+    def convert_issue(self, issue_raw):
         if issue_raw:
             skip_fields    = ['resolution', 'votes','worklog','watches','comment',
                               'iconUrl','fixVersions', 'customfield_14238',
@@ -101,8 +101,9 @@ class API_Jira_Rest:
             use_name_value = ['user', 'issuetype','status','project','priority', 'securitylevel']
             use_value      = ['string', 'number','datetime', 'date']
             if issue_raw:
-                issue  = {'Key' : issue_id}
-                fields = self.fields_by_id()
+                issue_id = issue_raw['key']
+                issue    = { 'Key' : issue_id }
+                fields   = self.fields_by_id()
                 fields_values = issue_raw.get('fields')
                 self.map_issue_links(issue, fields_values.get('issuelinks'))
                 if fields_values:
@@ -135,6 +136,11 @@ class API_Jira_Rest:
 
 
                 return issue
+
+    def issue(self,issue_id,fields='*all'):
+        issue_raw = self.issue_raw(issue_id,fields)
+        return self.convert_issue(issue_raw)
+
 
     def issues(self,issues_ids,fields='*all'):
         issues = {}
@@ -180,3 +186,23 @@ class API_Jira_Rest:
                     to_data = transition.get('to')
                     items[to_data.get('name')] = to_data.get('id')
         return items
+
+    def search(self, jql='', fetch_all=True):
+        max_results = 100  # 100 seems to be the current limit of Jira cloud
+        results = []
+        start_at = 0
+        while True:
+            path  = f'search?jql={jql}&startAt={start_at}&maxResults={max_results}'
+            if self.request_get(path) is None:
+                return results
+            data  = json.loads(self.request_get(path))
+            issues = data['issues']
+            for issue in issues:
+                results.append(self.convert_issue(issue))
+            if fetch_all is False:
+                break
+            if len(issues) == 0:
+                break
+            start_at += len(issues)
+
+        return results

@@ -56,15 +56,17 @@ class GW_Elastic_Jira:
 
         return issue
 
-    def send_data_from_project(self, project,start_at=0, max = -1):
+    def send_data_from_project(self, project=None):
         if project:
-            query = 'project={0}'.format(project)
+            jql = 'project={0}'.format(project)
         else:
-            query = ''
-        issues = self.api_Jira.search(query,start_at, max).values()
-        fixed_issues = []
-        for issue in issues:                                    # need to fix the data so that it looks/indexes better in ELK
-            fixed_issues.append(self.fix_issue_for_elk(issue))
+            jql = ''
+        from osbot_jira.api.jira_server.API_Jira_Rest import API_Jira_Rest
+        api_jira_rest = API_Jira_Rest()
+        issues = api_jira_rest.search(jql)
+        #fixed_issues = []
+        #for issue in issues:                                    # need to fix the data so that it looks/indexes better in ELK
+        #    fixed_issues.append(self.fix_issue_for_elk(issue))
 
         return self.elastic.add_bulk(issues, "Key")
 
@@ -143,94 +145,94 @@ class GW_Elastic_Jira:
         return data
 
 
-    def reload_jira_index__jira(self):           # need to do also do this for the SEC project
-        index = 'jira'
+    # def reload_jira_index__jira(self):           # need to do also do this for the SEC project
+    #     index = 'jira'
+    #
+    #     query = {  "query": { "match_all": {} } }
+    #     self.elastic.index = index
+    #     result     = self.elastic.delete_using_query(query)     # delete all items
+    #     fact_issues = self.send_data_from_project('FACT')       # add all issues from FACT project
+    #     risk_issues = self.send_data_from_project('RISK')       # add all issues from RISK project
+    #     vuln_issues = self.send_data_from_project('VULN')       # add all issues from VULN project
+    #
+    #
+    #     stats =  { "stats": {
+    #                         "index"             : index             ,
+    #                         "delete_issues"     : result['deleted'] ,
+    #                         "fact_issues_added" : fact_issues       ,
+    #                         "risk_issues_added" : risk_issues       ,
+    #                         "vuln_issues_added" : vuln_issues
+    #                       }}
+    #     Dev.pprint(stats)
+    #     return stats
 
-        query = {  "query": { "match_all": {} } }
-        self.elastic.index = index
-        result     = self.elastic.delete_using_query(query)     # delete all items
-        fact_issues = self.send_data_from_project('FACT')       # add all issues from FACT project
-        risk_issues = self.send_data_from_project('RISK')       # add all issues from RISK project
-        vuln_issues = self.send_data_from_project('VULN')       # add all issues from VULN project
+    # def reload_jira_index__sec_project(self):
+    #     index = 'sec_project'
+    #     query = {"query": {"match_all": {}}}
+    #     self.elastic.index = index
+    #     result = self.elastic.delete_using_query(query)  # delete all items
+    #     step_by    = 500
+    #     sec_issues = 0
+    #     max        = 22         # do up to 11000        - at the moment there are 8k
+    #     for i in range(0, max):
+    #         start_at = i * step_by
+    #         last_count = self.send_data_from_project('SEC', start_at, step_by)
+    #         sec_issues += last_count
+    #         Dev.print("[{0}/{1}] reload_jira_index__sec_project - added {2} (total: {3}".format(i,max, last_count, sec_issues))
+    #         if last_count == 0:
+    #             break;
+    #     stats = { "stats": {
+    #                         "index"             : index             ,
+    #                         "delete_issues"     : result['deleted'] ,
+    #                         "sec_issues_added"  : sec_issues        ,
+    #                       }}
+    #     Dev.pprint(stats)
+    #     return stats
 
-
-        stats =  { "stats": {
-                            "index"             : index             ,
-                            "delete_issues"     : result['deleted'] ,
-                            "fact_issues_added" : fact_issues       ,
-                            "risk_issues_added" : risk_issues       ,
-                            "vuln_issues_added" : vuln_issues
-                          }}
-        Dev.pprint(stats)
-        return stats
-
-    def reload_jira_index__sec_project(self):
-        index = 'sec_project'
-        query = {"query": {"match_all": {}}}
-        self.elastic.index = index
-        result = self.elastic.delete_using_query(query)  # delete all items
-        step_by    = 500
-        sec_issues = 0
-        max        = 22         # do up to 11000        - at the moment there are 8k
-        for i in range(0, max):
-            start_at = i * step_by
-            last_count = self.send_data_from_project('SEC', start_at, step_by)
-            sec_issues += last_count
-            Dev.print("[{0}/{1}] reload_jira_index__sec_project - added {2} (total: {3}".format(i,max, last_count, sec_issues))
-            if last_count == 0:
-                break;
-        stats = { "stats": {
-                            "index"             : index             ,
-                            "delete_issues"     : result['deleted'] ,
-                            "sec_issues_added"  : sec_issues        ,
-                          }}
-        Dev.pprint(stats)
-        return stats
-
-    def reload_jira_index__it_Assets(self):           # need to do also do this for the SEC project
-        index = 'it_assets'
-        self.elastic.index = index
-        query = {  "query": { "match_all": {} } }
-        result     = self.elastic.delete_using_query(query)     # delete all items
-
-        slack_message(':point_right: starting reload_jira_index__it_Assets', [], 'DDKUZTK6X', 'T7F3AUXGV')
-
-        ia_issues    = self.send_data_from_project('IA')
-        tm_issues    = self.send_data_from_project('TM')
-        gdpr_issues  = self.send_data_from_project('GDPR')
-        gsp_issues   = self.send_data_from_project('GSP')
-        gsokr_issues = self.send_data_from_project('GSOKR')
-        rt_issues    = self.send_data_from_project('RT')
-        fix_issues   = self.send_data_from_project('FIX')
-        sc_issues    = self.send_data_from_project('SC')
-        gssp_issues  = self.send_data_from_project('GSSP')
-        sl_issues    = self.send_data_from_project('SL')
-        gsos_issues  = self.send_data_from_project('GSOS')
-        gscs_issues  = self.send_data_from_project('GSCS')
-        gsbot_issues = self.send_data_from_project('GSBOT')
-        gsed_issues  = self.send_data_from_project('GSED')
-
-        stats = { "stats": {
-                            "index"             : index             ,
-                            "delete_issues"     : result['deleted'] ,
-                            "ia_issues_added"   : ia_issues         ,
-                            "tm_issues_added"   : tm_issues         ,
-                            "gdpr_issues_added" : gdpr_issues       ,
-                            "gsp_issues_added"  : gsp_issues        ,
-                            "gskr_issues_added" : gsokr_issues      ,
-                            "rt_issues_added"   : rt_issues         ,
-                            "fix_issues_added"  : fix_issues        ,
-                            "sc_issues"         : sc_issues         ,
-                            "gssp_issues"       : gssp_issues       ,
-                            "sl_issues"         : sl_issues         ,
-                            "gsos_issues"       : gsos_issues       ,
-                            "gscs_issues"       : gscs_issues       ,
-                            "gsbot_issues"      : gsbot_issues      ,
-                            "gsed_issues"       : gsed_issues
-                          }}
-        Dev.pprint(stats)
-        slack_message(json.dumps(stats), [], 'DDKUZTK6X','T7F3AUXGV')
-        return stats
+    # def reload_jira_index__it_Assets(self):           # need to do also do this for the SEC project
+    #     index = 'it_assets'
+    #     self.elastic.index = index
+    #     query = {  "query": { "match_all": {} } }
+    #     result     = self.elastic.delete_using_query(query)     # delete all items
+    #
+    #     slack_message(':point_right: starting reload_jira_index__it_Assets', [], 'DDKUZTK6X', 'T7F3AUXGV')
+    #
+    #     ia_issues    = self.send_data_from_project('IA')
+    #     tm_issues    = self.send_data_from_project('TM')
+    #     gdpr_issues  = self.send_data_from_project('GDPR')
+    #     gsp_issues   = self.send_data_from_project('GSP')
+    #     gsokr_issues = self.send_data_from_project('GSOKR')
+    #     rt_issues    = self.send_data_from_project('RT')
+    #     fix_issues   = self.send_data_from_project('FIX')
+    #     sc_issues    = self.send_data_from_project('SC')
+    #     gssp_issues  = self.send_data_from_project('GSSP')
+    #     sl_issues    = self.send_data_from_project('SL')
+    #     gsos_issues  = self.send_data_from_project('GSOS')
+    #     gscs_issues  = self.send_data_from_project('GSCS')
+    #     gsbot_issues = self.send_data_from_project('GSBOT')
+    #     gsed_issues  = self.send_data_from_project('GSED')
+    #
+    #     stats = { "stats": {
+    #                         "index"             : index             ,
+    #                         "delete_issues"     : result['deleted'] ,
+    #                         "ia_issues_added"   : ia_issues         ,
+    #                         "tm_issues_added"   : tm_issues         ,
+    #                         "gdpr_issues_added" : gdpr_issues       ,
+    #                         "gsp_issues_added"  : gsp_issues        ,
+    #                         "gskr_issues_added" : gsokr_issues      ,
+    #                         "rt_issues_added"   : rt_issues         ,
+    #                         "fix_issues_added"  : fix_issues        ,
+    #                         "sc_issues"         : sc_issues         ,
+    #                         "gssp_issues"       : gssp_issues       ,
+    #                         "sl_issues"         : sl_issues         ,
+    #                         "gsos_issues"       : gsos_issues       ,
+    #                         "gscs_issues"       : gscs_issues       ,
+    #                         "gsbot_issues"      : gsbot_issues      ,
+    #                         "gsed_issues"       : gsed_issues
+    #                       }}
+    #     Dev.pprint(stats)
+    #     slack_message(json.dumps(stats), [], 'DDKUZTK6X','T7F3AUXGV')
+    #     return stats
 
 
     # def find_deleted_keys(self, project):
