@@ -1,10 +1,10 @@
 import json
 
 import requests
-from osbot_aws.apis.Secrets import Secrets
 
+from gw_bot.helpers.Lambda_Helpers import log_error
+from osbot_aws.apis.Secrets import Secrets
 from pbx_gs_python_utils.utils.Dev import Dev
-#from pbx_gs_python_utils.utils.Local_Cache import use_local_cache_if_available
 from pbx_gs_python_utils.utils.Misc import Misc
 
 
@@ -25,17 +25,32 @@ class API_Jira_Rest:
         self._config = (server, "", "")
         return self
 
+    # request helpers
+
     def request_get(self,path):
+        return self.request_method('GET', path)
+
+    def request_delete(self,path):
+        return self.request_method('DELETE', path)
+
+    def request_method(self,method, path):
         (server, username, password)= self.config()
         path = '{0}/rest/api/2/{1}'.format(server, path)
         if self.log_requests: Dev.pprint('get', path)
         if username and password:
-            response = requests.get(path, auth=(username, password))
+            if method =='GET':
+                response = requests.get(path, auth=(username, password))
+            elif method == 'DELETE':
+                response = requests.delete(path, auth=(username, password))
+            else:
+                log_error(f'[Error][request_method]: unsupported method {method} for path: {path}')
+                return None
         else:
             response = requests.get(path)
         if response.status_code == 200:
             return response.text
-        Dev.pprint('[Error][request_get]: {0}'.format(response.text))
+        else:
+            log_error(f'[Error][request_get] for path {path}: {response.text}')
         return None
 
     def request_put(self, path, data):
@@ -49,6 +64,9 @@ class API_Jira_Rest:
             return True
         Dev.pprint('[Error][request_put]: {0}'.format(response.text))
         return False
+
+    # methods
+
 
     def fields(self):
         if self._fields is None:
@@ -68,7 +86,12 @@ class API_Jira_Rest:
             fields[field.get('name')] = field
         return fields
 
-    #@use_local_cache_if_available
+    def issue_delete(self, issue_id):
+        if issue_id:
+            path = f'issue/{issue_id}'
+            data = self.request_delete(path)
+            return Misc.json_load(data)
+
     def issue_raw(self,issue_id,fields='*all'):
         if issue_id:
             path = 'issue/{0}?fields={1}'.format(issue_id,fields)
@@ -101,8 +124,10 @@ class API_Jira_Rest:
             use_name_value = ['user', 'issuetype','status','project','priority', 'securitylevel']
             use_value      = ['string', 'number','datetime', 'date']
             if issue_raw:
-                issue_id = issue_raw['key']
-                issue    = { 'Key' : issue_id }
+
+                issue_key = issue_raw['key']
+                issue_id  = issue_raw['id']
+                issue    = { 'Key' : issue_key , 'Id': issue_id }
                 fields   = self.fields_by_id()
                 fields_values = issue_raw.get('fields')
                 self.map_issue_links(issue, fields_values.get('issuelinks'))

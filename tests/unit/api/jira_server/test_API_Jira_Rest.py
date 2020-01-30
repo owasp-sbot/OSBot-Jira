@@ -33,7 +33,7 @@ class Test_API_Jira_Rest(Test_Helper):
     #         Dev.pprint(len(self.api.fields_by_name()))
 
     def test_issue_raw(self):
-        issue_id= 'RISK-12'
+        issue_id= 'PERSON-1'
         result = self.api.issue_raw(issue_id,'_')
         assert set(result) == {'id', 'self', 'key', 'expand'}
 

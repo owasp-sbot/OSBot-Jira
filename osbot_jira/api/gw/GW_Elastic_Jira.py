@@ -133,7 +133,7 @@ class GW_Elastic_Jira:
 
     def add_changed_log_status(self, project, start_at=0, max =-1):
         jql = "Project={0}".format(project)
-        statuses = self.api_gs_jira.api_Jira.issue_changes_log_only_status(jql, start_at, max)
+        statuses = self.api_Jira.issue_changes_log_only_status(jql, start_at, max)
         data = []
         for key,items in statuses.items():
             for entry in items:
