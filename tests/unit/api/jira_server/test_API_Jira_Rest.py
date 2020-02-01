@@ -77,6 +77,9 @@ class Test_API_Jira_Rest(Test_Helper):
 
         self.result = len(issues)
 
+    def test_webhook_failed(self):
+        self.result = self.api.webhook_failed()
+
 
 
     # @unittest.skip('not working')

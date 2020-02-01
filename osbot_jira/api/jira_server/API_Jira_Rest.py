@@ -231,3 +231,6 @@ class API_Jira_Rest:
             start_at += len(issues)
 
         return results
+
+    def webhook_failed(self):
+        return self.request_get('webhook/failed')
