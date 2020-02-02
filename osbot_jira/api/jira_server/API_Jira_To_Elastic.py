@@ -20,7 +20,7 @@ class API_Jira_To_Elastic:
 
     # handle methods
 
-    def handle_event(self,event_type, data):
+    def handle_event(self,event_type, user_id, data):
         log_message = 'API_Jira_To_Elastic.handle_event'
         log_to_elk('message received', f"{data}")
         if event_type   == 'issuelink_deleted':                            # link deleted
@@ -39,6 +39,7 @@ class API_Jira_To_Elastic:
                              'event_key'      : 'NA'                                   ,
                              'raw_data'       : f'{data}'                              }
 
+        log_data['user_id'] = user_id
 
 
         return log_to_elk(log_message, log_data, index='elastic_logs')
@@ -81,10 +82,10 @@ class API_Jira_To_Elastic:
         return log_data
 
     def handle_link_event(self, data, event_type):
-        issue_link        = data.get('issueLink')
-        source            = issue_link.get('sourceIssueId')
-        destination       = issue_link.get('destinationIssueId')
-        link_type         = issue_link.get('issueLinkType').get('name')
+        issue_link        = data.get      ('issueLink'         , {})
+        source            = issue_link.get('sourceIssueId'     , {})
+        destination       = issue_link.get('destinationIssueId', {})
+        link_type         = issue_link.get('issueLinkType'     , {}).get('name')
         issue_source      = self.get_jira_issue(source)
         issue_destination = self.get_jira_issue(destination)
         self.add_to_elk(issue_source)
@@ -96,7 +97,7 @@ class API_Jira_To_Elastic:
 
     # main methods
     def add_to_elk(self, issue):
-        self.elastic().add(issue, 'Key')
+        return self.elastic().add(issue, 'Key')
 
     def get_jira_issue(self, issue_id_or_key):
         return self.api_jira_rest().issue(issue_id_or_key)

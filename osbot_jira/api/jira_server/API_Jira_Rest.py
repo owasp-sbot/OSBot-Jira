@@ -154,13 +154,15 @@ class API_Jira_Rest:
                                                 items.append(item.get('name'))
                                     value = ",".join(items)
                                 else:
-                                    print('>> ', field_id,issue_type)
+                                    #print('>> ', field_id,issue_type)
                                     Dev.pprint(value)
                                     continue
                                 issue[issue_name] = value
 
 
                 return issue
+        return {}
+
 
     def issue(self,issue_id,fields='*all'):
         issue_raw = self.issue_raw(issue_id,fields)

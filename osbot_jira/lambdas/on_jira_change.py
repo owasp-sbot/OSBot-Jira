@@ -15,9 +15,10 @@ def run(event, context):
     #
     # log_to_elk('in on_jira_change', log_data, index='elastic_logs', level='error')
     try:
-        data = json.loads(event.get('body'))
+        data       = json.loads(event.get('body'))
         event_type = data.get('webhookEvent')
-        message = API_Jira_To_Elastic().handle_event(event_type, data)
+        user_id    = event.get('queryStringParameters').get('user_id')
+        message = API_Jira_To_Elastic().handle_event(event_type, user_id, data)
         status_code = 200
     except Exception as error:
         message = f'error in on_jira_change: {error}'
