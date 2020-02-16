@@ -22,7 +22,6 @@ class API_Jira_To_Elastic:
 
     def handle_event(self,event_type, user_id, data):
         log_message = 'API_Jira_To_Elastic.handle_event'
-        log_to_elk('message received', f"{data}")
         if event_type   == 'issuelink_deleted':                            # link deleted
             log_data     = self.handle_link_event(data, 'link_deleted')
         elif event_type == 'issuelink_created':                            # link created

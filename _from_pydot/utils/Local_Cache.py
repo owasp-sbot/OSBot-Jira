@@ -1,4 +1,4 @@
-from utils.Json import *
+from pbx_gs_python_utils.utils import Json
 from pbx_gs_python_utils.utils.Files import *
 
 def clear_local_cache_files(function):
