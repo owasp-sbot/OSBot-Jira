@@ -47,7 +47,7 @@ class Lambda_Graph():
         return self.save_to_elk().elastic.search_using_lucene_sort_by_date(lucene_query, count)
 
     def handle_lambda_event(self, event):
-        log_to_elk("in Lambda_Graph.handle_lambda_event :{0}".format(event))
+        #log_to_elk("in Lambda_Graph.handle_lambda_event :{0}".format(event))
         data    = event.get('data')
         if data:
             channel = data.get('channel')

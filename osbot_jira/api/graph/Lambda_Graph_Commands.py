@@ -455,20 +455,21 @@ class Lambda_Graph_Commands:
 
         if len(params) < 1:
             text = ':red_circle: Hi, for the `view` command, you need to provide a graph name (use `graph last` to see a list of graphs names you can use)'
-            slack_message(text, [], channel, team_id)
-            return
+            return slack_message(text, [], channel, team_id)
 
         if len(params) == 1:
 
             text = Graph_View().bad_params_message()
-            slack_message(text, [], channel, team_id)
-            return
+            return slack_message(text, [], channel, team_id)
 
 
         graph = Graph_View().handle_lambda_request(params, channel, team_id)
 
         if graph:
-            Lambda('utils.puml_to_slack').invoke({"puml": graph.get_puml(), "channel": channel, "team_id": team_id})
+            puml = graph.get_puml()
+            if channel:
+                Lambda('utils.puml_to_slack').invoke({"puml": puml, "channel": channel, "team_id": team_id})
+            return puml
 
     @staticmethod
     def vis_js(team_id, channel, params, data):
