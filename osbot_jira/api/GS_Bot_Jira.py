@@ -17,7 +17,7 @@ from osbot_jira.api.slack.views.Jira_View_Issue             import Jira_View_Iss
 class GS_Bot_Jira:
 
     def __init__(self):
-        self.version = "v0.42 (GSBot)"
+        self.version = "v0.43 (GSBot)"
 
     def cmd_add_link(self, params, team_id=None, channel=None):
             if len(params) < 4:
@@ -151,7 +151,7 @@ class GS_Bot_Jira:
 
 
 
-    def cmd_screenshot(self, params, team_id, channel):
+    def cmd_screenshot(self, params, team_id=None, channel=None):
         attachments = []
         if len(params) < 2:
             text = ":exclamation: you must provide an issue id "
@@ -161,19 +161,23 @@ class GS_Bot_Jira:
             issue_id = params.pop(0).upper()
             width    = Misc.to_int(Misc.array_pop(params, 0))
             height   = Misc.to_int(Misc.array_pop(params, 0))
+            delay    = Misc.to_int(Misc.array_pop(params, 0))
 
             text = ':point_right: Getting screenshot for issue `{0}`'.format(issue_id)
             if width:
                 text += ' with width `{0}`'.format(width)
             if height:
                 text += ' and height `{0}`'.format(height)
+            if delay:
+                text += ' and delay `{0}`'.format(delay)
 
             payload = {
                             'issue_id': issue_id,
                             'channel' : channel ,
                             'team_id' : team_id ,
                             'width'   : width   ,
-                            'height'  : height
+                            'height'  : height  ,
+                            'delay'   : delay
                       }
             Lambda('osbot_browser.lambdas.jira_web').invoke_async(payload)
             # previews version (that showed a plantuml table

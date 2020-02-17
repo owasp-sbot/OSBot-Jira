@@ -22,6 +22,7 @@ class test_GS_Bot_Jira(Test_Helper):
 
     def test_update_lambda(self):
         Deploy().deploy_lambda__jira('osbot_jira.lambdas.elastic_jira')
+
     # def test__update_lambda_elastic_jira(self):
     #     Deploy('osbot_jira.lambdas.elastic_jira').deploy()             # update the main jira lambda
     #
@@ -88,7 +89,7 @@ class test_GS_Bot_Jira(Test_Helper):
 
 
     def test_cmd_screenshot(self):
-        result = self.api.cmd_screenshot(['issue', 'SEC-10965', '2000', '500'],'T7F3AUXGV', 'DDKUZTK6X')
+        result = self.api.cmd_screenshot(['screenshot', 'VP-1', '2000', '500', '2'], channel='DRE51D4EM')
         Dev.pprint(result.get('text'))
 
     def test_cmd_links(self):
