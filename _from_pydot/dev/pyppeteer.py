@@ -2,9 +2,9 @@ import base64
 import os
 import asyncio
 
-from utils.Process import Process
-from utils.aws.Lambdas import load_dependency
+from pbx_gs_python_utils.utils.Process import Process
 
+from osbot_aws.Dependencies import load_dependency
 
 def run(event, context):
 

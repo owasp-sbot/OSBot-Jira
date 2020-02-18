@@ -1,4 +1,4 @@
-from osbot_jira.api.gw.GW_Setup import load_dependency
+from osbot_aws.Dependencies import load_dependency
 
 # def setup():
 #     load_dependency('jira')

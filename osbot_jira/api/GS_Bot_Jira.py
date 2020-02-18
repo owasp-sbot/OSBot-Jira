@@ -53,7 +53,7 @@ class GS_Bot_Jira:
             slack_message(':point_right: Going to create an `{0}` issue, in project `{1}` with summary `{2}`'.format(issue_type, project,summary), [], channel,team_id)
 
             #to do, move this feature to a separate lambda (which can be called to create issues
-            from osbot_aws.apis.Lambda import load_dependency
+            from osbot_aws.Dependencies import load_dependency
             load_dependency('jira')
             from osbot_jira.api.jira_server.API_Jira import API_Jira
 

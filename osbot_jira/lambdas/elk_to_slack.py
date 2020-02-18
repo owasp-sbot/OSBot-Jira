@@ -1,5 +1,4 @@
-from gw_bot.helpers.Lambda_Helpers import log_to_elk
-from gw_bot.lambdas.png_to_slack import load_dependency
+from osbot_aws.Dependencies import load_dependency
 
 
 def run(event, context):
