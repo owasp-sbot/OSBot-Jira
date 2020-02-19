@@ -6,7 +6,7 @@ from gw_bot.helpers.Lambda_Helpers import slack_message
 from gw_bot.helpers.Test_Helper import Test_Helper
 from osbot_jira.api.GS_Bot_Jira                 import GS_Bot_Jira
 from pbx_gs_python_utils.utils.Dev              import Dev
-from osbot_aws.apis.Lambda import Lambda, upload_dependency
+from osbot_aws.apis.Lambda import Lambda
 
 
 class test_GS_Bot_Jira(Test_Helper):
@@ -22,12 +22,6 @@ class test_GS_Bot_Jira(Test_Helper):
 
     def test_update_lambda(self):
         Deploy().deploy_lambda__jira('osbot_jira.lambdas.elastic_jira')
-
-    # def test__update_lambda_elastic_jira(self):
-    #     Deploy('osbot_jira.lambdas.elastic_jira').deploy()             # update the main jira lambda
-    #
-    # def test__update_lambda_slack_actions(self):
-    #     Deploy('osbot_jira.lambdas.slack_actions').deploy()            # update the lambda that handles the callbacks
 
     def test_handle_request(self):
         event = {}
@@ -58,9 +52,9 @@ class test_GS_Bot_Jira(Test_Helper):
 
 
     def test_cmd_create(self):
-        params = ['create','Task', 'an','task']
+        params = ['create','TAskasd', 'an new','task']
+        self.result = self.api.cmd_create(params)
         #self.result = self.api.cmd_create(params)
-        self.result = self.api.cmd_create(['issue','SEC-11823'],None,None)
 
 
 
@@ -163,7 +157,7 @@ class test_GS_Bot_Jira(Test_Helper):
 
     @unittest.skip('fix lambda target location')
     def test__cmd_links__via_lambda(self):
-        elastic_jira = Lambda('pbx_gs_python_utils.lambdas.gs.elastic_jira')
+        elastic_jira = Lambda('osbot_jira.lambdas.elastic_jira')
         payload = {"params": ["links","FACT-47", "up", "3"], "channel": "GDL2EC3EE"}
 
         result = elastic_jira.invoke(payload)
@@ -176,7 +170,7 @@ class test_GS_Bot_Jira(Test_Helper):
         assert ":point_right: Rendering graph for `FACT-47` in the direction `up`, with depth `3`, with plantuml size:" in text
 
     def test__cmd_server__via_lambda(self):
-        elastic_jira = Lambda('pbx_gs_python_utils.lambdas.gs.elastic_jira')
+        elastic_jira = Lambda('osbot_jira.lambdas.elastic_jira')
         payload = {"params": ["server", "status"], "channel": "DDKUZTK6X", 'team_id': 'T7F3AUXGV'}
 
         result = elastic_jira.invoke(payload)

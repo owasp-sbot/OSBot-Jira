@@ -27,15 +27,21 @@ class test_lambda_elastic_jira(Test_Helper):
         response = run({'params':['version']},{})
         assert response == GS_Bot_Jira().version
 
+    def test_invoke_directly__send_to_slack(self):
+        response = run({'params':['version'],"channel": 'DRE51D4EM'},{})
+        #assert response == GS_Bot_Jira().version
+
+
 
     def test_invoke_help(self):
         self.test_update_lambda()
         self.result = self.jira_issues.invoke({"params": []})
 
-    def test_invoke_issue(self):
-        key = 'RISK-424'
-        issue = self.jira_issues.invoke({"params": ['issue', key], "channel": 'GDL2EC3EE'})
-        assert issue.get('text') == '....._fetching data for *<https://glasswall.atlassian.net/browse/RISK-424|RISK-424>* _from index:_ *jira*'
+    def test_invoke_issue__send_to_slack(self):
+        key = 'Person_1'
+        issue = self.jira_issues.invoke({"params": ['issue', key], "channel": 'DRE51D4EM'})
+        self.result = issue
+        #assert issue.get('text') == '....._fetching data for *<https://glasswall.atlassian.net/browse/RISK-424|RISK-424>* _from index:_ *jira*'
 
     def test_update_invoke__link_links(self):
         id = 'RISK-1'

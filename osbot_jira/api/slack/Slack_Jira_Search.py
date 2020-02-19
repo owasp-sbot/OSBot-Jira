@@ -1,8 +1,4 @@
 from osbot_aws.apis.Lambda import Lambda
-from pbx_gs_python_utils.utils.Misc import Misc
-from pbx_gs_python_utils.utils.Lambdas_Helpers import slack_message
-
-from osbot_jira.api.API_Issues import API_Issues
 from osbot_jira.api.elk.Elk_To_Slack import ELK_to_Slack
 
 

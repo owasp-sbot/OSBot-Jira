@@ -46,7 +46,7 @@ class Lambda_Graph_Commands:
             graph_name = params.pop(0)
             send_slack_message(':one: creating Sheet from Graph data ...')
 
-            response = Lambda('pbx_gs_python_utils.lambdas.gs.elastic_jira').invoke({"params":['server','/jira-sync/sheet-from-graph/{0}'.format(graph_name)]})
+            response = Lambda('osbot_jira.lambdas.elastic_jira').invoke({"params":['server','/jira-sync/sheet-from-graph/{0}'.format(graph_name)]})
             if response:
                 weblink = json.loads(response.get('text')).get('status')
                 jira_id = weblink.split('=')[1]
@@ -119,7 +119,7 @@ class Lambda_Graph_Commands:
                                 len(graph.nodes), len(graph.edges))
             slack_message(text, [],channel, team_id)
 
-            Lambda('utils.puml_to_slack').invoke({"puml": graph.get_puml(), "channel": channel, "team_id": team_id})
+            Lambda('gw_bot.lambdas.puml_to_slack').invoke({"puml": graph.get_puml(), "channel": channel, "team_id": team_id})
         else:
             data = {
                 "graph_or_key" : graph_or_key   ,
@@ -214,7 +214,7 @@ class Lambda_Graph_Commands:
 
             if 'plantuml' in engines:
                 slack_message('...using `plantuml`', [], channel, team_id)
-                Lambda('utils.puml_to_slack').invoke_async({"puml": graph.get_puml(), "channel": channel, "team_id": team_id})
+                Lambda('gw_bot.lambdas.puml_to_slack').invoke_async({"puml": graph.get_puml(), "channel": channel, "team_id": team_id})
 
             if 'vis_js' in engines:
                 slack_message('...using `vis_js`', [], channel, team_id)
@@ -231,26 +231,6 @@ class Lambda_Graph_Commands:
                 params = ['go_js', graph_name, 'circular']
                 Lambda('osbot_browser.lambdas.lambda_browser').invoke_async({"params": params, 'data': {'team_id': team_id, 'channel': channel}})
 
-
-        # if len(params) !=1:
-        #     text            = ':red_circle: Hi, for the `show` command, you need to provide an `id`. Use `graph last` to see the `ids` available'
-        #     slack_message(text,[], channel, team_id)
-        #     return
-        #
-        # target = "".join(params)
-        #
-        # from utils.Dev import Dev
-        # if target.isdigit():                        # if it is a number use it has the index of the last executed query
-        #     index          = int(target)
-        #     last_10_graphs = Lambda_Graph().get_last_n_graphs_of_type('lambda_graph', index)
-        #     graph          = last_10_graphs[index -1]
-        #
-        #     puml           = graph.get('value').get('doc_data').get('extra_data').get('puml')
-        #     slack_message('*Showing last graph `#{0}` with size `{1}`*'.format(index, len(puml)), [], channel, team_id)
-        #     Lambda('utils.puml_to_slack').invoke({"puml": puml, "channel": channel , "team_id": team_id})
-        # else:                                       # if is a string try to use it as story
-        #     Lambda_Graph_Commands.story(team_id, channel,params,data)
-
     @staticmethod
     def mindmap(team_id, channel, params, data=None):
         if len(params) < 1:
@@ -266,71 +246,6 @@ class Lambda_Graph_Commands:
         graph_params.extend(params)
         Lambda('osbot_browser.lambdas.lambda_browser').invoke_async({"params": graph_params, 'data': {'team_id': team_id, 'channel': channel}})
 
-
-    # @staticmethod
-    # def story(team_id, channel, params, data):
-    #
-    #     from gs_elk.security_stories.Sec_9195 import SEC_9155
-    #     sec_9195 = SEC_9155()
-    #     if len(params) == 2 and params[1] == 'stakeholders':
-    #         graph_name = params[0]
-    #         text = "showing stakeholders for story: {0}".format(graph_name)
-    #         slack_message(text, [], channel, team_id)
-    #         graph = Lambda_Graph().get_gs_graph___by_name(graph_name)
-    #         if graph is None:
-    #             text = ':red_circle: Graph with name `{0}` not found'.format(graph_name)
-    #             slack_message(text, [], channel, team_id)
-    #         else:
-    #             sec_9195.story_nodes = graph.nodes
-    #             stakeholders = sec_9195.get_stakeholders()
-    #             attach_text = ""
-    #             graph = GS_Graph()
-    #             for key, value in stakeholders.items():
-    #                graph.puml.add_actor("{0} - {1}".format(key, value), key)
-    #                attach_text += "• {0:5} - {1}\n".format(key, value)
-    #
-    #             text = "here is the list of stakeholders found in graph"
-    #             slack_message(text, [{'text': attach_text}], channel, team_id)
-    #             graph.render_puml()
-    #             Lambda('utils.puml_to_slack').invoke({"puml": graph.get_puml(), "channel": channel, "team_id": team_id})
-    #         return
-    #
-    #     if len(params) == 4 and params[1] == 'stakeholder':
-    #         graph_name       = params[0]
-    #         stakeholder = params[2]
-    #         depth       = int(params[3])
-    #         text = "showing stakeholder `{0}` for story: `{1}` with depth `{2}`".format(stakeholder,graph_name, depth)
-    #         slack_message(text, [], channel, team_id)
-    #
-    #         graph = Lambda_Graph().get_gs_graph___by_name(graph_name)
-    #         if graph is None:
-    #             text = ':red_circle: Graph with name `{0}` not found'.format(graph_name)
-    #             slack_message(text, [], channel, team_id)
-    #         else:
-    #             sec_9195.story_nodes = graph.nodes
-    #             graph = sec_9195.render_stakeholder(stakeholder, depth)
-    #
-    #             graph.render_and_save_to_elk(graph_type = '_'.join(params))  # will not render if puml is already there
-    #
-    #             Lambda('utils.puml_to_slack').invoke({"puml": graph.get_puml(), "channel": channel, "team_id": team_id})
-    #
-    #         return
-    #
-    #
-    #     if len(params) == 1:
-    #         graph_name = params.pop()
-    #         graph = Lambda_Graph().get_gs_graph___by_name(graph_name)
-    #         if graph is None:
-    #             text = ':red_circle: Graph with name `{0}` not found'.format(graph_name)
-    #             slack_message(text, [], channel, team_id)
-    #         else:
-    #             text = "Showing graph with name `{0}`, with `{1}` nodes and `{2}` edges".format(graph_name, len(graph.nodes), len(graph.edges))
-    #             slack_message(text, [], channel, team_id)
-    #             Lambda('utils.puml_to_slack').invoke({"puml": graph.get_puml(), "channel": channel, "team_id": team_id})
-    #         return
-    #     text = ':red_circle: Hi, command not recognised: {0}'.format(params)
-    #     slack_message(text, [], channel, team_id)
-
     @staticmethod
     def epic(team_id, channel, params, data):
         if len(params) == 1:
@@ -344,22 +259,10 @@ class Lambda_Graph_Commands:
             graph.render_puml()
             graph_name = Lambda_Graph().save_gs_graph(graph)
             slack_message(":point_right: created graph called `{0}` for issues in epic(s)".format(graph_name), [], channel, team_id)
-            Lambda('utils.puml_to_slack').invoke({"puml": graph.get_puml(), "channel": channel, "team_id": team_id})
+            Lambda('gw_bot.lambdas.puml_to_slack').invoke({"puml": graph.get_puml(), "channel": channel, "team_id": team_id})
             return
         text = ':red_circle: Hi, you need to provide an issue ID to find the epics'
         slack_message(text, [], channel, team_id)
-
-    # @staticmethod
-    # def epics_details(team_id, channel, params, data):
-    #     if len(params) == 1:
-    #         keys = params.pop().split(',')
-    #         graph = GS_Graph()
-    #         graph.create_epic_graph_with_details(keys)
-    #
-    #         Lambda('utils.puml_to_slack').invoke({"puml": graph.get_puml(), "channel": channel, "team_id": team_id})
-    #         return
-    #     text = ':red_circle: Hi, you need to provide an issue ID to find the epics'
-    #     slack_message(text, [], channel, team_id)
 
     @staticmethod
     def gs_okrs(team_id, channel, params, data=None):
@@ -371,18 +274,7 @@ class Lambda_Graph_Commands:
              .add_all_linked_issues(depth=5)
         )
         graph.render_puml()
-        Lambda('utils.puml_to_slack').invoke({"puml": graph.get_puml(), "channel": channel, "team_id": team_id})
-
-    # @staticmethod
-    # def gs_sec_8694(team_id, channel, params, data):
-    #     graph = GS_Graph()
-    #     (graph.add_all_linked_issues(['SEC-8694'])
-    #          .add_nodes_from_epics()
-    #          .set_links_path_mode_to_up()
-    #          .add_all_linked_issues(depth=2)
-    #     )
-    #     graph.render_and_save_to_elk('gs_sec_8694','gs_sec_8694')
-    #     Lambda('utils.puml_to_slack').invoke({"puml": graph.get_puml(), "channel": channel, "team_id": team_id})
+        Lambda('gw_bot.lambdas.puml_to_slack').invoke({"puml": graph.get_puml(), "channel": channel, "team_id": team_id})
 
     @staticmethod
     def raw_data(team_id=None, channel=None, params=None, data=None):
@@ -468,7 +360,7 @@ class Lambda_Graph_Commands:
         if graph:
             puml = graph.get_puml()
             if channel:
-                Lambda('utils.puml_to_slack').invoke({"puml": puml, "channel": channel, "team_id": team_id})
+                Lambda('gw_bot.lambdas.puml_to_slack').invoke({"puml": puml, "channel": channel, "team_id": team_id})
             return puml
 
     @staticmethod
@@ -481,62 +373,3 @@ class Lambda_Graph_Commands:
             slack_message(Lambda_Graph_Commands_version, [], channel, team_id)
         else:
             return Lambda_Graph_Commands_version
-
-
-
-    #LEGACY TO REMOVE
-    # @staticmethod
-    # def story_jira_sec_9195(team_id, channel, params, data):
-    #     from gs_elk.security_stories.Sec_9195 import SEC_9155
-    #     sec_9195 = SEC_9155()
-    #
-    #     if len(params)==1 and params[0] == 'stakeholders':
-    #         text = "...creating stakeholders graph"
-    #         slack_message(text, [], channel, team_id)
-    #
-    #         graph = GS_Graph()                              # move this to a stakeholders_render method
-    #         sec_9195.get_all_nodes_for_story(2, 4)
-    #         stakeholders = sec_9195.get_stakeholders()
-    #         attach_text = ""
-    #         for key, value in stakeholders.items():
-    #             graph.puml.add_actor("{0} - {1}".format(key,value), key)
-    #             attach_text += "• {0:5} - {1}\n".format(key,value)
-    #
-    #         text = "here is the list of stakeholders found in graph"
-    #         slack_message(text, [{'text': attach_text }], channel, team_id)
-    #
-    #         graph.render_puml()
-    #         Lambda('utils.puml_to_slack').invoke({"puml": graph.get_puml(), "channel": channel, "team_id": team_id})
-    #         return
-    #
-    #     #graph = self.sec_9195.render_stakeholder(stakeholder, 4)
-    #     if len(params) == 2 and params[0] == 'stakeholder':
-    #         stakeholder = params[1]
-    #         text = "...creating stakeholders graph for `{0}`".format(stakeholder)
-    #         slack_message(text, [], channel, team_id)
-    #         graph = sec_9195.render_stakeholder(stakeholder, 4)
-    #         Lambda('utils.puml_to_slack').invoke({"puml": graph.get_puml(), "channel": channel, "team_id": team_id})
-    #         return
-    #
-    #     if len(params) == 3 and params[0] == 'stakeholder':
-    #         stakeholder = params[1]
-    #         depth       = int(params[2])
-    #         text        = "...creating stakeholders graph for `{0}` with depth `{1}`".format(stakeholder, depth)
-    #         slack_message(text, [], channel, team_id)
-    #         graph = sec_9195.render_stakeholder(stakeholder, depth)
-    #         Lambda('utils.puml_to_slack').invoke({"puml": graph.get_puml(), "channel": channel, "team_id": team_id})
-    #         return
-    #
-    #     if len(params) == 1 and params[0] == 'save':
-    #         user        = data.get('user')
-    #         graph_name  = 'sec_9195'
-    #         graph_type  = 'sec_9195'
-    #
-    #         sec_9195.get_all_nodes_for_story()
-    #         sec_9195.all_nodes_graph.render_and_save_to_elk(graph_name, graph_type, channel, user)
-    #         text = "Graph for Story SEC-9195 has been rendered"
-    #         slack_message(text, [], channel, team_id)
-    #         return
-    #
-    #     text = ':red_circle: Hi, command not recognised: {0}'.format(params)
-    #     slack_message(text, [], channel, team_id)

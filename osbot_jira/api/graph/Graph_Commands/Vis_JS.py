@@ -16,7 +16,7 @@ class Vis_JS:
         png_data = lambda_browser.invoke(payload)
 
         if channel:
-            png_to_slack = Lambda('utils.png_to_slack')
+            png_to_slack = Lambda('gw_bot.lambdas.png_to_slack')
             payload = {'png_data': png_data, 'team_id': team_id, 'channel': channel}
             png_to_slack.invoke(payload)
 
@@ -81,7 +81,7 @@ class Vis_JS:
         payload = {"params": ['vis_js', json.dumps(data)]}
         png_data = lambda_browser.invoke(payload)
         if channel:
-            png_to_slack = Lambda('utils.png_to_slack')
+            png_to_slack = Lambda('gw_bot.lambdas.png_to_slack')
             payload = {'png_data':png_data, 'team_id': team_id, 'channel': channel }
             png_to_slack.invoke(payload)
 

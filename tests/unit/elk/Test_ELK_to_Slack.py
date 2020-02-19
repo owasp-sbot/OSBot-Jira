@@ -1,9 +1,7 @@
 from unittest import  TestCase
 
 from osbot_aws.apis.Lambda import Lambda
-from pbx_gs_python_utils.utils.Dev import Dev
-from pbx_gs_python_utils.utils.Lambdas_Helpers import slack_message
-
+from gw_bot.helpers.Lambda_Helpers import slack_message
 from osbot_jira.api.elk.Elk_To_Slack import ELK_to_Slack
 
 
@@ -14,7 +12,7 @@ class Test_ELK_to_Slack(TestCase):
 
     # def test_update_lambda(self):
     #     Lambda("lambdas.gs.elk_to_slack").update_with_src()
-    #     #Lambda('pbx_gs_python_utils.lambdas.gs.elastic_jira').update_with_src()
+    #     #Lambda('osbot_jira.lambdas.elastic_jira').update_with_src()
 
 
     def test_cmd_search(self):
@@ -79,7 +77,7 @@ class Test_ELK_to_Slack(TestCase):
         params    = slack_cmd.split(' ')
         user_id   = None
         channel   = 'DDKUZTK6X'
-        result    = Lambda('pbx_gs_python_utils.lambdas.gs.elastic_jira').invoke({"params": params,  "user": user_id, "channel": channel})
+        result    = Lambda('osbot_jira.lambdas.elastic_jira').invoke({"params": params,  "user": user_id, "channel": channel})
         ##Dev.pprint(result)
         slack_message(result.get('text'), result.get('attachments'), channel)
 

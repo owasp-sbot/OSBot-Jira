@@ -4,9 +4,9 @@ import sys
 sys.path.append('.')
 sys.path.append('../libs/pbx-gs-python-utils')
 
-from pbx_gs_python_utils.utils.Lambdas_Helpers  import log_to_elk, slack_message
-from flask                                      import Flask,request
-from sync_server.rest_apis                      import api
+from gw_bot.helpers.Lambda_Helpers import log_to_elk, slack_message
+from flask                         import Flask,request
+from sync_server.rest_apis         import api
 
 app = Flask(__name__)
 

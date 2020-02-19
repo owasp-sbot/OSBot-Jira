@@ -1,16 +1,10 @@
 import base64
 import tempfile
 import requests
+from osbot_aws.apis.Secrets import Secrets
 
-from   pbx_gs_python_utils.utils.aws.secrets        import Secrets
-from   pbx_gs_python_utils.utils.aws.Lambdas        import Lambdas
+from osbot_aws.apis.Lambda import Lambda
 
-
-# def test_send_message(message):
-#
-#     channel_id = 'GBMGMK88Z'
-#     result = send_message(channel_id, message)
-#     return result
 
 def upload_png_file(channel_id, file):
     bot_token = Secrets('slack-gs-bot').value()
@@ -33,7 +27,7 @@ def run(event, context):
     dot             = event['dot']
 
     (fd, tmp_file)  = tempfile.mkstemp('png)')
-    dot_to_png      = Lambda('utils.dot_to_png').invoke
+    dot_to_png      = Lambda('gw_bot.lambdas..dot_to_png').invoke
     png_data        = dot_to_png({"dot": dot, "width" : 500, "channel" : channel})
 
 

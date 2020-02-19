@@ -1,4 +1,4 @@
-from pbx_gs_python_utils.utils.Lambdas_Helpers import slack_message
+from gw_bot.helpers.Lambda_Helpers import slack_message
 from pbx_gs_python_utils.utils.slack.API_Slack import API_Slack
 
 from osbot_jira.api.slack.dialogs.Jira_Create_Issue import Jira_Create_Issue

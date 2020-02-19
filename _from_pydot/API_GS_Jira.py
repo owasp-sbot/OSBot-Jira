@@ -1,7 +1,7 @@
-from osbot_jira.api.jira_server.API_Jira import API_Jira
+from osbot_jira.api.jira_server.API_Jira        import API_Jira
 from pbx_gs_python_utils.utils.Json             import Json
 from pbx_gs_python_utils.utils.Local_Cache      import get_local_cache_path
-from pbx_gs_python_utils.utils.Lambdas_Helpers  import log_debug
+from gw_bot.helpers.Lambda_Helpers              import log_debug
 
 
 class API_GS_Jira:

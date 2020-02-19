@@ -1,9 +1,9 @@
 import json
 import pprint
 
-from pbx_gs_python_utils.utils.Lambdas_Helpers              import slack_message
+from gw_bot.helpers.Lambda_Helpers import slack_message, log_to_elk
 from pbx_gs_python_utils.utils.Misc                         import Misc
-from pbx_gs_python_utils.utils.slack.API_Slack_Attachment   import API_Slack_Attachment
+from pbx_gs_python_utils.utils.slack.API_Slack_Attachment import API_Slack_Attachment
 
 from osbot_aws.apis.Lambda import Lambda
 from osbot_jira.api.API_Issues                              import API_Issues
@@ -42,33 +42,37 @@ class GS_Bot_Jira:
         return {"text": text, "attachments": attachments}
 
     def cmd_create(self, params, team_id=None, channel=None):
-        if len(params) < 3:
-            text = ":exclamation: To create an issue you need to provide the `issue type` and `summary`. For example `jira create task abc"
+        try:
+            if len(params) < 3:
+                text = ":exclamation: To create an issue you need to provide the `issue type` and `summary`. For example `jira create task abc"
+                return {"text": text, "attachments": []}
+            else:
+                params.pop(0)           # the create command
+                issue_type = params.pop(0)          #.title() # todo: find a better solution for this
+                project    = issue_type.upper()               # todo: and to address the mapping of issue types to projects
+                summary    = ' '.join(params)
+                slack_message(':point_right: Going to create an `{0}` issue, in project `{1}` with summary `{2}`'.format(issue_type, project,summary), [], channel,team_id)
+
+                #to do, move this feature to a separate lambda (which can be called to create issues
+                from osbot_aws.Dependencies import load_dependency
+                load_dependency('jira')
+                from osbot_jira.api.jira_server.API_Jira import API_Jira
+
+                # create issue
+                result = API_Jira().issue_create(project,summary,'',issue_type)
+                issue_id = "{0}".format(result)
+
+                # show issue screenshot
+                payload = {'issue_id': issue_id,'channel': channel,'team_id': team_id, }
+                Lambda('osbot_browser.lambdas.jira_web').invoke_async(payload)
+
+                # show link of new issue to user
+                jira_link = "https://glasswall.atlassian.net/browse/{0}".format(issue_id)
+                text = ':point_right: New issue created with id <{0}|{1}>'.format(jira_link, issue_id)
             return {"text": text, "attachments": []}
-        else:
-            params.pop(0)           # the create command
-            project = 'SEC'
-            issue_type = params.pop(0)
-            summary    = ' '.join(params)
-            slack_message(':point_right: Going to create an `{0}` issue, in project `{1}` with summary `{2}`'.format(issue_type, project,summary), [], channel,team_id)
-
-            #to do, move this feature to a separate lambda (which can be called to create issues
-            from osbot_aws.Dependencies import load_dependency
-            load_dependency('jira')
-            from osbot_jira.api.jira_server.API_Jira import API_Jira
-
-            # create issue
-            result = API_Jira().issue_create(project,summary,'',issue_type)
-            issue_id = "{0}".format(result)
-
-            # show issue screenshot
-            payload = {'issue_id': issue_id,'channel': channel,'team_id': team_id, }
-            Lambda('osbot_browser.lambdas.jira_web').invoke_async(payload)
-
-            # show link of new issue to user
-            jira_link = "https://glasswall.atlassian.net/browse/{0}".format(issue_id)
-            text = ':point_right: New issue created with id <{0}|{1}>'.format(jira_link, issue_id)
-        return {"text": text, "attachments": []}
+        except Exception as error:
+            log_to_elk('jira create error',f'{error}')
+            return {'text': f':red_circle: Issue could not be created, please make sure that: \n - issue type exists\n - issue type = project type\n - Issue type CamelCase is correctly entered (you want `Task` and not `task`)', "attachments": []}
 
     def cmd_created_in_last(self, params, team_id=None, channel=None):
         elk_to_slack = ELK_to_Slack()
@@ -180,22 +184,7 @@ class GS_Bot_Jira:
                             'delay'   : delay
                       }
             Lambda('osbot_browser.lambdas.jira_web').invoke_async(payload)
-            # previews version (that showed a plantuml table
-            # jira_link   = "https://glasswall.atlassian.net/browse/{0}".format(key)
-            # api_issues = API_Issues()
-            # es_index   = api_issues.resolve_es_index(key)
-            # if es_index:
-            #     text        = "....._fetching data for *<{0}|{1}>* _from index:_ *{2}*".format(jira_link, key, es_index)
-            #
-            #     table       = api_issues.create_issue_table(key)
-            #
-            #     if channel:
-            #         payload = {"puml": table.puml ,
-            #                    "channel": channel,
-            #                    "team_id": team_id }
-            #         Lambda('utils.puml_to_slack').invoke_async(payload)
-            # else:
-            #     text = ":exclamation: could not find index for issue "
+
         return {"text": text, "attachments": attachments}
 
     def cmd_links(self, params, team_id=None, channel=None, user=None, only_create=False,save_graph=True):
@@ -249,7 +238,7 @@ class GS_Bot_Jira:
                     if channel:  # if the channel value is provided return a user friendly message, if not, return the data
                         text = ':point_right: Created graph with name `{4}`, based on _{0}_ in the direction `{1}`, with depth `{2}`, with plantuml size: `{3}`, with view `{5}`, with `{6}` nodes and `{7}` edges'\
                                         .format(target, direction, depth, len(puml), graph_name, view, len(graph.nodes), len(graph.edges))
-                        Lambda('utils.puml_to_slack').invoke_async({"puml": puml,"channel": channel, 'team_id' : team_id})
+                        Lambda('gw_bot.lambdas.puml_to_slack').invoke_async({"puml": puml,"channel": channel, 'team_id' : team_id})
                     else:
                         data = {
                             "target"    : target     ,
@@ -385,10 +374,10 @@ class GS_Bot_Jira:
 
 
     def cmd_version(self, params, team_id=None, channel=None):
-        if team_id:
+        if channel:
             slack_message(self.version, [], channel, team_id)
         else:
-            return self.version
+            return {"text": self.version, "attachments":[] }
 
 
     # helpers

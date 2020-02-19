@@ -17,4 +17,4 @@ def run(event, context):
         else:
             return result
     except Exception as error:
-        log_to_elk("[elastic jira][Error]: {0}".format(error) , level='error')
+        return log_to_elk("[elastic jira][Error]: {0}".format(error) , level='error')

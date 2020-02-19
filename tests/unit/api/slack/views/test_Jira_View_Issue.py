@@ -1,9 +1,5 @@
 from unittest import TestCase
-
-from osbot_aws.apis.Lambda import Lambda
 from pbx_gs_python_utils.utils.Dev import Dev
-from pbx_gs_python_utils.utils.Lambdas_Helpers import slack_message
-
 from osbot_jira.Deploy import Deploy
 from osbot_jira.api.slack.views.Jira_View_Issue import Jira_View_Issue
 

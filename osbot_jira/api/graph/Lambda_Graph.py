@@ -36,7 +36,7 @@ class Lambda_Graph():
     def get_graph_png___by_name(self, graph_name):
         graph = self.get_gs_graph___by_name(graph_name)
         puml = graph.puml.puml
-        puml_to_png = Lambda('utils.puml_to_png').invoke
+        puml_to_png = Lambda('gw_bot.lambdas.puml_to_png').invoke
         return puml_to_png({"puml": puml})
 
     def get_last_10_graphs(self):
@@ -113,7 +113,7 @@ class Lambda_Graph():
 
     def send_graph_to_slack___by_type(self, graph_name, channel):
         graph = self.get_gs_graph___by_type(graph_name)
-        return Lambda('utils.puml_to_slack').invoke({"puml"   : graph.get_puml(), "channel": channel})
+        return Lambda('gw_bot.lambdas.puml_to_slack').invoke({"puml"   : graph.get_puml(), "channel": channel})
 
     def graph_links(self, target, direction, depth):
         graph = self.get_gs_graph___by_name(target)   # check if the value provided is a saved graph

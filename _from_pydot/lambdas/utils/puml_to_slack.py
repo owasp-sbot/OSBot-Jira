@@ -6,7 +6,7 @@ from osbot_aws.apis.Secrets import Secrets
 
 def upload_png_file(team_id, channel_id, file):
     import requests
-    from pbx_gs_python_utils.utils.Lambdas_Helpers import log_to_elk
+    from gw_bot.helpers.Lambda_Helpers import log_to_elk
     log_to_elk("[upload_png_file]: {0} {1} {2}".format(team_id,channel_id,file))
     bot_token = resolve_bot_token(team_id)
     my_file = {
@@ -36,7 +36,7 @@ def run(event, context):
     puml            = event['puml']
     puml            = puml.replace('&lt;', '<').replace('&gt;', '>')
     (fd, tmp_file)  = tempfile.mkstemp('.png')
-    puml_to_png     = Lambda('utils.puml_to_png').invoke
+    puml_to_png     = Lambda('gw_bot.lambdas.puml_to_png').invoke
     result          = puml_to_png({"puml": puml })
 
 
