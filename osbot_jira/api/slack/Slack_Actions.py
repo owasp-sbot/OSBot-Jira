@@ -1,9 +1,9 @@
 import json
 
+from gw_bot.api.API_Slack import API_Slack
 from osbot_aws.apis.Lambda                          import Lambda
 from gw_bot.helpers.Lambda_Helpers                  import slack_message, log_to_elk
 from pbx_gs_python_utils.utils.Misc                 import Misc
-from pbx_gs_python_utils.utils.slack.API_Slack      import API_Slack
 from osbot_jira.api.slack.views.Jira_Slack_Actions  import Jira_Slack_Actions
 from osbot_jira.api.slack.Slack_Jira_Search         import Slack_Jira_Search
 from osbot_jira.api.slack.Slack_Message_Action      import Slack_Message_Action
@@ -17,7 +17,7 @@ class Slack_Actions:
         trigger_id = data.get('trigger_id')
         #slack_dialog = API_Slack_Dialog().test_render()
         slack_dialog = Jira_Create_Issue().setup().render()
-        API_Slack().slack.api_call("dialog.open", trigger_id=trigger_id, dialog=slack_dialog)
+        API_Slack().slack.dialog_open(trigger_id=trigger_id, dialog=slack_dialog)
 
         return {"text": "Opening test dialog ...", "attachments": [], 'replace_original': False}
 
@@ -187,8 +187,8 @@ class Slack_Actions:
     def handle_request(self, event):
 
         event = self.fix_slack_encoding(event)
-        channel = event['channel']['id']
-        team_id = event['team']['id']
+        channel = event.get('channel', {}).get('id')
+        team_id = event.get('team'   , {}).get('id')
 
         #slack_message('in handle request',[] , channel, team_id)
 

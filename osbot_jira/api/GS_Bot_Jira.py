@@ -63,8 +63,13 @@ class GS_Bot_Jira:
                 issue_id = "{0}".format(result)
 
                 # show issue screenshot
-                payload = {'issue_id': issue_id,'channel': channel,'team_id': team_id, }
-                Lambda('osbot_browser.lambdas.jira_web').invoke_async(payload)
+                # payload = {'issue_id': issue_id,'channel': channel,'team_id': team_id, }
+                # Lambda('osbot_browser.lambdas.jira_web').invoke_async(payload)
+
+                # show issue UI
+                payload = {'params': ['issue', issue_id], "channel": channel}
+                Lambda('osbot_jira.lambdas.elastic_jira').invoke_async(payload)
+
 
                 # show link of new issue to user
                 jira_link = "https://glasswall.atlassian.net/browse/{0}".format(issue_id)
@@ -148,7 +153,7 @@ class GS_Bot_Jira:
         else:
             issue_id = params.pop(1)            # position 0 is the 'issue' command
             #return {"text": issue_id, "attachments": []}
-            return Jira_View_Issue(issue_id,channel, team_id).create_and_send()
+            Jira_View_Issue(issue_id,channel, team_id).create_and_send()
 
             #text, attachments = Jira_View_Issue(issue_id).get_actions_ui()
             #return {"text": text, "attachments": attachments}

@@ -98,15 +98,15 @@ class Jira_View_Issue():
             actions_section.render()
 
             self.slack_blocks.add_divider()
-            footer_items = [ #'Status: {0}'    .format(self.issue.get('Status')),
-                             'Rating: {0}'    .format(self.issue.get('Rating')),
-                             'Priority: {0}'  .format(self.issue.get('Priority')),
-                             'Issue Type: {0}'.format(self.issue.get('Issue Type')),
-                             'Assignee: {0}'.format(self.issue.get('Assignee')),
-                             'Labels: {0}'.format(self.issue.get('Labels')),
-                             'Creator: {0}'.format(self.issue.get('Creator')),
-                             'Created: {0}'.format(self.issue.get('Created').split('T').pop(0)),
-                             'Updated: {0}'.format(self.issue.get('Updated').split('T').pop(0))
+            footer_items = [ 'Status: *{0}*'    .format(self.issue.get('Status')),
+                             'Rating: *{0}*'    .format(self.issue.get('Rating')),
+                             'Priority: *{0}*'  .format(self.issue.get('Priority')),
+                             'Issue Type: *{0}*'.format(self.issue.get('Issue Type')),
+                             'Assignee: *{0}*'.format(self.issue.get('Assignee')),
+                             'Labels: *{0}*'.format(self.issue.get('Labels')),
+                             'Creator: *{0}*'.format(self.issue.get('Creator')),
+                             'Created: *{0}*'.format(self.issue.get('Created').split('T').pop(0)),
+                             'Updated: *{0}*'.format(self.issue.get('Updated').split('T').pop(0))
                             ]
             footer_section.add_texts(footer_items).render()
 
@@ -122,9 +122,10 @@ class Jira_View_Issue():
             #self.add_button('An Replay')
 
             self.slack_blocks.add_attachment({'text':'Issue *{0}* Status: `{1}`'.format(self.issue_id, self.issue.get('Status')),'color':'good'})
+            return True
         else:
             self.slack_blocks.add_layout_section().add_text(':red_circle: Issue not found: `{0}`'.format(self.issue_id)).render()
-        return self
+            return False
 
     def send(self):
         result = self.slack_blocks.send_message(self.channel, self.team_id)
@@ -135,8 +136,8 @@ class Jira_View_Issue():
 
 
     def create_and_send(self):
-        self.send_message(':point_right: *Loading data for issue: `{0}`* :point_left:'.format(self.issue_id))
-        self.create()
+        if self.create():
+            self.send_message(':point_right: *Loading data for issue: `{0}`* :point_left:'.format(self.issue_id))
         return self.send()
 
     # def an_replay(self, event):
@@ -215,7 +216,8 @@ class Jira_View_Issue():
         self.issue = self.api_issues.issue(self.issue_id)
         if self.issue:
             #fields = set(self.issue)
-            fields = ['Assignee','Description', 'Labels', 'Latest Information','Summary',
+            fields = ['Summary','Description', 'Labels'
+                      #'Assignee','Description', 'Labels', 'Latest Information','Summary',
                       #'Priority','Rating','Email', 'Slack ID','Image_Url'
                       ]
             action_id = 'Jira_View_Issue::edit_field::{0}'.format(self.issue_id)
@@ -231,13 +233,13 @@ class Jira_View_Issue():
 
     def edit_field(self,action):
         try:
-            from pbx_gs_python_utils.utils.slack.API_Slack import API_Slack   # todo: check if this needs to be done here (or can be done at the top level)
             selected_option = action.get('selected_option')
             field           = selected_option.get('text').get('text')
             issue_id        = action.get('action_id').split('::').pop(3)
             trigger_id      = self.event.get('trigger_id')
             slack_dialog = Jira_Edit_Issue(issue_id, field).setup().render()
-            API_Slack(self.channel, self.team_id).slack.api_call("dialog.open", trigger_id=trigger_id, dialog=slack_dialog)
+            from gw_bot.api.API_Slack import API_Slack
+            API_Slack(self.channel, self.team_id).slack.dialog_open(trigger_id=trigger_id, dialog=slack_dialog)
         except Exception as error:
             self.send_message(':red_circle: Error in edit_field: {0}'.format(error))
 

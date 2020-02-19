@@ -28,7 +28,7 @@ class test_lambda_elastic_jira(Test_Helper):
         assert response == GS_Bot_Jira().version
 
     def test_invoke_directly__send_to_slack(self):
-        response = run({'params':['version'],"channel": 'DRE51D4EM'},{})
+        self.result= run({'params':['issue', 'Person-42'],"channel": 'DRE51D4EM'},{})
         #assert response == GS_Bot_Jira().version
 
 

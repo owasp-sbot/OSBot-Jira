@@ -1,7 +1,3 @@
-from gs_elk.API_Jira_Dialog import API_Jira_Dialog
-from utils.Lambdas_Helpers import slack_message, log_to_elk
-
-
 def run(event, context):
     try:
         data    = event.get('data')
