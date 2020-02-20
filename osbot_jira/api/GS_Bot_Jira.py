@@ -122,7 +122,7 @@ class GS_Bot_Jira:
                 self.cmd_table(["table", graph_name], team_id, channel)
             return {"text": text, "attachments": [{ 'text': issues_text , 'color':'good'}]}
         except Exception as error:
-            text ="Error incmd_created_between: {0}".format(error)
+            text ="Error in cmd_created_between: {0}".format(error)
             return {"text": text, "attachments": []}
 
     def cmd_updated_in_last(self, params, team_id=None, channel=None):  # refactor with cmd_created_in_last since 99% of the code is the same
@@ -285,7 +285,7 @@ class GS_Bot_Jira:
             params.pop(0)                           # remove 1st command since it is 'server'
             graph_name = params.pop()
             text = ':point_right: Showing table with data created from graph `{0}`'.format(graph_name)
-            Lambda('lambdas.browser.lambda_browser').invoke_async({"params": [ "table", graph_name , 'graph_simple'], "data":{"channel" : channel, "team_id": team_id}})
+            Lambda('osbot_browser.lambdas.lambda_browser').invoke_async({"params": [ "table", graph_name , 'graph_simple'], "data":{"channel" : channel, "team_id": team_id}})
         return {"text": text, "attachments": attachments}
 
     # def cmd_server(self, params, team_id=None, channel=None):

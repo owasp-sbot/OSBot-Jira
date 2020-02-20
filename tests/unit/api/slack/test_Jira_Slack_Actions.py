@@ -1,9 +1,9 @@
 from unittest import TestCase
 
+from gw_bot.Deploy import Deploy
 from osbot_aws.apis.Lambda import Lambda
 from pbx_gs_python_utils.utils.Dev import Dev
 from gw_bot.helpers.Lambda_Helpers import slack_message
-from osbot_jira.Deploy import Deploy
 from osbot_jira.api.slack.views.Jira_Slack_Actions import Jira_Slack_Actions
 
 
@@ -27,12 +27,12 @@ class test_Jira_Slack_Actions(TestCase):
 
 
     def test__update_all_lambdas(self):
-        Deploy('osbot_jira.lambdas.elastic_jira'      ).deploy()             # update the actions menu
-        Deploy('osbot_jira.lambdas.slack_actions'     ).deploy()             # update the callback action
-        Deploy('osbot_jira.lambdas.slack_jira_actions').deploy()             # update the jira actions
+        Deploy().deploy_lambda__jira('osbot_jira.lambdas.elastic_jira'      )             # update the actions menu
+        Deploy().deploy_lambda__jira('osbot_jira.lambdas.slack_actions'     )             # update the callback action
+        Deploy().deploy_lambda__jira('osbot_jira.lambdas.slack_jira_actions')             # update the jira actions
 
     def test__update_lambda(self):
-        Deploy('osbot_jira.lambdas.slack_actions').deploy()
+        Deploy().deploy_lambda__jira('osbot_jira.lambdas.slack_actions'     )
 
     def test__invoke_lambda(self):
         self.test__update_lambda()

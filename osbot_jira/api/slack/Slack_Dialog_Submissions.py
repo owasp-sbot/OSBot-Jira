@@ -47,8 +47,9 @@ class Slack_Dialog_Submissions:
             self.send_message(':red_circle: error in jira_edit_issue: {0}'.format(error))
 
     def jira_create_issue(self):
-        project     = self.submission.get('project')
+        #project     = self.submission.get('project')
         issue_type  = self.submission.get('issue_type')
+        project     = issue_type.upper()
         summary     = self.submission.get('summary')
         description = self.submission.get('description')
         if summary    : summary     = summary.replace('+', ' ')
@@ -63,7 +64,8 @@ class Slack_Dialog_Submissions:
                 result = API_Jira().issue_create(project, summary, description, issue_type)
                 new_issue_id = "{0}".format(result)
                 self.submission['issue_id'] = new_issue_id
-                self.show_issue_screnshot()
+                self.show_issue()
+                #self.show_issue_screnshot()
                 jira_link = "https://glasswall.atlassian.net/browse/{0}".format(new_issue_id)
                 return 'Created issue: <{0}|{1}>'.format(jira_link,new_issue_id)
             except Exception as error:
@@ -84,8 +86,10 @@ class Slack_Dialog_Submissions:
     def show_issue(self):
         issue_id = self.submission.get('issue_id')
         if issue_id:
-            payload = {'params': [issue_id], 'channel': self.channel, 'team_id': self.team_id}
+            payload = {'params': ['issue', issue_id], "channel": self.channel}
             Lambda('osbot_jira.lambdas.elastic_jira').invoke_async(payload)
-            return ':point_right: Screenshot of `{0}` send to channel `{1}`'.format(issue_id, self.channel)
+            #payload = {'params': [issue_id], 'channel': self.channel, 'team_id': self.team_id}
+            #Lambda('osbot_jira.lambdas.elastic_jira').invoke_async(payload)
+            #return ':point_right: Screenshot of `{0}` send to channel `{1}`'.format(issue_id, self.channel)
         else:
-            return ':red_circle: in Slack_Dialog_Submissions.show_issue_screnshot, no `issue_id` was provided'
+            return ':red_circle: in Slack_Dialog_Submissions.show_issue, no `issue_id` was provided'

@@ -61,7 +61,7 @@ class Slack_Jira_Search():
                             "callback_id": "jira_search_select_box",
                             "actions": [
                                 {
-                                    # 'action_id': 'AAAAAAAAAA',
+                                    #'action_id': 'AAAAAAAAAA',
                                     "name": "query",
                                     "text": "query",
                                     "value": "",

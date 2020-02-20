@@ -27,7 +27,7 @@ class Jira_Slack_Actions:
     def create(self):                                           # this is where the current buttons exist
         self.buttons_ui.set_callback_id(self.callback_id)
         self.add_button('Create Issue')
-        self.add_button('Search')
+        #self.add_button('Search')
         #self.add_button('Search')
 
         return self

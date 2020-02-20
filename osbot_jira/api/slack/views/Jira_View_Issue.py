@@ -63,12 +63,13 @@ class Jira_View_Issue():
             latest_info = self.issue.get('Latest_Information')
             description = self.issue.get('Description')
             issue_type  = self.issue.get('Issue Type')
-            key_link    = "{0}/browse/{1}".format(self.api_issues.server_url(), key)
+            jira_link = "https://glasswall.atlassian.net/browse/{0}".format(key)            # todo: put the glasswall jira url in a site config value
+            #key_link    = "{0}/browse/{1}".format(self.api_issues.server_url(), key)
 
             add_layout  = self.slack_blocks.add_layout_section
 
             #text = "*{0}*:\n<{1}|{2} - {3}>".format(issue_type,key_link,key, summary)
-            text = ":point_right: *Issue*: <{1}|{2} - {3}>".format(issue_type, key_link, key, summary)
+            text = ":point_right: *Issue*: <{1}|{2} - {3}>".format(issue_type, jira_link, key, summary)
 
             add_layout(self.issue_id).add_text(text).render()
             if latest_info:
