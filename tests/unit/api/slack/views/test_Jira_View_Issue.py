@@ -21,7 +21,7 @@ class test_Jira_View_Issue(Test_Helper):
         self.test__update_lambda_slack_jira_actions()
 
     def test__update_lambda_elastic_jira(self):
-        Deploy().deploy_lambda__jira('osbot_jira.lambdas.elastic_jira')        # update the main jira lambda
+        Deploy().deploy_lambda__jira('osbot_jira.lambdas.jira')        # update the main jira lambda
 
     def test__update_lambda_slack_actions(self):
         Deploy().deploy_lambda__jira('osbot_jira.lambdas.slack_actions')       # update the lambda that handles the callbacks

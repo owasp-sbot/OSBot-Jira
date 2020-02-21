@@ -46,7 +46,7 @@ class Lambda_Graph_Commands:
             graph_name = params.pop(0)
             send_slack_message(':one: creating Sheet from Graph data ...')
 
-            response = Lambda('osbot_jira.lambdas.elastic_jira').invoke({"params":['server','/jira-sync/sheet-from-graph/{0}'.format(graph_name)]})
+            response = Lambda('osbot_jira.lambdas.jira').invoke({"params":['server','/jira-sync/sheet-from-graph/{0}'.format(graph_name)]})
             if response:
                 weblink = json.loads(response.get('text')).get('status')
                 jira_id = weblink.split('=')[1]

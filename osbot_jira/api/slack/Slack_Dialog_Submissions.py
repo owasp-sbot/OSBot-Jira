@@ -78,7 +78,7 @@ class Slack_Dialog_Submissions:
         issue_id = self.submission.get('issue_id')
         if issue_id:
             payload = {'params': ['screenshot', issue_id], 'channel': self.channel, 'team_id': self.team_id}
-            Lambda('osbot_jira.lambdas.elastic_jira').invoke_async(payload)
+            Lambda('osbot_jira.lambdas.jira').invoke_async(payload)
             return ':point_right: Screenshot of `{0}` send to channel `{1}`'.format(issue_id, self.channel)
         else:
             return ':red_circle: in Slack_Dialog_Submissions.show_issue_screnshot, no `issue_id` was provided'
@@ -87,9 +87,9 @@ class Slack_Dialog_Submissions:
         issue_id = self.submission.get('issue_id')
         if issue_id:
             payload = {'params': ['issue', issue_id], "channel": self.channel}
-            Lambda('osbot_jira.lambdas.elastic_jira').invoke_async(payload)
+            Lambda('osbot_jira.lambdas.jira').invoke_async(payload)
             #payload = {'params': [issue_id], 'channel': self.channel, 'team_id': self.team_id}
-            #Lambda('osbot_jira.lambdas.elastic_jira').invoke_async(payload)
+            #Lambda('osbot_jira.lambdas.jira').invoke_async(payload)
             #return ':point_right: Screenshot of `{0}` send to channel `{1}`'.format(issue_id, self.channel)
         else:
             return ':red_circle: in Slack_Dialog_Submissions.show_issue, no `issue_id` was provided'

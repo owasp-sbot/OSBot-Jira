@@ -68,7 +68,7 @@ class GS_Bot_Jira:
 
                 # show issue UI
                 payload = {'params': ['issue', issue_id], "channel": channel}
-                Lambda('osbot_jira.lambdas.elastic_jira').invoke_async(payload)
+                Lambda('osbot_jira.lambdas.jira').invoke_async(payload)
 
 
                 # show link of new issue to user
@@ -152,8 +152,13 @@ class GS_Bot_Jira:
             return {"text": text, "attachments": []}
         else:
             issue_id = params.pop(1)            # position 0 is the 'issue' command
-            #return {"text": issue_id, "attachments": []}
-            Jira_View_Issue(issue_id,channel, team_id).create_and_send()
+            jira_view_issue = Jira_View_Issue(issue_id,channel, team_id)
+            jira_view_issue.create_and_send()
+            if channel is None:
+                return jira_view_issue.issue
+
+
+
 
             #text, attachments = Jira_View_Issue(issue_id).get_actions_ui()
             #return {"text": text, "attachments": attachments}

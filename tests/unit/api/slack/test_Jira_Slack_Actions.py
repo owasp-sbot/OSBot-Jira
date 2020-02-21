@@ -27,7 +27,7 @@ class test_Jira_Slack_Actions(TestCase):
 
 
     def test__update_all_lambdas(self):
-        Deploy().deploy_lambda__jira('osbot_jira.lambdas.elastic_jira'      )             # update the actions menu
+        Deploy().deploy_lambda__jira('osbot_jira.lambdas.jira'      )             # update the actions menu
         Deploy().deploy_lambda__jira('osbot_jira.lambdas.slack_actions'     )             # update the callback action
         Deploy().deploy_lambda__jira('osbot_jira.lambdas.slack_jira_actions')             # update the jira actions
 
@@ -37,9 +37,9 @@ class test_Jira_Slack_Actions(TestCase):
     def test__invoke_lambda(self):
         self.test__update_lambda()
         payload = {'params': ['actions'], 'channel':'DDKUZTK6X', 'team_id':'T7F3AUXGV'}
-        self.result = Lambda('osbot_jira.lambdas.elastic_jira').invoke(payload)
+        self.result = Lambda('osbot_jira.lambdas.jira').invoke(payload)
 
     def test_show_issue(self):
         issue_id = 'SEC-11782'
         payload = {'params': [issue_id], 'channel':'DDKUZTK6X', 'team_id':'T7F3AUXGV'}
-        self.result = Lambda('osbot_jira.lambdas.elastic_jira').invoke(payload)
+        self.result = Lambda('osbot_jira.lambdas.jira').invoke(payload)

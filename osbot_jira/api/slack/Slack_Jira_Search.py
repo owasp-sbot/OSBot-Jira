@@ -45,7 +45,7 @@ class Slack_Jira_Search():
 
         issue_id = actions[0].get('selected_options')[0].get('value')
         payload = {'params': [issue_id], 'channel': channel, 'team_id': team_id}
-        Lambda('osbot_jira.lambdas.elastic_jira').invoke_async(payload)
+        Lambda('osbot_jira.lambdas.jira').invoke_async(payload)
         return {"text": ":information_source: Issue selected: {0}".format(issue_id), "attachments": [], 'replace_original': False}
 
 

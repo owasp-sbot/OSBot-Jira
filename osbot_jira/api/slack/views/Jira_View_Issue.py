@@ -129,11 +129,12 @@ class Jira_View_Issue():
             return False
 
     def send(self):
-        result = self.slack_blocks.send_message(self.channel, self.team_id)
-        if type(result) == dict and result.get('ok') is False:
-            error_messages = result.get('response_metadata').get('messages')
-            self.send_message(':red_circle: Error in `Jira_View_Issue.send`; ```{0}```'.format(error_messages))
-        return result
+        if self.channel:
+            result = self.slack_blocks.send_message(self.channel, self.team_id)
+            if type(result) == dict and result.get('ok') is False:
+                error_messages = result.get('response_metadata').get('messages')
+                self.send_message(':red_circle: Error in `Jira_View_Issue.send`; ```{0}```'.format(error_messages))
+            return result
 
 
     def create_and_send(self):
@@ -250,7 +251,7 @@ class Jira_View_Issue():
     def screenshot(self, action):
         issue_id = action.get('value')
         payload  = {'params': ['screenshot', issue_id], 'channel': self.channel, 'team_id': self.team_id}
-        Lambda('osbot_jira.lambdas.elastic_jira').invoke_async(payload)
+        Lambda('osbot_jira.lambdas.jira').invoke_async(payload)
 
     def raw_issue_data(self, action):
         issue_id = action.get('value')
@@ -267,7 +268,7 @@ class Jira_View_Issue():
                 issue_id = selected_option.get('value')
         if issue_id:
             payload = {'params': ['issue', issue_id], 'channel': self.channel, 'team_id': self.team_id}
-            Lambda('osbot_jira.lambdas.elastic_jira').invoke_async(payload)
+            Lambda('osbot_jira.lambdas.jira').invoke_async(payload)
         else:
             self.send_message(':red_circle: Error in View Issue, no issue id found in action :{0}'.format(action))
 
@@ -276,7 +277,7 @@ class Jira_View_Issue():
             issue_id = action.get('value')
             self.send_message(':point_right: Viewing all links for issue: `{0}`'.format(issue_id))
             payload = {'params': ['links', issue_id, 'all', '1'], 'channel': self.channel, 'team_id': self.team_id}
-            Lambda('osbot_jira.lambdas.elastic_jira').invoke_async(payload)
+            Lambda('osbot_jira.lambdas.jira').invoke_async(payload)
         except Exception as error:
             self.send_message(':red_circle: Error in View Links for issue with id `{0}`: {1}'.format(issue_id, error))
 

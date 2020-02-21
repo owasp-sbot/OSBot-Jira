@@ -6,15 +6,15 @@ from    pbx_gs_python_utils.utils.Dev         import Dev
 from gw_bot.Deploy import Deploy
 from gw_bot.helpers.Test_Helper import Test_Helper
 from osbot_jira.api.GS_Bot_Jira import GS_Bot_Jira
-from osbot_jira.lambdas.elastic_jira import run
+from osbot_jira.lambdas.jira import run
 
 class test_lambda_elastic_jira(Test_Helper):
     def setUp(self):
         super().setUp()
-        self.jira_issues = Lambda('osbot_jira.lambdas.elastic_jira')
+        self.jira_issues = Lambda('osbot_jira.lambdas.jira')
 
     def test_update_lambda(self):
-        Deploy().deploy_lambda__jira('osbot_jira.lambdas.elastic_jira')
+        Deploy().deploy_lambda__jira('osbot_jira.lambdas.jira')
 
     def test_invoke_directly(self):
         response = run({},{})
@@ -24,7 +24,7 @@ class test_lambda_elastic_jira(Test_Helper):
         #                               'available commands`'}
 
     def test_invoke_directly__version(self):
-        response = run({'params':['version']},{})
+        response = run({'params':['version']},{}).get('text')
         assert response == GS_Bot_Jira().version
 
     def test_invoke_directly__send_to_slack(self):

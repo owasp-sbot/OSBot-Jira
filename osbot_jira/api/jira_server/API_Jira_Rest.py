@@ -73,7 +73,6 @@ class API_Jira_Rest:
             self._fields =  Misc.json_load(self.request_get('field'))
         return self._fields
 
-    #@use_local_cache_if_available
     def fields_by_id(self):
         fields = {}
         for field in self.fields():
