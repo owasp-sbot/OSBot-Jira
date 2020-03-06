@@ -43,7 +43,6 @@ class API_Jira:
 
     # main methods
 
-
     def convert_issue(self, issue):
         #print('converting issue: {0}'.format(issue))
         def custom_field_value(field_id, field_name = None):
@@ -54,61 +53,30 @@ class API_Jira:
                 else:
                     return field_value
 
-        def custom_brands_values():
-            brand_value  = issue.raw['fields'].get('customfield_12626')
-            brands_value = issue.raw['fields'].get('customfield_12501')
-            brands = []
-            if brand_value:
-                brands.append(brand_value['value'])
-            if brands_value:
-                for item in brands_value:
-                    brands.append(item['value'])
-            return list(set(brands))
-
         def components_values():
             return [i.name for i in issue.fields.components]
 
-        def likelihood():
-            value = custom_field_value('customfield_14161' , 'value'       )
-            if value:
-                value = value.split(':').pop(0)
-            return value
-
-        def split(value, separator):
-            if value:
-                items = value.split(separator)              # split by separator
-                return [item.strip() for item in items]     # trim individual results
+        # def split(value, separator):
+        #     if value:
+        #         items = value.split(separator)              # split by separator
+        #         return [item.strip() for item in items]     # trim individual results
 
         data = {    "Assignee"          : custom_field_value('assignee'          , 'name'       ) ,
-                    "Brands"            : custom_brands_values()                                  ,
                     "Components"        : components_values()                                                      ,
                     "Created"           : issue.fields.created                                    ,
-                    "Creator"           : custom_field_value('creator'           , 'name'       ) ,
+                    "Creator"           : custom_field_value('creator'           , 'displayName'       ) ,
                     "Description"       : custom_field_value('description'                      ) ,
-                    "Email"             : custom_field_value('customfield_14549'                ) ,
-                    'Epic Link'         : custom_field_value('customfield_11200'                ) ,
-                    "GDPR Article"      : split(custom_field_value('customfield_14156'),'\r\n'  ) ,
-                    "Image Url"         : custom_field_value('customfield_14551'                ) ,
                     "Issue Type"        : custom_field_value('issuetype'         , 'name'       ) ,
                     "Issue Links"       : {}                                                      ,
-                    "ISO27001 Standard" : split(custom_field_value('customfield_14157'),','     ) ,
                     "Key"               : issue.key                                               ,
                     "Labels"            : issue.fields.labels                                     ,
-                    "Latest_Information": custom_field_value("customfield_12924"                ) ,
-                    "Likelihood"        : likelihood()                                            ,
                     "Parent"            : custom_field_value('parent'            , 'key'        ) ,
                     "Priority"          : custom_field_value('priority'          , 'name'       ) ,
                     "Project"           : custom_field_value('project'           , 'name'       ) ,
-                    "Slack ID"          : custom_field_value('customfield_14548'                ) ,
                     "Summary"           : custom_field_value('summary'                          ) ,
 				    "Status"            : custom_field_value('status'            , 'name'       ) ,
-                    #'Subtasks'          : {}                                                      ,
-				    "Rating"            : custom_field_value('customfield_12639' , 'value'      ) ,
-                    "Reporter"          : custom_field_value('reporter'          , 'name'       ) ,
-                    "Risk Owner"        : custom_field_value('customfield_12622' , 'displayName') ,
-                    "Updated"           : issue.fields.updated                                    ,
-                    "Impacts"           : custom_field_value('customfield_14162' , 'value'       ),
-                    'VULN Priority'     : custom_field_value('customfield_14263' , 'value'       )}
+                    "Reporter"          : custom_field_value('reporter'          , 'displayName'       ) ,
+                    "Updated"           : issue.fields.updated                                    }
 
 
         for link in issue.fields.issuelinks:

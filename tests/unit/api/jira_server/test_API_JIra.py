@@ -2,9 +2,11 @@
 import  unittest
 
 from jira import JIRA
-from pbx_gs_python_utils.utils.Dev import Dev
 
+#from osbot_aws import Globals
 from osbot_jira.api.jira_server.API_Jira import API_Jira
+from osbot_utils.utils.Dev import Dev
+
 
 class Test_API_Jira(unittest.TestCase):
 
@@ -26,23 +28,23 @@ class Test_API_Jira(unittest.TestCase):
     # methods
 
     def test_covert_issue(self):
-        raw_issue = self.api.jira().issue('VULN-1404')  # 'FACT-10') #
+        raw_issue = self.api.jira().issue('PERSON-1')  # 'FACT-10') #
         issue = self.api.convert_issue(raw_issue)
-
-        raw_issue = self.api.jira().issue('SEC-9195')# 'FACT-10') #
-        issue     = self.api.convert_issue(raw_issue)
-        self.api.convert_issue(self.api.jira().issue('SEC-9195'))
-        assert issue['Labels'   ] == ['SEC-9195', 'SEC-9195-CFO']       # check the fields added recently
-        assert issue['Priority' ] == 'Minor'
-
-        raw_issue = self.api.jira().issue('GSOKR-900')                  # check epic link
-        issue = self.api.convert_issue(raw_issue)
-        assert issue['Epic Link'] == 'GSOKR-924'
-
-        raw_issue = self.api.jira().issue('GSOKR-872')                  # check parent (for sub taks)
-        issue = self.api.convert_issue(raw_issue)
-        assert issue['Parent'] == 'GSOKR-279'
-        #Dev.pprint(issue)
+        Dev.pprint(issue)
+        # raw_issue = self.api.jira().issue('SEC-9195')# 'FACT-10') #
+        # issue     = self.api.convert_issue(raw_issue)
+        # self.api.convert_issue(self.api.jira().issue('SEC-9195'))
+        # assert issue['Labels'   ] == ['SEC-9195', 'SEC-9195-CFO']       # check the fields added recently
+        # assert issue['Priority' ] == 'Minor'
+        #
+        # raw_issue = self.api.jira().issue('GSOKR-900')                  # check epic link
+        # issue = self.api.convert_issue(raw_issue)
+        # assert issue['Epic Link'] == 'GSOKR-924'
+        #
+        # raw_issue = self.api.jira().issue('GSOKR-872')                  # check parent (for sub taks)
+        # issue = self.api.convert_issue(raw_issue)
+        # assert issue['Parent'] == 'GSOKR-279'
+        # #Dev.pprint(issue)
 
     def test_fields(self):
         fields = self.api.fields()
