@@ -98,6 +98,13 @@ class Test_API_Jira(unittest.TestCase):
                           'Status'           : 'Fixed'                                      ,
                           'Summary'          : 'Test risk to GS-Bot'                        }
 
+
+    def test_issue_add_link__error(self):
+        try:
+            Dev.pprint(self.api.issue_add_link('from','link_type', 'to'))
+        except Exception as error:
+            assert error.text == "No issue link type with name 'link_type' found."
+
     @unittest.skip('needs to be refactored (this method will get the change log for the issues')
     def _test_issue_change_log_only_status(self):
         statuses = self.api.issue_changes_log_only_status("Project=VULN", 300)
