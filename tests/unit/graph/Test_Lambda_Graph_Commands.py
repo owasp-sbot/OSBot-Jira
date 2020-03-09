@@ -129,3 +129,10 @@ class Test_Lambda_Graph_Commands(Test_Helper):
         self.channel = None
         self.result = Lambda_Graph_Commands().filter(self.team_id, self.channel, params, None)
 
+
+    # bugs
+    def test__bug_request_causes_lambda_error(self):
+        params = ['only_with_issue_types', 'graph_A4J', 'Issue Person']
+        from osbot_jira.api.graph.GS_Graph import GS_Graph
+        assert type(Lambda_Graph_Commands().filter(params=params)) == GS_Graph
+        assert Lambda_Graph_Commands().filter(params=params, channel='ABC') is None # bug was here (when channel was provided, the GS_Graph object was being returned and it was failing to serialize

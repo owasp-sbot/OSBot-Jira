@@ -71,8 +71,12 @@ class Lambda_Graph_Commands:
             return text,attachments
 
     @staticmethod
-    def filter(team_id, channel, params, data):
-        return Commands_Helper(Graph_Filters,with_slack_support=True).invoke(team_id, channel, params)
+    def filter(team_id=None, channel=None, params=None, data=None):
+        print(f'******* in FILTER WITH CHANNEL: {channel}')
+        result = Commands_Helper(Graph_Filters,with_slack_support=True).invoke(team_id, channel, params)
+        if channel is None:                 # cases when filter is invoked directly (from example from Jupyter)
+            return result
+        print(f'******* in FILTER: nothing to return')
 
     @staticmethod
     def nodes(team_id, channel, params, data):
