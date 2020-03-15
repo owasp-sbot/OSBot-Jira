@@ -1,9 +1,10 @@
-from osbot_aws.apis.Lambdas import Lambdas
+from gw_bot.api.slack.API_Slack_Attachment import API_Slack_Attachment
+from gw_bot.api.slack.API_Slack_Dialog import API_Slack_Dialog
 from gw_bot.helpers.Lambda_Helpers import slack_message, log_to_elk
-from osbot_jira.api.slack.API_Slack_Attachment import API_Slack_Attachment
-from osbot_jira.api.slack.API_Slack_Dialog import API_Slack_Dialog
+from osbot_aws.apis.Lambda import Lambda
 
 
+#todo: add unit tests and fix old PBX lambda references (those lambdas don't exist any more)
 class API_Jira_Dialog():
 
     def get_dialog_issue(self):
@@ -124,7 +125,7 @@ class API_Jira_Dialog():
 
         if view_type == 'table':
             slack_message("Generating table for key: {0}".format(key), [], channel)
-            Lambdas('pbx_gs_python_utils.lambdas.gs.elastic_jira').invoke_async({"params": ["issue", key], "user": user_id, "channel": channel})
+            Lambda('pbx_gs_python_utils.lambdas.gs.elastic_jira').invoke_async({"params": ["issue", key], "user": user_id, "channel": channel})
             #slack_message(result.get('text'), result.get('attachments'), channel)
 
         elif view_type == 'issue-links-vuln-path':
@@ -163,7 +164,7 @@ class API_Jira_Dialog():
             'data'       : data
         }
         slack_message('invoking gs.jira_graphs for keys  {0}'.format(payload['keys']), [], payload['channel'])
-        Lambdas('gs.jira_graphs').invoke_async(payload)
+        Lambda('gs.jira_graphs').invoke_async(payload)
 
 
     def handle_dialog_submission(self, data):
@@ -173,7 +174,7 @@ class API_Jira_Dialog():
 
         if callback_id =='jira-graph-chooser':
             graph_name = data['submission'].get('graph_name')
-            Lambdas('pbx_gs_python_utils.lambdas.gs.elastic_jira').invoke_async({"params": ["graph", graph_name], "user": user_id, "channel": channel})
+            Lambda('pbx_gs_python_utils.lambdas.gs.elastic_jira').invoke_async({"params": ["graph", graph_name], "user": user_id, "channel": channel})
 
         elif callback_id == 'jira-view-issue-links':
             self.handle_callback_jira_view_issue_links(data)
@@ -181,7 +182,7 @@ class API_Jira_Dialog():
         elif callback_id == 'jira-view-issue-dialogue':
             slack_message('jira-view-issue-dialogue: {0}'.format(data),[], channel)
             key     = data.get('submission').get('key')
-            result  = Lambdas('pbx_gs_python_utils.lambdas.gs.elastic_jira').invoke({"params": ["issue", key], "user": user_id, "channel": channel})
+            result  = Lambda('pbx_gs_python_utils.lambdas.gs.elastic_jira').invoke({"params": ["issue", key], "user": user_id, "channel": channel})
             slack_message(result.get('text'), result.get('attachments'), channel)
 
         # elif callback_id == 'issue-search-dialog':
@@ -216,7 +217,7 @@ class API_Jira_Dialog():
 
     def show_dialog(self,trigger_id,dialog):
         payload = {"trigger_id": trigger_id, "dialog": dialog}
-        Lambdas('utils.slack_dialog').invoke(payload)
+        Lambda('utils.slack_dialog').invoke(payload)
         return "Opening up Jira Slack Dialog window..."  # for Slack Commands we need to send a message back (or the user sees a 'None' message
 
     def show_buttons_with_examples(self):

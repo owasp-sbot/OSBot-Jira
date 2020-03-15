@@ -2,13 +2,12 @@ import unittest
 from unittest import TestCase
 
 from gw_bot.Deploy import Deploy
+from gw_bot.api.slack.API_Slack_Attachment import API_Slack_Attachment
 from gw_bot.helpers.Test_Helper import Test_Helper
 from osbot_aws.apis.Lambda import Lambda
 from osbot_aws.helpers.Lambda_Package import Lambda_Package
 from pbx_gs_python_utils.utils.Dev import Dev
 from gw_bot.helpers.Lambda_Helpers import slack_message
-from pbx_gs_python_utils.utils.slack.API_Slack_Attachment import API_Slack_Attachment
-
 from osbot_jira.lambdas.slack_actions import run
 
 
