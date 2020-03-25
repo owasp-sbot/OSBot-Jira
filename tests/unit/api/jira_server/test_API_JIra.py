@@ -28,7 +28,7 @@ class Test_API_Jira(unittest.TestCase):
     # methods
 
     def test_covert_issue(self):
-        raw_issue = self.api.jira().issue('PERSON-1')  # 'FACT-10') #
+        raw_issue = self.api.jira().issue('TASK-502')  # 'FACT-10') #
         issue = self.api.convert_issue(raw_issue)
         Dev.pprint(issue)
         # raw_issue = self.api.jira().issue('SEC-9195')# 'FACT-10') #
@@ -125,20 +125,20 @@ class Test_API_Jira(unittest.TestCase):
         Dev.pprint(result)
 
 
-    def test_issues_updated_in_last_hour(self):
-        results    = self.api.issues_updated_in_last_hour()
-        assert len(results) > 0
-        #
+    # def test_issues_updated_in_last_hour(self):
+    #     results    = self.api.issues_updated_in_last_hour()
+    #     assert len(results) > 0
+    #     #
         # results_1h = self.api.issues_updated_in_last_hour(1)
         # results_10h = self.api.issues_updated_in_last_hour(10)
         # assert results               ==  results_1h
         # assert set(results_1h)       == {'FACT-13', 'RISK-1597'}
         # assert len(set(results_10h)) == 19
 
-    def test_issues_updated_in_last_day(self):
-        results = self.api.issues_updated_in_last_day()
-        assert len(set(results)) > 1
-        #Dev.pprint(len(set(results)))
+    # def test_issues_updated_in_last_day(self):
+    #     results = self.api.issues_updated_in_last_day()
+    #     assert len(set(results)) > 1
+    #     #Dev.pprint(len(set(results)))
 
     def test_projects(self):
         results =  self.api.jira().projects()

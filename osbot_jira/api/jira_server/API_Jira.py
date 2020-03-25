@@ -49,7 +49,7 @@ class API_Jira:
             field_value = issue.raw['fields'].get(field_id)
             if field_value:
                 if field_name:
-                    return field_value[field_name]
+                    return field_value.get(field_name)
                 else:
                     return field_value
 
@@ -282,14 +282,14 @@ class API_Jira:
         return change_log
 
 
-    def issues_updated_in_last_day(self, hour=1):
-        return self.search_no_cache('project in (VULN,RISK,SEC,FACT) AND updated >= -{0}d'.format(hour))
-
-    def issues_updated_in_last_hour(self, hour=1):
-        return self.search_no_cache('project in (VULN,RISK,SEC,FACT) AND updated >= -{0}h'.format(hour))
-
-    def issues_updated_in_last_minute(self, minute=1):
-        return self.search_no_cache('project in (VULN,RISK,SEC,FACT) AND updated >= -{0}m'.format(minute))
+    # def issues_updated_in_last_day(self, hour=1):
+    #     return self.search_no_cache('project in (VULN,RISK,SEC,FACT) AND updated >= -{0}d'.format(hour))
+    #
+    # def issues_updated_in_last_hour(self, hour=1):
+    #     return self.search_no_cache('project in (VULN,RISK,SEC,FACT) AND updated >= -{0}h'.format(hour))
+    #
+    # def issues_updated_in_last_minute(self, minute=1):
+    #     return self.search_no_cache('project in (VULN,RISK,SEC,FACT) AND updated >= -{0}m'.format(minute))
 
     def jira_server_details(self):
         data     = Secrets(self.secrets_id).value_from_json_string()

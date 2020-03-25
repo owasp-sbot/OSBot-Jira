@@ -21,3 +21,6 @@ class test_GW_Elastic_Jira(Test_Helper):
     def test_query(self):
         self.result =  len(self.gw_elastic_jira.api_Jira.search('',0,1000))
 
+
+    def test_reload_all_data_from_jira_project(self):
+        self.result = self.gw_elastic_jira.reload_all_data_from_jira_project()

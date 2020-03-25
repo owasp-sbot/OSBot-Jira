@@ -87,49 +87,49 @@ class API_Elastic_Jira:
         self.elastic.delete_data_by_id(update_key)
         return self
 
-    def update_index_from_jira_changes(self):
-        if self.projects is None:
-            log_error("Cannot update ELK since self.projects value is not configured")
-            return
-        update_key = '_update_details'              # code to store last updated time in the index (move this to a dedicated location)
-        data       = self.elastic.get_data(update_key)
-        if data is None:
-            update_key_data = {
-                                  "Key": update_key,
-                                  "last_updated_at": None
-                              }
-            epoch = (datetime.datetime.now() - datetime.timedelta(0, 60 * 1440)).timestamp()         # if the value is not set , go back 24 h
-            when            = strftime("%Y/%m/%d %H:%M", localtime(epoch))
-        else:
-            update_key_data = data['_source']
-            when            = update_key_data['last_updated_at']
-
-        now_epoch = time() - 120 # due to the current issue with the sync server, remove 2 minutes from the time() value (which is the current time in seconds since the Epoch)
-
-        now    = strftime("%Y/%m/%d %H:%M", localtime(now_epoch))                      # capture this value here (as soon as possible)
-
-        now_server = strftime("%Y/%m/%d %H:%M",localtime(time()))
-        print(" > using {0}  , localtime: {1}".format(now,now_server))
-
-        query  = 'project in ({0}) AND updated >= "{1}"'.format(self.projects,when)
-        changes = self.api_gs_jira.api_Jira.search_no_cache(query)
-        if len(changes) == 0:
-            log_info("No issues updated since: {0}".format(when),"API_Elastic_Jira.update_index_from_jira_changes")
-            return
-
-
-
-        log_info(Dev.pprint("Since {0}, there where {1} issues updated: {2}".format(when, len(set(changes)),set(changes))),
-                            "API_Elastic_Jira.update_index_from_jira_changes")
-
-        issues = self.fix_issues_for_elk(changes.values())
-
-        result = self.elastic.add_bulk(issues, "Key")
-        log_info(Dev.pprint("sent {0} issues to elk instance: {1}".format(result, self.secrets_id)),
-                            "API_Elastic_Jira.update_index_from_jira_changes")
-
-        update_key_data['last_updated_at'] = now
-        self.elastic.add(update_key_data, "Key")
+    # def update_index_from_jira_changes(self):
+    #     if self.projects is None:
+    #         log_error("Cannot update ELK since self.projects value is not configured")
+    #         return
+    #     update_key = '_update_details'              # code to store last updated time in the index (move this to a dedicated location)
+    #     data       = self.elastic.get_data(update_key)
+    #     if data is None:
+    #         update_key_data = {
+    #                               "Key": update_key,
+    #                               "last_updated_at": None
+    #                           }
+    #         epoch = (datetime.datetime.now() - datetime.timedelta(0, 60 * 1440)).timestamp()         # if the value is not set , go back 24 h
+    #         when            = strftime("%Y/%m/%d %H:%M", localtime(epoch))
+    #     else:
+    #         update_key_data = data['_source']
+    #         when            = update_key_data['last_updated_at']
+    #
+    #     now_epoch = time() - 120 # due to the current issue with the sync server, remove 2 minutes from the time() value (which is the current time in seconds since the Epoch)
+    #
+    #     now    = strftime("%Y/%m/%d %H:%M", localtime(now_epoch))                      # capture this value here (as soon as possible)
+    #
+    #     now_server = strftime("%Y/%m/%d %H:%M",localtime(time()))
+    #     print(" > using {0}  , localtime: {1}".format(now,now_server))
+    #
+    #     query  = 'project in ({0}) AND updated >= "{1}"'.format(self.projects,when)
+    #     changes = self.api_gs_jira.api_Jira.search_no_cache(query)
+    #     if len(changes) == 0:
+    #         log_info("No issues updated since: {0}".format(when),"API_Elastic_Jira.update_index_from_jira_changes")
+    #         return
+    #
+    #
+    #
+    #     log_info(Dev.pprint("Since {0}, there where {1} issues updated: {2}".format(when, len(set(changes)),set(changes))),
+    #                         "API_Elastic_Jira.update_index_from_jira_changes")
+    #
+    #     issues = self.fix_issues_for_elk(changes.values())
+    #
+    #     result = self.elastic.add_bulk(issues, "Key")
+    #     log_info(Dev.pprint("sent {0} issues to elk instance: {1}".format(result, self.secrets_id)),
+    #                         "API_Elastic_Jira.update_index_from_jira_changes")
+    #
+    #     update_key_data['last_updated_at'] = now
+    #     self.elastic.add(update_key_data, "Key")
 
 
     def add_changed_log_status(self, project, start_at=0, max =-1):
@@ -146,49 +146,49 @@ class API_Elastic_Jira:
         return data
 
 
-    def reload_jira_index__jira(self):           # need to do also do this for the SEC project
-        index = 'jira'
+    # def reload_jira_index__jira(self):           # need to do also do this for the SEC project
+    #     index = 'jira'
+    #
+    #     query = {  "query": { "match_all": {} } }
+    #     self.elastic.index = index
+    #     result     = self.elastic.delete_using_query(query)     # delete all items
+    #     fact_issues = self.send_data_from_project('FACT')       # add all issues from FACT project
+    #     risk_issues = self.send_data_from_project('RISK')       # add all issues from RISK project
+    #     vuln_issues = self.send_data_from_project('VULN')       # add all issues from VULN project
+    #
+    #
+    #     stats =  { "stats": {
+    #                         "index"             : index             ,
+    #                         "delete_issues"     : result['deleted'] ,
+    #                         "fact_issues_added" : fact_issues       ,
+    #                         "risk_issues_added" : risk_issues       ,
+    #                         "vuln_issues_added" : vuln_issues
+    #                       }}
+    #     Dev.pprint(stats)
+    #     return stats
 
-        query = {  "query": { "match_all": {} } }
-        self.elastic.index = index
-        result     = self.elastic.delete_using_query(query)     # delete all items
-        fact_issues = self.send_data_from_project('FACT')       # add all issues from FACT project
-        risk_issues = self.send_data_from_project('RISK')       # add all issues from RISK project
-        vuln_issues = self.send_data_from_project('VULN')       # add all issues from VULN project
-
-
-        stats =  { "stats": {
-                            "index"             : index             ,
-                            "delete_issues"     : result['deleted'] ,
-                            "fact_issues_added" : fact_issues       ,
-                            "risk_issues_added" : risk_issues       ,
-                            "vuln_issues_added" : vuln_issues
-                          }}
-        Dev.pprint(stats)
-        return stats
-
-    def reload_jira_index__sec_project(self):
-        index = 'sec_project'
-        query = {"query": {"match_all": {}}}
-        self.elastic.index = index
-        result = self.elastic.delete_using_query(query)  # delete all items
-        step_by    = 500
-        sec_issues = 0
-        max        = 22         # do up to 11000        - at the moment there are 8k
-        for i in range(0, max):
-            start_at = i * step_by
-            last_count = self.send_data_from_project('SEC', start_at, step_by)
-            sec_issues += last_count
-            Dev.print("[{0}/{1}] reload_jira_index__sec_project - added {2} (total: {3}".format(i,max, last_count, sec_issues))
-            if last_count == 0:
-                break;
-        stats = { "stats": {
-                            "index"             : index             ,
-                            "delete_issues"     : result['deleted'] ,
-                            "sec_issues_added"  : sec_issues        ,
-                          }}
-        Dev.pprint(stats)
-        return stats
+    # def reload_jira_index__sec_project(self):
+    #     index = 'sec_project'
+    #     query = {"query": {"match_all": {}}}
+    #     self.elastic.index = index
+    #     result = self.elastic.delete_using_query(query)  # delete all items
+    #     step_by    = 500
+    #     sec_issues = 0
+    #     max        = 22         # do up to 11000        - at the moment there are 8k
+    #     for i in range(0, max):
+    #         start_at = i * step_by
+    #         last_count = self.send_data_from_project('SEC', start_at, step_by)
+    #         sec_issues += last_count
+    #         Dev.print("[{0}/{1}] reload_jira_index__sec_project - added {2} (total: {3}".format(i,max, last_count, sec_issues))
+    #         if last_count == 0:
+    #             break;
+    #     stats = { "stats": {
+    #                         "index"             : index             ,
+    #                         "delete_issues"     : result['deleted'] ,
+    #                         "sec_issues_added"  : sec_issues        ,
+    #                       }}
+    #     Dev.pprint(stats)
+    #     return stats
 
     def reload_jira_index__it_Assets(self):           # need to do also do this for the SEC project
         index = 'it_assets'

@@ -119,9 +119,10 @@ class API_Jira_Rest:
             skip_fields    = ['resolution', 'votes','worklog','watches','comment',
                               'iconUrl','fixVersions', 'customfield_14238',
                               'issuelinks'] # '% complete'
-            skip_types     = ['any','progress','option-with-child']
-            use_name_value = ['user', 'issuetype','status','project','priority', 'securitylevel']
-            use_value      = ['string', 'number','datetime', 'date']
+            skip_types       = ['any','progress','option-with-child']
+            use_display_name = ['user']
+            use_name         = ['issuetype','status','project','priority', 'securitylevel']
+            use_value        = ['string', 'number','datetime', 'date']
             if issue_raw:
 
                 issue_key = issue_raw['key']
@@ -135,14 +136,15 @@ class API_Jira_Rest:
                         if value and field_id not in skip_fields:
                             field = fields.get(field_id)
                             issue_type = field.get('schema').get('type')
+
                             if issue_type not in skip_types:
                                 issue_name = field.get('name')
-                                #Dev.pprint(fields.get(field_id))
 
-                                if issue_type in use_name_value : value = value.get('name')
-                                elif issue_type in use_value    : value = value
-                                elif issue_type == 'option'     : value = value.get('value')
-                                elif issue_type == 'array'      :
+                                if issue_type in use_display_name: value = value.get('displayName')
+                                elif issue_type in use_name      : value = value.get('name')
+                                elif issue_type in use_value     : value = value
+                                elif issue_type == 'option'      : value = value.get('value')
+                                elif issue_type == 'array'       :
                                     items = []
                                     for item in value:
                                         if type(item) is str: items.append(item)

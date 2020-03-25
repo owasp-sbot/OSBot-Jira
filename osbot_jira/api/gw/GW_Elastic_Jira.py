@@ -9,6 +9,7 @@ from    pbx_gs_python_utils.utils.Local_Cache               import *
 from gw_bot.elastic.Elastic_Search import Elastic_Search
 from gw_bot.helpers.Lambda_Helpers import log_info, slack_message, log_error
 from osbot_jira.api.jira_server.API_Jira import API_Jira
+from osbot_jira.api.jira_server.API_Jira_Rest import API_Jira_Rest
 
 
 class GW_Elastic_Jira:
@@ -18,6 +19,10 @@ class GW_Elastic_Jira:
         self.elastic        = None
         self.api_Jira       = API_Jira()
         self.projects       = projects #'IA, TM,GDPR'
+
+    def reload_all_data_from_jira_project(self): # todo: find better location to do this (reloading of elastic data)
+        self.re_create_index()
+        self.send_data_from_project()
 
     def re_create_index(self):         # note that this will delete the index and recreate it
         self.elastic.delete_index()               \
@@ -60,13 +65,10 @@ class GW_Elastic_Jira:
         if project:
             jql = 'project={0}'.format(project)
         else:
-            jql = ''
-        from osbot_jira.api.jira_server.API_Jira_Rest import API_Jira_Rest
+            jql = ''                                                        # todo: find a better way to get all results from Jira
+
         api_jira_rest = API_Jira_Rest()
         issues = api_jira_rest.search(jql)
-        #fixed_issues = []
-        #for issue in issues:                                    # need to fix the data so that it looks/indexes better in ELK
-        #    fixed_issues.append(self.fix_issue_for_elk(issue))
 
         return self.elastic.add_bulk(issues, "Key")
 
