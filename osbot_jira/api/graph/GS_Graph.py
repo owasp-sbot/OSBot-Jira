@@ -175,7 +175,7 @@ class GS_Graph:
 
     @index_by
     def get_issues(self,reload=False):                          # better name for the method
-        return self.get_nodes_issues(reload)
+        return self.get_nodes_issues(reload).values()
 
     def get_nodes_issues(self,reload=False):                    # depreciate
         if self.issues is None or reload is True:
