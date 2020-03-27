@@ -5,6 +5,7 @@ from pbx_gs_python_utils.utils.Json     import Json
 
 from osbot_jira.api.API_Issues          import API_Issues
 from osbot_jira.api.graph.GS_Graph_Puml import GS_Graph_Puml
+from osbot_utils.decorators.Lists import index_by
 
 
 class GS_Graph:
@@ -172,7 +173,11 @@ class GS_Graph:
         self.puml_options['link-types-to-add'] = link_types_to_add
         return self
 
-    def get_nodes_issues     (self,reload=False):
+    @index_by
+    def get_issues(self,reload=False):                          # better name for the method
+        return self.get_nodes_issues(reload)
+
+    def get_nodes_issues(self,reload=False):                    # depreciate
         if self.issues is None or reload is True:
             self.issues = self.api_issues.issues(self.nodes)
         return self.issues
