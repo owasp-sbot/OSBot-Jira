@@ -23,27 +23,30 @@ class API_Issues:
 
     def issue(self,key):
         try:
-            self.elastic().index = self.resolve_es_index(key)
-            if self.elastic().index:
-                data = self.elastic().get_data(key.upper())
-                if data:
-                    return data['_source']
+            #self.elastic().index = self.resolve_es_index(key)
+            #if self.elastic().index:
+            data = self.elastic().get_data(key.upper())
+            if data:
+                return data['_source']
         except Exception as error:
             log_error(str(error),'API_Elastic_Lambda.issue')
         return {}
 
     def issues(self, keys):
-        issues = {}
-        keys_by_index = {}
-        for key in keys:
-            index = self.resolve_es_index(key)
-            if index:
-                if keys_by_index.get(index) is None: keys_by_index[index]=[]
-                keys_by_index[index].append(key)
-        for index, keys in keys_by_index.items():
-            matches = self.elastic().set_index(index).get_many(keys)
-            issues.update(matches)
-        return issues
+        keys = list(filter(None, keys))               # remove null values (which will cause elastic to throw an exception)
+        return self.elastic().get_many(keys)
+        # the code below was needed when the issue were distributed across multiple elastic indexes, which is something we shouldn't support here
+        # issues = {}
+        # keys_by_index = {}
+        # for key in keys:
+        #     index = self.resolve_es_index(key)
+        #     if index:
+        #         if keys_by_index.get(index) is None: keys_by_index[index]=[]
+        #         keys_by_index[index].append(key)
+        # for index, keys in keys_by_index.items():
+        #     matches = self.elastic().set_index(index).get_many(keys)
+        #     issues.update(matches)
+        # return issues
         #return self.api.elastic.get_many(keys)              # need to add support for fetching multiple indexes
 
     def issues_created_in_last_seconds(self, seconds): return self.issues_created_in_last("{0}s".format(seconds))

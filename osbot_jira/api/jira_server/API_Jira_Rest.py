@@ -4,8 +4,9 @@ import requests
 
 from gw_bot.helpers.Lambda_Helpers import log_error
 from osbot_aws.apis.Secrets import Secrets
-from pbx_gs_python_utils.utils.Dev import Dev
-from pbx_gs_python_utils.utils.Misc import Misc
+from osbot_utils.decorators.Lists import index_by
+from osbot_utils.utils.Dev import Dev
+from osbot_utils.utils.Misc import json_load, json_dumps
 
 
 class API_Jira_Rest:
@@ -35,7 +36,8 @@ class API_Jira_Rest:
 
     def request_method(self,method, path):
         (server, username, password)= self.config()
-        path = '{0}/rest/api/2/{1}'.format(server, path)
+        if path.startswith('http') is False:
+            path = '{0}/rest/api/2/{1}'.format(server, path)
         if self.log_requests: Dev.pprint('get', path)
         if username and password:
             if method =='GET':
@@ -48,13 +50,15 @@ class API_Jira_Rest:
         else:
             response = requests.get(path)
         if response.status_code == 200:
+            if 'image/' in response.headers.get('content-type'):
+                return response.content
             return response.text
         else:
             log_error(f'[Error][request_get] for path {path}: {response.text}')
         return None
 
     def request_put(self, path, data):
-        json_data = Misc.json_dumps(data)
+        json_data = json_dumps(data)
         (server, username, password) = self.config()
         path = '{0}/rest/api/2/{1}'.format(server, path)
         if self.log_requests: Dev.pprint('put', path)
@@ -67,10 +71,10 @@ class API_Jira_Rest:
 
     # methods
 
-
+    @index_by
     def fields(self):
         if self._fields is None:
-            self._fields =  Misc.json_load(self.request_get('field'))
+            self._fields =  json_load(self.request_get('field'))
         return self._fields
 
     def fields_by_id(self):
@@ -89,13 +93,13 @@ class API_Jira_Rest:
         if issue_id:
             path = f'issue/{issue_id}'
             data = self.request_delete(path)
-            return Misc.json_load(data)
+            return json_load(data)
 
     def issue_raw(self,issue_id,fields='*all'):
         if issue_id:
             path = 'issue/{0}?fields={1}'.format(issue_id,fields)
             data = self.request_get(path)
-            return Misc.json_load(data)
+            return json_load(data)
 
     def map_issue_links(self, issue, issue_links_raw):
         issue_links = {}
@@ -210,10 +214,23 @@ class API_Jira_Rest:
             path = 'issue/{0}/transitions'.format(issue_id)
             data = self.request_get(path)
             if data:
-                for transition in Misc.json_load(data).get('transitions'):
+                for transition in json_load(data).get('transitions'):
                     to_data = transition.get('to')
                     items[to_data.get('name')] = to_data.get('id')
         return items
+
+    def projects(self):
+        projects = {}
+        data = json_load(self.request_get('issue/createmeta')).get('projects')
+        for item in data:
+            projects[item.get('key')] = item
+        return projects
+
+    def projects_icons(self):
+        icons = {}
+        for key,project in self.projects().items():
+            icons[key] = project.get('avatarUrls').get('48x48')
+        return icons
 
     def search(self, jql='', fetch_all=True):
         max_results = 100  # 100 seems to be the current limit of Jira cloud

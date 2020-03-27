@@ -17,6 +17,7 @@ class Test_API_Jira_Rest(Test_Helper):
 
     def test_fields(self):
         assert len(self.api.fields()) > 10
+        #self.result = self.api.fields(index_by='name')
         # for field in self.api.fields():
         #     print(field.get('id'), field.get('name'))
 
@@ -31,6 +32,7 @@ class Test_API_Jira_Rest(Test_Helper):
     # def test_fields_by_name__performance_test(self):        # test what happens when this method is called multiple times
     #     for i in range(0,2):
     #         Dev.pprint(len(self.api.fields_by_name()))
+
 
     def test_issue_raw(self):
         issue_id= 'PERSON-1'
@@ -69,6 +71,12 @@ class Test_API_Jira_Rest(Test_Helper):
         issue_id = 'RISK-12'
         result = self.api.issue_status_available(issue_id)
         assert 'Blocked' in set(result)
+
+    def test_projects(self):
+        self.result = self.api.projects()
+
+    def test_projects_icons(self):
+        self.result = self.api.projects_icons()
 
 
     def test_search(self):
