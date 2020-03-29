@@ -209,12 +209,13 @@ class Lambda_Graph_Commands:
             text = ':red_circle: Graph with name `{0}` not found'.format(graph_name)
             slack_message(text, [], channel, team_id)
         else:
-
+            default_engine = 'viva_graph'
             engines = Misc.array_pop(params,0)
-            if engines is None: engines = 'plantuml,vis_js,viva_graph,go_js'
-            text = ":point_right: Showing graph with name `{0}`, with `{1}` nodes and `{2}` edges)".format(
-                graph_name, len(graph.nodes), len(graph.edges))
-            slack_message(text, [], channel, team_id)
+            if engines is None: engines = default_engine
+
+            if engines != default_engine:                     # only show in case there is more than one engine
+                text = f":point_right: Showing graph with name `{graph_name}`, with `{len(graph.nodes)}` nodes and `{len(graph.edges)}` edges)"
+                slack_message(text, [], channel, team_id)
 
             if 'plantuml' in engines:
                 slack_message('...using `plantuml`', [], channel, team_id)
@@ -226,7 +227,8 @@ class Lambda_Graph_Commands:
                 Lambda('osbot_browser.lambdas.lambda_browser').invoke_async({"params": params, 'data': {'team_id': team_id, 'channel': channel}})
 
             if 'viva_graph' in engines:
-                slack_message('...using `viva_graph`', [], channel, team_id)
+                if engines != default_engine:   # only show in case there is more than one engine
+                    slack_message('...using `viva_graph`', [], channel, team_id)
                 params = ['viva_graph',graph_name,'default']
                 Lambda('osbot_browser.lambdas.lambda_browser').invoke_async({"params": params, 'data': {'team_id': team_id, 'channel': channel}})
 
