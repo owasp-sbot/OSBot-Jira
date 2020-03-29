@@ -83,7 +83,7 @@ class test_GS_Bot_Jira(Test_Helper):
         Dev.pprint(result.get('text'))
 
     def test_cmd_links(self):
-        self.result = self.api.cmd_links(['links', 'PERSON-1', 'all', '1'], channel='DRE51D4EM')
+        self.result = self.api.cmd_links(['links', 'PERSON-1', '1'],channel='DRE51D4EM')
 
         #assert ' "target": "SEC-10965",\n' in result.get('text')
 

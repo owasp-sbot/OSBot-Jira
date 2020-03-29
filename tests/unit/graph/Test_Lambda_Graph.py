@@ -92,6 +92,11 @@ class Test_Lambda_Graph(Test_Helper):
         graph.add_linked_issues_of_type('is manager of')
         graph.render_and_save_to_elk   ("test_save_gs_graph_____org_chart", "from unit test")
 
+    def test_wait_for_elk_to_index_graph(self):
+        graph    = self.lambda_graph.load_gs_graph('graph_CT6')
+        new_name = self.lambda_graph.save_gs_graph(graph)
+        self.result = self.lambda_graph.wait_for_elk_to_index_graph(new_name)
+
         #self.lambda_graph.save_gs_graph(graph, "test_save_gs_graph_____org_chart", "from unit test")
 
 

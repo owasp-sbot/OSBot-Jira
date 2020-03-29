@@ -12,7 +12,6 @@ from osbot_jira.api.graph.GS_Graph import GS_Graph
 from osbot_jira.api.graph.Graph_Commands.Commands_Helper import Commands_Helper
 from osbot_jira.api.graph.Graph_Commands.Graph_Filters import Graph_Filters
 from osbot_jira.api.graph.Graph_Commands.Nodes import Nodes
-from osbot_jira.api.graph.Graph_Commands.Vis_JS import Vis_JS
 from osbot_jira.api.graph.Lambda_Graph import Lambda_Graph
 from osbot_utils.utils import Misc
 
@@ -20,41 +19,41 @@ Lambda_Graph_Commands_version = "v0.33 (GW)"
 
 class Lambda_Graph_Commands:
 
-    @staticmethod
-    def create(team_id, channel, params, data):
-        (graph, graph_name, graph_or_key, depth, link_types_to_add) = Lambda_Graph_Commands.expand(team_id, channel, params, data,only_create=True)
-        if channel:
-            text = "Created new graph called `{0}`,\n by expanding the graph/key `{1}` with depth `{2}`, for link types `{3}` (`{4}` nodes, `{5}` edges)" \
-                .format(graph_name, graph_or_key, depth, link_types_to_add,
-                        len(graph.nodes), len(graph.edges))
-            slack_message(text, [], channel, team_id)
-            Lambda('osbot_jira.lambdas.graph').invoke_async({ "data": {"team_id": team_id,"channel":channel},"params" :['viva_graph', graph_name ,'default']})
-            #'lambdas.browser.lambda_browser'
-        else:
-            return graph
+    # @staticmethod
+    # def create(team_id, channel, params, data):
+    #     (graph, graph_name, graph_or_key, depth, link_types_to_add) = Lambda_Graph_Commands.expand(team_id, channel, params, data,only_create=True)
+    #     if channel:
+    #         text = "Created new graph called `{0}`,\n by expanding the graph/key `{1}` with depth `{2}`, for link types `{3}` (`{4}` nodes, `{5}` edges)" \
+    #             .format(graph_name, graph_or_key, depth, link_types_to_add,
+    #                     len(graph.nodes), len(graph.edges))
+    #         slack_message(text, [], channel, team_id)
+    #         Lambda('osbot_jira.lambdas.graph').invoke_async({ "data": {"team_id": team_id,"channel":channel},"params" :['viva_graph', graph_name ,'default']})
+    #         #'lambdas.browser.lambda_browser'
+    #     else:
+    #         return graph
 
-    @staticmethod
-    def edit(team_id, channel, params, data):
-        def send_slack_message(message):
-            slack_message(message, [], channel, team_id)
-
-        if len(params) < 1:
-            text = ":exclamation: you must provide an `graph_name`"
-            send_slack_message(text)
-        else:
-            #params.pop(0)           # remove 1st command since it is 'server'
-            graph_name = params.pop(0)
-            send_slack_message(':one: creating Sheet from Graph data ...')
-
-            response = Lambda('osbot_jira.lambdas.jira').invoke({"params":['server','/jira-sync/sheet-from-graph/{0}'.format(graph_name)]})
-            if response:
-                weblink = json.loads(response.get('text')).get('status')
-                jira_id = weblink.split('=')[1]
-                send_slack_message(":point_right: Here is the link to the sheet created: {0}. \n\n:point_right: You will need to run the `jira load_sheet {1}` command before syncing".format(weblink,jira_id))
-            else:
-                send_slack_message(":red_circle: Some error occurred on the sync server (no data received from it)")
-
-            #Lambda('gs.lambda_gdocs').invoke({"params": ['pdf', file_id], 'data': {'team_id': team_id, 'channel': channel}})
+    # @staticmethod
+    # def edit(team_id, channel, params, data):
+    #     def send_slack_message(message):
+    #         slack_message(message, [], channel, team_id)
+    #
+    #     if len(params) < 1:
+    #         text = ":exclamation: you must provide an `graph_name`"
+    #         send_slack_message(text)
+    #     else:
+    #         #params.pop(0)           # remove 1st command since it is 'server'
+    #         graph_name = params.pop(0)
+    #         send_slack_message(':one: creating Sheet from Graph data ...')
+    #
+    #         response = Lambda('osbot_jira.lambdas.jira').invoke({"params":['server','/jira-sync/sheet-from-graph/{0}'.format(graph_name)]})
+    #         if response:
+    #             weblink = json.loads(response.get('text')).get('status')
+    #             jira_id = weblink.split('=')[1]
+    #             send_slack_message(":point_right: Here is the link to the sheet created: {0}. \n\n:point_right: You will need to run the `jira load_sheet {1}` command before syncing".format(weblink,jira_id))
+    #         else:
+    #             send_slack_message(":red_circle: Some error occurred on the sync server (no data received from it)")
+    #
+    #         #Lambda('gs.lambda_gdocs').invoke({"params": ['pdf', file_id], 'data': {'team_id': team_id, 'channel': channel}})
 
     @staticmethod
     def help(team_id, channel, params,  data):
@@ -72,19 +71,13 @@ class Lambda_Graph_Commands:
 
     @staticmethod
     def filter(team_id=None, channel=None, params=None, data=None):
-        print(f'******* in FILTER WITH CHANNEL: {channel}')
         result = Commands_Helper(Graph_Filters,with_slack_support=True).invoke(team_id, channel, params)
         if channel is None:                 # cases when filter is invoked directly (from example from Jupyter)
             return result
-        print(f'******* in FILTER: nothing to return')
 
     @staticmethod
     def nodes(team_id, channel, params, data):
         Commands_Helper(Nodes).invoke(team_id, channel, params)
-
-#        from time import sleep                              # wait 1 sec (to allow ES index)
-#        sleep(1)
-#        Lambda_Graph_Commands.show(team_id, channel,["1"],None)      # show last graph created (this helps with the UX)
 
     @staticmethod
     def expand(team_id=None, channel=None, params=None, data=None, only_create=False, save_graph=True):
@@ -171,29 +164,29 @@ class Lambda_Graph_Commands:
             return attachments
 
 
-    @staticmethod
-    def save(team_id, channel, params, data):
-        if len(params) !=2:
-            text            = ':red_circle: Hi, for the `save` command, you need to provide 2 parameters: '
-            attachment_text =  '*graph index or key* - use the command `graph last_10` to get these values\n'  \
-                               '*name* - the key you are going to use the future to load the graph'
-            slack_message(text, [{'text': attachment_text}], channel, team_id)
-            return
-        index = int(params.pop(0))
-        name  = params.pop(0)
-        last_10_graphs = Lambda_Graph().get_last_n_graphs_of_type('lambda_graph', index)
-        graph = last_10_graphs[index - 1]
-        graph_id = graph.get('id')
-        puml     = graph.get('value').get('doc_data').get('extra_data').get('puml')
-
-        doc_type = graph.get('value').get('doc_type')
-        doc_data = graph.get('value').get('doc_data')
-
-        doc_data['name'] = name
-        result = Save_To_ELK().add_document(doc_type, doc_data)
-
-        text = "Saved graph `#{0}` (id = `{1}`, puml size = `{2}`) with name `{3}`".format(index, graph_id, len(puml), name)
-        slack_message(text,[], channel, team_id)
+    # @staticmethod
+    # def save(team_id, channel, params, data):
+    #     if len(params) !=2:
+    #         text            = ':red_circle: Hi, for the `save` command, you need to provide 2 parameters: '
+    #         attachment_text =  '*graph index or key* - use the command `graph last_10` to get these values\n'  \
+    #                            '*name* - the key you are going to use the future to load the graph'
+    #         slack_message(text, [{'text': attachment_text}], channel, team_id)
+    #         return
+    #     index = int(params.pop(0))
+    #     name  = params.pop(0)
+    #     last_10_graphs = Lambda_Graph().get_last_n_graphs_of_type('lambda_graph', index)
+    #     graph = last_10_graphs[index - 1]
+    #     graph_id = graph.get('id')
+    #     puml     = graph.get('value').get('doc_data').get('extra_data').get('puml')
+    #
+    #     doc_type = graph.get('value').get('doc_type')
+    #     doc_data = graph.get('value').get('doc_data')
+    #
+    #     doc_data['name'] = name
+    #     result = Save_To_ELK().add_document(doc_type, doc_data)
+    #
+    #     text = "Saved graph `#{0}` (id = `{1}`, puml size = `{2}`) with name `{3}`".format(index, graph_id, len(puml), name)
+    #     slack_message(text,[], channel, team_id)
 
     @staticmethod
     def show(team_id, channel, params, data=None):
@@ -252,35 +245,35 @@ class Lambda_Graph_Commands:
         graph_params.extend(params)
         Lambda('osbot_browser.lambdas.lambda_browser').invoke_async({"params": graph_params, 'data': {'team_id': team_id, 'channel': channel}})
 
-    @staticmethod
-    def epic(team_id, channel, params, data):
-        if len(params) == 1:
-            keys = params.pop().split(',')
-            graph = GS_Graph()
-            (graph.set_links_path_mode_to_down()
-                  .add_all_linked_issues(keys, 1)
-                  .add_nodes_from_epics()
-                  .add_all_linked_issues()
-             )
-            graph.render_puml()
-            graph_name = Lambda_Graph().save_gs_graph(graph)
-            slack_message(":point_right: created graph called `{0}` for issues in epic(s)".format(graph_name), [], channel, team_id)
-            Lambda('gw_bot.lambdas.puml_to_slack').invoke({"puml": graph.get_puml(), "channel": channel, "team_id": team_id})
-            return
-        text = ':red_circle: Hi, you need to provide an issue ID to find the epics'
-        slack_message(text, [], channel, team_id)
+    # @staticmethod
+    # def epic(team_id, channel, params, data):
+    #     if len(params) == 1:
+    #         keys = params.pop().split(',')
+    #         graph = GS_Graph()
+    #         (graph.set_links_path_mode_to_down()
+    #               .add_all_linked_issues(keys, 1)
+    #               .add_nodes_from_epics()
+    #               .add_all_linked_issues()
+    #          )
+    #         graph.render_puml()
+    #         graph_name = Lambda_Graph().save_gs_graph(graph)
+    #         slack_message(":point_right: created graph called `{0}` for issues in epic(s)".format(graph_name), [], channel, team_id)
+    #         Lambda('gw_bot.lambdas.puml_to_slack').invoke({"puml": graph.get_puml(), "channel": channel, "team_id": team_id})
+    #         return
+    #     text = ':red_circle: Hi, you need to provide an issue ID to find the epics'
+    #     slack_message(text, [], channel, team_id)
 
-    @staticmethod
-    def gs_okrs(team_id, channel, params, data=None):
-        graph = GS_Graph()
-        (graph.add_all_linked_issues(['GSOKR-924'])
-             .add_nodes_from_epics()
-             .set_link_paths_to_ignore(['is child of', 'has Stakeholder'])
-             .set_links_path_mode_to_up()
-             .add_all_linked_issues(depth=5)
-        )
-        graph.render_puml()
-        Lambda('gw_bot.lambdas.puml_to_slack').invoke({"puml": graph.get_puml(), "channel": channel, "team_id": team_id})
+    # @staticmethod
+    # def gs_okrs(team_id, channel, params, data=None):
+    #     graph = GS_Graph()
+    #     (graph.add_all_linked_issues(['GSOKR-924'])
+    #          .add_nodes_from_epics()
+    #          .set_link_paths_to_ignore(['is child of', 'has Stakeholder'])
+    #          .set_links_path_mode_to_up()
+    #          .add_all_linked_issues(depth=5)
+    #     )
+    #     graph.render_puml()
+    #     Lambda('gw_bot.lambdas.puml_to_slack').invoke({"puml": graph.get_puml(), "channel": channel, "team_id": team_id})
 
     @staticmethod
     def raw_data(team_id=None, channel=None, params=None, data=None):
@@ -369,9 +362,9 @@ class Lambda_Graph_Commands:
                 Lambda('gw_bot.lambdas.puml_to_slack').invoke({"puml": puml, "channel": channel, "team_id": team_id})
             return puml
 
-    @staticmethod
-    def vis_js(team_id, channel, params, data):
-        return Slack_Commands_Helper(Vis_JS).invoke(team_id, channel, params)
+    # @staticmethod
+    # def vis_js(team_id, channel, params, data):
+    #     return Slack_Commands_Helper(Vis_JS).invoke(team_id, channel, params)
 
     @staticmethod
     def version(team_id, channel, params, data):

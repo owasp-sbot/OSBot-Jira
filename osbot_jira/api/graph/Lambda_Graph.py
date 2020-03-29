@@ -1,4 +1,5 @@
 import pprint
+from time import sleep
 
 from osbot_aws.apis.Lambda import Lambda
 
@@ -116,6 +117,8 @@ class Lambda_Graph():
         return Lambda('gw_bot.lambdas.puml_to_slack').invoke({"puml"   : graph.get_puml(), "channel": channel})
 
     def graph_links(self, target, direction, depth):
+        if target is None:
+            return None
         graph = self.get_gs_graph___by_name(target)   # check if the value provided is a saved graph
         if graph is not None:                                   # if it exists
             keys = graph.nodes                                  # set keys to graph nodes
@@ -135,3 +138,12 @@ class Lambda_Graph():
 
         graph.add_all_linked_issues(keys, depth)
         return graph
+
+    def wait_for_elk_to_index_graph(self, graph_name, wait_count=10, wait_for_ms=100):
+        for i in range(wait_count):
+            graph = self.get_gs_graph___by_name(graph_name)
+            if graph:
+                return True
+            print(f'[{wait_count}] not there yet so sleeping for {wait_for_ms}')
+            sleep(wait_for_ms/1000)
+        return False

@@ -313,10 +313,13 @@ class GS_Graph:
         data = { 'nodes': self.nodes, 'edges': self.edges }
         return Json.save_json_pretty(path, data)
 
-    def render_and_save_to_elk(self, graph_name=None, graph_type=None, channel= None, user = None):                                    # might need to move this to a Lambda function
-        #from pbx_gs_python_utils.gs_elk.Lambda_Graph import Lambda_Graph
-        from osbot_jira.api.graph.Lambda_Graph import Lambda_Graph                                                                      # needs to be here of it fail to load the dependency (could be caused by a cyclic dependency)
-        return Lambda_Graph().save_gs_graph(self, graph_name, graph_type, channel, user)
+    def render_and_save_to_elk(self, graph_name=None, graph_type=None, channel= None, user = None):      # might need to move this to a Lambda function
+        from osbot_jira.api.graph.Lambda_Graph import Lambda_Graph                                       # todo: find out why this needs to be here of it fail to load the dependency (could be caused by a cyclic dependency)
+        lambda_graph = Lambda_Graph()
+        graph_name = lambda_graph.save_gs_graph(self, graph_name, graph_type, channel, user)
+        if lambda_graph.wait_for_elk_to_index_graph(graph_name):                                         # wait for ELK to index the graph (to prevent a fetch before the data is available in ELK)
+            return graph_name
+        return None
 
 
     def render_puml(self):

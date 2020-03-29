@@ -11,6 +11,7 @@ from osbot_jira.api.graph.Lambda_Graph                      import Lambda_Graph
 from osbot_jira.api.slack.views.Jira_Slack_Actions          import Jira_Slack_Actions
 from osbot_jira.api.slack.views.Jira_View_Issue             import Jira_View_Issue
 from osbot_utils.utils import Misc
+from osbot_utils.utils.Misc import array_get, to_int
 
 
 class GS_Bot_Jira:
@@ -197,79 +198,96 @@ class GS_Bot_Jira:
         return {"text": text, "attachments": attachments}
 
     def cmd_links(self, params, team_id=None, channel=None, user=None, only_create=False,save_graph=True):
-        attachments = []
-        text        = ''
 
-        if len(params) == 5: view = params.pop()
-        else               : view = None
+        if len(params) < 2:
+             text = ':point_right: Hi, here are the valid parameters for the `jira links` command: ' \
+                    '\n\t\t - `jira key` '                                                           \
+                    '\n\t\t - `depth` (default to 1)'                                                \
+                    '\n\t\t - `view engine`: viva_graph (default), or plantuml'                      \
+                    '\n\t\t - `width` (of graph)'                                                    \
+                    '\n\t\t - `delay` (before screenshot)'
+             return {"text": text, "attachments": []}
 
-        if len(params) != 4:
-            text = ':red_circle: for the `jira links` command, you need to provide 3 parameters: ' \
-                   '\n\t\t - `jira key` ' \
-                   '\n\t\t - `direction` (up, down or any) and ' \
-                   '\n\t\t - `depth` '
-            #text += '\n\n {0}'.format(params)
-        else:
-            depth = params.pop()
-            if Misc.is_number(depth):
-                depth     = int(depth)
-                direction = params.pop()
-                target    = params.pop()
+        target      =        array_get(params, 1               )
+        depth       = to_int(array_get(params, 2, 1            ))   # default to depth 1
+        view_engine =        array_get(params, 3, 'viva_graph' )
+        width       = to_int(array_get(params, 4, None         ))
+        delay       = to_int(array_get(params, 5, None         ))
 
-                if direction not in ['up', 'down','children','parents', 'all']:
-                    text = ':red_circle: Unsupported direction `{0}` for `jira links` command. Current supported values are: `all`, `up`, `down`, `children` and `parents`'.format(
-                        direction)
-                    return {"text": text, "attachments": attachments}
+        if depth > 5:
+            text = f':red_circle: sorry depths bigger than 5 are not supported (since 5 will already give you the only graph)'
+            return {"text": text, "attachments": []}
 
-                graph = Lambda_Graph().graph_links(target, direction, depth)
+        direction = 'all'       # change behaviour to only show all
 
-                graph_type = "{0}__{1}___depth_{2}".format(target, direction, depth)
+        graph = Lambda_Graph().graph_links(target, direction, depth)
+        if graph is None:
+            text = f':red_circle: graph not created for target `{target}`'
+            return {"text": text, "attachments": []}
 
-                if save_graph is False:
-                    return graph
-                graph_name = graph.render_and_save_to_elk(None, graph_type, channel, user)
-                if only_create:
-                    return graph, graph_name, depth, direction, target
+        if len(graph.edges) == 0:
+            text = f':red_circle: no graph created from `{target}` (please double check that the issue ID exists)'
+            return {"text": text, "attachments": []}
 
-                params = ['viva_graph', graph_name, 'default']
-                Lambda('osbot_browser.lambdas.lambda_browser').invoke_async({"params": params, 'data': {'team_id': team_id, 'channel': channel}})
+        graph_type = "{0}__{1}___depth_{2}".format(target, direction, depth)
 
-                # puml = graph.puml.puml
-                # max_size = 60000
-                # if channel and (not view) and len(puml) > max_size:            # only do this check when there is a channel and no view (meaning that the graph will be generated)
-                #     text = ':red_circle: for the graph `{0}` with `{1}` nodes and `{2}` edges, the PlantUML code generated from your query was too big `{3}` and rendering this type of large graphs doesn\'t work well in PlantUML (max allowed is `{4}`)'\
-                #                     .format(graph_name, len(graph.nodes), len(graph.edges), len(puml),max_size)
-                # else:
-                #     if view:                                        # if we have defined a view, render it here
-                #         graph_view          = Graph_View()
-                #         graph_view.graph    = graph
-                #         graph_view.graph.reset_puml()
-                #         graph_view.render_view(view,channel,team_id,graph_name)
-                #         puml = graph_view.graph.puml.puml
-                #     else:
-                #         view = 'default'
-                #
-                #     if channel:  # if the channel value is provided return a user friendly message, if not, return the data
-                #         text = ':point_right: Created graph with name `{4}`, based on _{0}_ in the direction `{1}`, with depth `{2}`, with plantuml size: `{3}`, with view `{5}`, with `{6}` nodes and `{7}` edges'\
-                #                         .format(target, direction, depth, len(puml), graph_name, view, len(graph.nodes), len(graph.edges))
-                #         Lambda('gw_bot.lambdas.puml_to_slack').invoke_async({"puml": puml,"channel": channel, 'team_id' : team_id})
-                #     else:
-                #         data = {
-                #             "target"    : target     ,
-                #             "direction" : direction  ,
-                #             "depth"     : depth      ,
-                #             "nodes"     : graph.nodes,
-                #             "edges"     : graph.edges,
-                #             "puml"      : puml       ,
-                #             "graph_name": graph_name ,
-                #             "view"      : view
-                #         }
-                #         text = json.dumps(data, indent=4)
+        if save_graph is False:
+            return graph
+
+        graph_name = graph.render_and_save_to_elk(None, graph_type, channel, user)
+
+        if only_create:
+            return graph, graph_name, depth, direction, target
+
+        if channel:
+            message = f':point_right: Created graph with *name* `{graph_name}` *from* `{target}` *direction* `{direction}` *depth* `{depth}`'
+            slack_message(message,[],channel)
+
+            if view_engine =='plantuml':
+                params = ['show', graph_name, view_engine]
+                Lambda('osbot_jira.lambdas.graph').invoke_async({"params": params, 'data': {'team_id': team_id, 'channel': channel}})
             else:
-                text = ':red_circle: error: invalid value provided for depth `{0}`. It must be an number'.format(depth)
+                params = [view_engine, graph_name, 'default', width, delay]
+                Lambda('osbot_browser.lambdas.lambda_browser').invoke_async({"params": params, 'data': {'team_id': team_id, 'channel': channel}})
+        else:
+            return graph, graph_name, depth, direction, target
+
+            # puml = graph.puml.puml
+            # max_size = 60000
+            # if channel and (not view) and len(puml) > max_size:            # only do this check when there is a channel and no view (meaning that the graph will be generated)
+            #     text = ':red_circle: for the graph `{0}` with `{1}` nodes and `{2}` edges, the PlantUML code generated from your query was too big `{3}` and rendering this type of large graphs doesn\'t work well in PlantUML (max allowed is `{4}`)'\
+            #                     .format(graph_name, len(graph.nodes), len(graph.edges), len(puml),max_size)
+            # else:
+            #     if view:                                        # if we have defined a view, render it here
+            #         graph_view          = Graph_View()
+            #         graph_view.graph    = graph
+            #         graph_view.graph.reset_puml()
+            #         graph_view.render_view(view,channel,team_id,graph_name)
+            #         puml = graph_view.graph.puml.puml
+            #     else:
+            #         view = 'default'
+            #
+            #     if channel:  # if the channel value is provided return a user friendly message, if not, return the data
+            #         text = ':point_right: Created graph with name `{4}`, based on _{0}_ in the direction `{1}`, with depth `{2}`, with plantuml size: `{3}`, with view `{5}`, with `{6}` nodes and `{7}` edges'\
+            #                         .format(target, direction, depth, len(puml), graph_name, view, len(graph.nodes), len(graph.edges))
+            #         Lambda('gw_bot.lambdas.puml_to_slack').invoke_async({"puml": puml,"channel": channel, 'team_id' : team_id})
+            #     else:
+            #         data = {
+            #             "target"    : target     ,
+            #             "direction" : direction  ,
+            #             "depth"     : depth      ,
+            #             "nodes"     : graph.nodes,
+            #             "edges"     : graph.edges,
+            #             "puml"      : puml       ,
+            #             "graph_name": graph_name ,
+            #             "view"      : view
+            #         }
+            #         text = json.dumps(data, indent=4)
+            #else:
+            #    text = ':red_circle: error: invalid value provided for depth `{0}`. It must be an number'.format(depth)
 
 
-        return {"text": text, "attachments": attachments}
+        #return {"text": text, "attachments": attachments}
 
     def cmd_help(self):
         commands = [func for func in dir(GS_Bot_Jira) if

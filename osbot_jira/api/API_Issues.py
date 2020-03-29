@@ -34,7 +34,10 @@ class API_Issues:
 
     def issues(self, keys):
         keys = list(filter(None, keys))               # remove null values (which will cause elastic to throw an exception)
+        if len(keys)  == 0:
+            return []
         return self.elastic().get_many(keys)
+
         # the code below was needed when the issue were distributed across multiple elastic indexes, which is something we shouldn't support here
         # issues = {}
         # keys_by_index = {}
