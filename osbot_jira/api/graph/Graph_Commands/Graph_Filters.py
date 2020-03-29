@@ -48,7 +48,7 @@ class Graph_Filters:
 
             slack_message(text, [], channel, team_id)
             sleep(1)
-            Lambda('osbot_jira.lambdas.graph').invoke_async({"params": ["show", new_graph_name, "plantuml"], "data": {"channel": channel, "team_id": team_id}})
+            Lambda('osbot_jira.lambdas.graph').invoke_async({"params": ["show", new_graph_name, "viva_graph"], "data": {"channel": channel, "team_id": team_id}})
         return graph
 
     @staticmethod
@@ -171,7 +171,7 @@ class Graph_Filters:
         graph_name = params.pop(0)
         field_name = ' '.join(params)
 
-        slack_message(":point_right: ....Creating new graph using the `group_by_field` filter on the `{0}` field of the `{1}` graph".format(field_name,graph_name),[], channel, team_id)
+        slack_message(":point_right: Creating new graph using the `group_by_field` filter on the `{0}` field of the `{1}` graph".format(field_name,graph_name),[], channel, team_id)
 
         graph  = Graph_Filters._get_graph(graph_name)
         if graph:

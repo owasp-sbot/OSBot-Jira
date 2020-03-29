@@ -198,6 +198,8 @@ class GS_Bot_Jira:
 
     def cmd_links(self, params, team_id=None, channel=None, user=None, only_create=False,save_graph=True):
         attachments = []
+        text        = ''
+
         if len(params) == 5: view = params.pop()
         else               : view = None
 
@@ -229,37 +231,40 @@ class GS_Bot_Jira:
                 if only_create:
                     return graph, graph_name, depth, direction, target
 
-                puml = graph.puml.puml
-                max_size = 60000
-                if channel and (not view) and len(puml) > max_size:            # only do this check when there is a channel and no view (meaning that the graph will be generated)
-                    text = ':red_circle: for the graph `{0}` with `{1}` nodes and `{2}` edges, the PlantUML code generated from your query was too big `{3}` and rendering this type of large graphs doesn\'t work well in PlantUML (max allowed is `{4}`)'\
-                                    .format(graph_name, len(graph.nodes), len(graph.edges), len(puml),max_size)
-                else:
-                    if view:                                        # if we have defined a view, render it here
-                        graph_view          = Graph_View()
-                        graph_view.graph    = graph
-                        graph_view.graph.reset_puml()
-                        graph_view.render_view(view,channel,team_id,graph_name)
-                        puml = graph_view.graph.puml.puml
-                    else:
-                        view = 'default'
+                params = ['viva_graph', graph_name, 'default']
+                Lambda('osbot_browser.lambdas.lambda_browser').invoke_async({"params": params, 'data': {'team_id': team_id, 'channel': channel}})
 
-                    if channel:  # if the channel value is provided return a user friendly message, if not, return the data
-                        text = ':point_right: Created graph with name `{4}`, based on _{0}_ in the direction `{1}`, with depth `{2}`, with plantuml size: `{3}`, with view `{5}`, with `{6}` nodes and `{7}` edges'\
-                                        .format(target, direction, depth, len(puml), graph_name, view, len(graph.nodes), len(graph.edges))
-                        Lambda('gw_bot.lambdas.puml_to_slack').invoke_async({"puml": puml,"channel": channel, 'team_id' : team_id})
-                    else:
-                        data = {
-                            "target"    : target     ,
-                            "direction" : direction  ,
-                            "depth"     : depth      ,
-                            "nodes"     : graph.nodes,
-                            "edges"     : graph.edges,
-                            "puml"      : puml       ,
-                            "graph_name": graph_name ,
-                            "view"      : view
-                        }
-                        text = json.dumps(data, indent=4)
+                # puml = graph.puml.puml
+                # max_size = 60000
+                # if channel and (not view) and len(puml) > max_size:            # only do this check when there is a channel and no view (meaning that the graph will be generated)
+                #     text = ':red_circle: for the graph `{0}` with `{1}` nodes and `{2}` edges, the PlantUML code generated from your query was too big `{3}` and rendering this type of large graphs doesn\'t work well in PlantUML (max allowed is `{4}`)'\
+                #                     .format(graph_name, len(graph.nodes), len(graph.edges), len(puml),max_size)
+                # else:
+                #     if view:                                        # if we have defined a view, render it here
+                #         graph_view          = Graph_View()
+                #         graph_view.graph    = graph
+                #         graph_view.graph.reset_puml()
+                #         graph_view.render_view(view,channel,team_id,graph_name)
+                #         puml = graph_view.graph.puml.puml
+                #     else:
+                #         view = 'default'
+                #
+                #     if channel:  # if the channel value is provided return a user friendly message, if not, return the data
+                #         text = ':point_right: Created graph with name `{4}`, based on _{0}_ in the direction `{1}`, with depth `{2}`, with plantuml size: `{3}`, with view `{5}`, with `{6}` nodes and `{7}` edges'\
+                #                         .format(target, direction, depth, len(puml), graph_name, view, len(graph.nodes), len(graph.edges))
+                #         Lambda('gw_bot.lambdas.puml_to_slack').invoke_async({"puml": puml,"channel": channel, 'team_id' : team_id})
+                #     else:
+                #         data = {
+                #             "target"    : target     ,
+                #             "direction" : direction  ,
+                #             "depth"     : depth      ,
+                #             "nodes"     : graph.nodes,
+                #             "edges"     : graph.edges,
+                #             "puml"      : puml       ,
+                #             "graph_name": graph_name ,
+                #             "view"      : view
+                #         }
+                #         text = json.dumps(data, indent=4)
             else:
                 text = ':red_circle: error: invalid value provided for depth `{0}`. It must be an number'.format(depth)
 

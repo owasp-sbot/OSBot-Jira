@@ -115,31 +115,34 @@ class test_Filters(Test_Helper):
         self.show_graph()
 
 
+
     def test_search_by_field(self):
-        self.use_graph('graph_9G8').search_by_field('Project','equals', 'gs people')
-        assert self.graph.edges__link_types() == ['is managed by']
-
-        self.use_graph('graph_9G8').search_by_field__equals('Project', 'Risk')
-        assert self.graph.edges__link_types() == ['has RISK']
-
-        self.use_graph('graph_9G8').search_by_field('Project', 'not equals', 'gs people')
-        assert self.graph.edges__link_types() == ['has RISK', 'is child of']
-
-        self.use_graph('graph_9G8').search_by_field__not_equals('Project', 'IT Assets')
-        assert self.graph.edges__link_types() == ['has RISK', 'is managed by']
-
-        self.use_graph('graph_9G8').search_by_field('Summary', 'contains', 'jira')
-        assert self.graph.edges__link_types() == ['has RISK']
-
-        self.use_graph('graph_9G8').search_by_field__contains('Summary', 'Group')
-        assert self.graph.edges__link_types() == ['has Business Owner', 'is child of']
-
-        self.use_graph('graph_9G8').search_by_field('Summary', 'not contains', 'jira')
-        assert self.graph.edges__link_types() == ['has Business Owner', 'has Technical Owner', 'is child of', 'is managed by']
-
-        self.use_graph('graph_9G8').search_by_field__not_contains('Summary', 'Group')
-        assert self.graph.edges__link_types() == ['has RISK', 'has Technical Owner', 'is child of', 'is managed by']
-        #self.result = self.graph.edges__link_types()
+        self.use_graph('graph_NO9').search_by_field('Status','equals', 'Active')
+        self.result = self.graph.nodes
+    #     self.use_graph('graph_9G8').search_by_field('Project','equals', 'gs people')
+    #     assert self.graph.edges__link_types() == ['is managed by']
+    #
+    #     self.use_graph('graph_9G8').search_by_field__equals('Project', 'Risk')
+    #     assert self.graph.edges__link_types() == ['has RISK']
+    #
+    #     self.use_graph('graph_9G8').search_by_field('Project', 'not equals', 'gs people')
+    #     assert self.graph.edges__link_types() == ['has RISK', 'is child of']
+    #
+    #     self.use_graph('graph_9G8').search_by_field__not_equals('Project', 'IT Assets')
+    #     assert self.graph.edges__link_types() == ['has RISK', 'is managed by']
+    #
+    #     self.use_graph('graph_9G8').search_by_field('Summary', 'contains', 'jira')
+    #     assert self.graph.edges__link_types() == ['has RISK']
+    #
+    #     self.use_graph('graph_9G8').search_by_field__contains('Summary', 'Group')
+    #     assert self.graph.edges__link_types() == ['has Business Owner', 'is child of']
+    #
+    #     self.use_graph('graph_9G8').search_by_field('Summary', 'not contains', 'jira')
+    #     assert self.graph.edges__link_types() == ['has Business Owner', 'has Technical Owner', 'is child of', 'is managed by']
+    #
+    #     self.use_graph('graph_9G8').search_by_field__not_contains('Summary', 'Group')
+    #     assert self.graph.edges__link_types() == ['has RISK', 'has Technical Owner', 'is child of', 'is managed by']
+    #     #self.result = self.graph.edges__link_types()
 
         #self.show_graph()
 
