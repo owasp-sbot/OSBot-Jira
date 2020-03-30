@@ -12,6 +12,10 @@ class Test_Lambda_Graph(Test_Helper):
         super().setUp()
         self.lambda_graph = Lambda_Graph()
 
+    def test_get_graph_data(self):
+        graph_name = 'graph_I3H'
+        self.result = self.lambda_graph.get_graph_data(graph_name)
+
     def test_get_gs_graph_by_name(self):
         graph = self.lambda_graph.get_gs_graph___by_name("test_save_gs_graph_____org_chart")
         Dev.pprint( graph.stats() )

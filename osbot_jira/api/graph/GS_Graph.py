@@ -173,6 +173,9 @@ class GS_Graph:
         self.puml_options['link-types-to-add'] = link_types_to_add
         return self
 
+    def get_graph_data(self):
+        return { "nodes": self.get_nodes_issues(True),
+                 "edges" : self.edges}
     @index_by
     def get_issues(self,reload=False):                          # better name for the method
         return list(self.get_nodes_issues(reload).values())

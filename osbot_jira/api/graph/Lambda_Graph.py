@@ -20,6 +20,18 @@ class Lambda_Graph():
             self._save_to_elk    = Save_To_ELK()
         return self._save_to_elk
 
+    def get_graph_data(self, graph_name):
+        graph_data = { "graph_name": graph_name ,
+                       "nodes"     : []         ,
+                       "edges"     : []         }
+        graph      = self.load_gs_graph(graph_name)
+
+        if graph:
+            graph_data['nodes'] = graph.get_nodes_issues()
+            graph_data["edges"] = graph.edges
+        return graph_data
+
+        #data['nodes'] =
     def get_gs_graph_from_most_recent_version(self, lucene_query):
         data = self.save_to_elk().get_most_recent_version_of_document(lucene_query)
         if data is None: return None
