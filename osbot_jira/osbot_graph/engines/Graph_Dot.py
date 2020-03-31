@@ -1,4 +1,5 @@
 from osbot_aws.apis.Lambda import Lambda
+from osbot_utils.utils.Files import file_create
 
 
 class Graph_Dot:
@@ -23,4 +24,12 @@ class Graph_Dot:
 
     def render_svg(self):
         return Lambda('gw_bot.lambdas.dot_to_png').invoke({'dot':self.dot()})
+
+    def render_svg_to_file(self, target_file):
+        result = self.render_svg()
+        svg = result.get('svg')
+        if svg:
+            file_create(target_file, svg)
+            return {'status:':'ok', 'svg_file': target_file }
+        return {'status:':'error', 'error': result.get('error') }
 

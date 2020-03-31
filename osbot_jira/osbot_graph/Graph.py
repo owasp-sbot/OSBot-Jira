@@ -8,13 +8,16 @@ class Graph:
         self._edges = {}
         self.options = self.default_options()
 
-    def add_edge(self, from_key:str, to_key:str, label:str=None, params:dict=None):
+    def add_edge(self, from_key:str, label:str, to_key:str, params:dict=None):
         self.edge_add(from_key, label, to_key, params)
         return self
 
     def add_edges(self, edges):
         for edge in edges:
-            self.add_edge(*edge)
+            if len(edge) == 2:
+                self.add_edge(edge[0],None,edge[1])
+            if len(edge) == 3:
+                self.add_edge(*edge)
         return self
 
     def add_node(self, key:str, data=None):
