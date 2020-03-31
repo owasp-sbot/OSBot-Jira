@@ -14,9 +14,14 @@ class test_Graph(TestCase):
         if self.result is not None:
             Dev.pprint(self.result)
 
+    def test_add_edges(self):
+        assert self.graph.add_edges([('a','b')]).edges() == [{'from': 'a', 'label': None, 'to': 'b'}]
+        assert self.graph.add_edges([('a', 'b'), ('a','b','c')]).edges() == [ {'from': 'a', 'label': None, 'to': 'b'},
+                                                                              {'from': 'a', 'label': 'c' , 'to': 'b'}]
+
     def test_edges(self):
-        self.graph.add_edge('key_1', 'an label', 'key_2')
-        self.graph.add_edge('key_1', None      , 'key_2', {'a': 42})
+        self.graph.add_edge('key_1', 'key_2', 'an label')
+        self.graph.add_edge('key_1', 'key_2', params={'a': 42})
         assert self.graph._edges == { 'key_1__None__key_2'    : { 'from': 'key_1', 'label': None      ,'to': 'key_2','params': {'a': 42 }},
                                       'key_1__an label__key_2': { 'from': 'key_1', 'label': 'an label','to': 'key_2'                    }}
 
