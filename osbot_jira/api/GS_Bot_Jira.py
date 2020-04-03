@@ -173,9 +173,9 @@ class GS_Bot_Jira:
             params.pop(0) # remove 'issue' command
 
             issue_id = params.pop(0).upper()
-            width    = Misc.to_int(Misc.array_pop(params, 0))
-            height   = Misc.to_int(Misc.array_pop(params, 0))
-            delay    = Misc.to_int(Misc.array_pop(params, 0))
+            width    = to_int(Misc.array_pop(params), None)
+            height   = to_int(Misc.array_pop(params), None)
+            delay    = to_int(Misc.array_pop(params), None)
 
             text = ':point_right: Getting screenshot for issue `{0}`'.format(issue_id)
             if width:
@@ -209,10 +209,10 @@ class GS_Bot_Jira:
              return {"text": text, "attachments": []}
 
         target      =        array_get(params, 1               )
-        depth       = to_int(array_get(params, 2, 1            ))   # default to depth 1
+        depth       = to_int(array_get(params, 2), 1           )   # default to depth 1
         view_engine =        array_get(params, 3, 'viva_graph' )
-        width       = to_int(array_get(params, 4, None         ))
-        delay       = to_int(array_get(params, 5, None         ))
+        width       = to_int(array_get(params, 4), None        )
+        delay       = to_int(array_get(params, 5), None        )
 
         if depth > 5:
             text = f':red_circle: sorry depths bigger than 5 are not supported (since 5 will already give you the only graph)'

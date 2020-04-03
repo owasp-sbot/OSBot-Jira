@@ -7,9 +7,17 @@ class Graph_Dot:
     def __init__(self,graph):
         self.graph         = graph
         self.layout_engine = 'fdp'
-        self.rank_dir      = None
         self.dot_code      = ""
+        self.label         = ""
+        self.node_params   = {}
+        self.rank_dir      = None
         self.ranks         = {}
+
+    def add_label(self):
+        if self.label:
+            self.add_line(f'label="{self.label}";')    \
+                .add_line('labelloc = "t"')            # default to put label at the top
+        return self
 
     def add_line(self, value):                      # todo: refactor all add_*** methods into separate 'build' class
         self.dot_code += f'\t\t\t{value} \n'
@@ -23,26 +31,46 @@ class Graph_Dot:
     def add_comment(self, value):
         return self.add_line(f'#{value} \n')
 
+    def add_node_params(self):
+        if self.node_params:
+            self.add_line(f'node [{self.join_params(self.node_params)}]')
+        return self
+
     def add_ranks(self):
         for rank, node_ids in self.ranks.items():
             node_list = ', '.join(['"%s"' % node_id for node_id in node_ids])
             self.add_line(f'{{ rank={rank}; {node_list} }}')
         return self
 
-    def dot(self):
+    def join_params(self,params):
+        return ' '.join([f'{key}="{value}"' for key, value in params.items()])
+
+    def print_dot_code(self):
+        print(self.dot_code)
+        return self
+
+    def render(self):
         self.dot_code = "digraph G { \n"
         (
             self.add_rand_dir()
-                .add_line('node [shape=plaintext color=red]')
-                .add_line('label="The title\ngoes here" ')
-                .add_line('labelloc = "t"')
-                .add_line('mynode [image="https://i.stack.imgur.com/uhs5B.png"];')
+                .add_label()
+                .add_node_params()
+                .add_line('mynode [image="/tmp/ACCESS.png" label="" shape="box"];')
                 .add_comment ('###### Nodes #######')
          )
 
         for node in self.graph.nodes():
+            shape  = node.get('shape')
+            color  = node.get('color')
+            params = ""
+            if shape: params += f'shape="{shape}" '
+            if color: params += f'color="{color}" '
             key = node.get('key')
-            self.dot_code += f'\t\t\t"{key}"\n'
+            if params:
+                self.add_line(f'"{key}" ["label"="{key}" {params}]')
+            else:
+            #self.dot_code += f'\t\t\t"{key}"\n'
+                self.add_line(f'"{key}" ["label"="{key}"]')
 
         self.dot_code += '\t\t\t####### Edges #######\n'
         for edge in self.graph.edges():
@@ -65,7 +93,11 @@ class Graph_Dot:
     def set_layout_engine_osage(self): return self.set_layout_engine('osage')
     def set_layout_engine_neato(self): return self.set_layout_engine('neato')
 
-    def set_rank_dir(self, value ): self.rank_dir = value ; return self
+    def set_label      (self,      value ): self.label            = value       ; return self
+    def set_node_params(self,      params): self.node_params      = params      ; return self
+    def set_node_param (self, key, value ): self.node_params[key] = value       ; return self
+    def set_node_shape (self,      value ): self.set_node_param('shape', value) ; return self
+    def set_rank_dir   (self,      value ): self.rank_dir         = value       ; return self
 
     def set_rank       (self, rank, node_ids): self.ranks[rank] = node_ids; return self
     def set_rank_same  (self,       node_ids): return self.set_rank('same' , node_ids)
@@ -75,7 +107,7 @@ class Graph_Dot:
     def set_rank_source(self,       node_ids): return self.set_rank('source', node_ids)
 
     def render_svg(self):
-        params = { 'dot':self.dot(), 'layout_engine' : self.layout_engine}
+        params = { 'dot':self.render(), 'layout_engine' : self.layout_engine}
         return Lambda('gw_bot.lambdas.dot_to_png').invoke(params)
 
     def render_svg_to_file(self, target_file):

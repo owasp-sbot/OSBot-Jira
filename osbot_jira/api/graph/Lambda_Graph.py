@@ -1,13 +1,14 @@
 import pprint
 from time import sleep
 
-from osbot_aws.apis.Lambda import Lambda
-
-#from gs_elk.Lambda_Graph_Commands   import Lambda_Graph_Commands
-from gw_bot.elastic.Save_To_ELK import Save_To_ELK
-from gw_bot.helpers.Lambda_Helpers import slack_message, log_to_elk
-from osbot_jira.api.graph.GS_Graph                      import GS_Graph
-from pbx_gs_python_utils.utils.Misc                     import Misc
+from osbot_aws.apis.Lambda           import Lambda
+from gw_bot.elastic.Save_To_ELK      import Save_To_ELK
+from gw_bot.helpers.Lambda_Helpers   import slack_message, log_to_elk
+from osbot_jira.api.graph.GS_Graph   import GS_Graph
+from osbot_jira.osbot_graph.Graph    import Graph
+from osbot_jira.osbot_graph.engines.Graph_Dot import Graph_Dot
+from osbot_utils.decorators.Method_Wrappers import cache
+from osbot_utils.utils.Local_Cache import use_local_cache_if_available
 
 
 class Lambda_Graph():
@@ -19,6 +20,16 @@ class Lambda_Graph():
         if self._save_to_elk is None:
             self._save_to_elk    = Save_To_ELK()
         return self._save_to_elk
+
+    def get_graph(self, graph_name):
+        graph_data = self.get_graph_data(graph_name)
+        nodes = graph_data.get('nodes').keys()
+        edges = graph_data.get('edges')
+        return Graph().add_nodes(nodes)     \
+                      .add_edges(edges)
+
+    def get_graph_dot(self, graph_name):
+        return Graph_Dot(self.get_graph(graph_name))
 
     def get_graph_data(self, graph_name):
         graph_data = { "graph_name": graph_name ,

@@ -47,16 +47,13 @@ class Graph:
         return list(self._edges.values())
 
     def node_add(self, key:str, data=None):
-        node = {}
+        node = {'key': key , 'value':key }
         if type(data) is dict:
-            for key,value in data.items():
-                node[key] = value
+            for data_key,data_value in data.items():
+                node[data_key] = data_value
         else:
             if data:
                 node['value'] = str(data)
-            else:
-                node['value'] = key
-        node['key'] = key
         self._nodes[key] = node
         return node
 
