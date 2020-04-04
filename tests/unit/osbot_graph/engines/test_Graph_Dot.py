@@ -27,10 +27,10 @@ class test_Graph_Dot(Test_Helper):
             self.result = result
 
     def test_sample_dot_graph(self):
-        self.test_graph.add_node('aaa', data={'shape':'box', 'color':'red'})
+        #self.test_graph.add_node('aaa', data={'shape':'box', 'color':'red'})
         #self.graph_dot.set_label('aaaa').set_node_param('shape','box')
-        self.graph_dot.render_svg_to_file(self.svg_file)
-        self.graph_dot.print_dot_code()
+        self.result = self.graph_dot.render_svg_to_file(self.svg_file)
+        #self.graph_dot.print_dot_code()
 
     def test_from_graph(self):
         graph = Graph()

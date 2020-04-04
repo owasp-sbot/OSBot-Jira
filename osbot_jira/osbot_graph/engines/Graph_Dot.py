@@ -55,7 +55,6 @@ class Graph_Dot:
             self.add_rand_dir()
                 .add_label()
                 .add_node_params()
-                .add_line('mynode [image="/tmp/ACCESS.png" label="" shape="box"];')
                 .add_comment ('###### Nodes #######')
          )
 
@@ -113,9 +112,10 @@ class Graph_Dot:
     def render_svg_to_file(self, target_file):
         result = self.render_svg()
         svg = result.get('svg')
+        print(result.get('error'))
         if svg:
             file_create(target_file, svg)
             return {'status:':'ok', 'svg_file': target_file }
-        print(result.get('error'))
+
         return {'status:':'error', 'error': result.get('error') }
 
