@@ -60,6 +60,9 @@ class Graph_View:
             self.graph.reset_puml()
         return self
 
+    def puml(self):
+        return self.graph.puml.puml
+
     def print_puml(self):
         print(self.graph.puml.puml)
         return self
