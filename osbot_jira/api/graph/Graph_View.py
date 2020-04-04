@@ -74,7 +74,7 @@ class Graph_View:
 
     def view_default(self):
         self.graph.render_puml()
-        return self
+        return self.puml()
 
     def view_by_issue_type(self):
 
@@ -92,7 +92,7 @@ class Graph_View:
                 self.graph.puml.add_edge(issue_type, key)
 
         self.graph.puml.enduml()
-        return self
+        return self.puml()
 
     def view_by_labels(self):
 
@@ -113,7 +113,7 @@ class Graph_View:
                     #Dev.pprint(issue.get('Labels'))
 
         self.graph.puml.enduml()
-        return self
+        return self.puml()
 
     def view_by_status(self):
 
@@ -139,7 +139,7 @@ class Graph_View:
         for edge in edges:
             self.graph.puml.add_edge(edge[0], edge[1])
         self.graph.puml.enduml()
-        return self
+        return self.puml()
 
     def view_links(self):
 
@@ -156,7 +156,7 @@ class Graph_View:
                 .set_puml_on_add_node(on_add_node)
                 .render_puml()
         )
-        return self
+        return self.puml()
 
     def view_no_keys(self):
         (
@@ -167,7 +167,7 @@ class Graph_View:
                 .set_skin_param('ArrowColor','DarkGray')
                 .render_puml()
         )
-        return self
+        return self.puml()
 
     def view_schema(self):
 
@@ -200,7 +200,7 @@ class Graph_View:
 
         self.graph = new_graph
         self.graph.render_puml()
-        return self
+        return self.puml()
 
     def view_colors(self):
 
@@ -251,13 +251,13 @@ class Graph_View:
         self.graph.set_skin_param('Padding'              , '3'   )
 
         self.graph.render_puml()
-        return self
+        return self.puml()
 
 
     def view_top_down(self):
         self.graph.set_puml_direction_top_down()
         self.graph.render_puml()
-        return self
+        return self.puml()
 
     def view_top_down_in_blue(self):
         (
@@ -274,6 +274,6 @@ class Graph_View:
                     .set_skin_param('Shadowing'           , False   )
                     .render_puml()
          )
-        return self
+        return self.puml()
 
 
