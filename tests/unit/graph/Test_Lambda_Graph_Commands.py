@@ -95,12 +95,12 @@ class Test_Lambda_Graph_Commands(Test_Helper):
     #     Lambda_Graph_Commands().story(self.channel, params, None)
 
     def test_view_links(self):
-        params = ['graph_3XW', 'links']
-        Lambda_Graph_Commands().view(None,None, params, None)
+        params = ['graph_81N', 'links']
+        Lambda_Graph_Commands().view(None, self.channel, params, None)
 
     def test_view_only_one_param(self):
         params = ['sec-9696-down']
-        Lambda_Graph_Commands().view(self.channel, params, None)
+        Lambda_Graph_Commands().view(None, self.channel, params, None)
 
 
     def test_plantuml(self):

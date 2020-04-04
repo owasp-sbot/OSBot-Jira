@@ -7,15 +7,11 @@ from osbot_jira.api.graph.Lambda_Graph          import Lambda_Graph
 
 class Graph_View:
 
-    def __init__(self,):
-        self.graph      = None
+    def __init__(self, graph=None):
+        self.graph          = graph
         self.lambda_graph   = Lambda_Graph()
 
     def handle_lambda_request(self, params, slack_channel=None,team_id=None):
-        if len(params) == 1:
-            graph_name = params.pop()
-            self.load_graph(graph_name).render_simple()
-
         if len(params) > 1:
             graph_name = params[0]
             view_name  = params[1]
@@ -127,7 +123,6 @@ class Graph_View:
         for key,issue in issues.items():
             if issue:
                     summary    = issue.get('Summary')
-
                     #summary   = Misc.word_wrap_escaped(summary,30)
                     status     = issue.get('Status')
 
@@ -143,23 +138,6 @@ class Graph_View:
         self.graph.puml.enduml()
         return self
 
-    def view_top_down(self): 
-        (
-                self.graph
-                    .set_puml_direction_top_down()
-                    .set_puml_show_key_in_text(False)
-                    .set_puml_show_edge_labels(False)
-                    .set_skin_param('Padding'             , 10      )
-                    .set_skin_param('DefaultFontSize'     , 40      )
-                    .set_skin_param('DefaultFontColor'    , 'white' )
-                    .set_skin_param('CardBorderColor'     , 'white' )
-                    .set_skin_param('CardBackgroundColor' , '175B73')
-                    .set_skin_param('CardBorderThickness' , 0       )
-                    .set_skin_param('Shadowing'           , False   )
-                    .render_puml()
-         )
-        return self
-
     def view_links(self):
 
         def on_add_node(element,title,id, original_id):
@@ -169,9 +147,6 @@ class Graph_View:
                 self.graph.notes.append(('right', id, issue_links))
                 return '{0} "{1} \\n \\n {2}" as {3}'.format(element,title, original_id, id)
 
-        #self.graph.puml.on_add_node = on_add_node
-        #self.graph.nodes = [self.graph.nodes.pop()]
-        #self.graph.edges = []
         (
             self.graph
                 .set_puml_show_key_in_text(False)
@@ -275,8 +250,27 @@ class Graph_View:
         self.graph.render_puml()
         return self
 
-    def view_it_systems(self):
+
+    def view_top_down(self):
         self.graph.set_puml_direction_top_down()
         self.graph.render_puml()
         return self
+
+    def view_top_down_in_blue(self):
+        (
+                self.graph
+                    .set_puml_direction_top_down()
+                    .set_puml_show_key_in_text(False)
+                    .set_puml_show_edge_labels(False)
+                    .set_skin_param('Padding'             , 10      )
+                    .set_skin_param('DefaultFontSize'     , 40      )
+                    .set_skin_param('DefaultFontColor'    , 'white' )
+                    .set_skin_param('CardBorderColor'     , 'white' )
+                    .set_skin_param('CardBackgroundColor' , '175B73')
+                    .set_skin_param('CardBorderThickness' , 0       )
+                    .set_skin_param('Shadowing'           , False   )
+                    .render_puml()
+         )
+        return self
+
 

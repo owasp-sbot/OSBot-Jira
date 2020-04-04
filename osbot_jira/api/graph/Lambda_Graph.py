@@ -9,6 +9,7 @@ from osbot_jira.osbot_graph.Graph    import Graph
 from osbot_jira.osbot_graph.engines.Graph_Dot import Graph_Dot
 from osbot_utils.decorators.Method_Wrappers import cache
 from osbot_utils.utils.Local_Cache import use_local_cache_if_available
+from osbot_utils.utils.Misc import random_string_and_numbers
 
 
 class Lambda_Graph():
@@ -122,7 +123,7 @@ class Lambda_Graph():
 
     def save_graph(self, nodes, edges, extra_data = None, graph_id = None, graph_name = None, graph_type = None):
         if graph_name is None:                                          # if graph_name is not set
-            graph_name = Misc.random_string_and_numbers(3, 'graph_' )   # give it a temp name
+            graph_name = random_string_and_numbers(3, 'graph_' )   # give it a temp name
 
         graph = {
                 "name"      : graph_name ,
