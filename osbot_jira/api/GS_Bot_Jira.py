@@ -229,7 +229,7 @@ class GS_Bot_Jira:
             text = f':red_circle: no graph created from `{target}` (please double check that the issue ID exists)'
             return {"text": text, "attachments": []}
 
-        graph_type = "{0}__{1}___depth_{2}".format(target, direction, depth)
+        graph_type = f"{target}___depth_{depth}"
 
         if save_graph is False:
             return graph
@@ -237,10 +237,10 @@ class GS_Bot_Jira:
         graph_name = graph.render_and_save_to_elk(None, graph_type, channel, user)
 
         if only_create:
-            return graph, graph_name, depth, direction, target
+            return graph, graph_name, depth, target
 
         if channel:
-            message = f':point_right: Created graph with *name* `{graph_name}` *from* `{target}` *direction* `{direction}` *depth* `{depth}`'
+            message = f':point_right: Created graph with *name* `{graph_name}` *from* `{target}` *depth* `{depth}`'
             slack_message(message,[],channel)
 
             if view_engine =='plantuml':
@@ -250,7 +250,7 @@ class GS_Bot_Jira:
                 params = [view_engine, graph_name, 'default', width, delay]
                 Lambda('osbot_browser.lambdas.lambda_browser').invoke_async({"params": params, 'data': {'team_id': team_id, 'channel': channel}})
         else:
-            return graph, graph_name, depth, direction, target
+            return graph, graph_name, depth, target
 
             # puml = graph.puml.puml
             # max_size = 60000
