@@ -72,13 +72,6 @@ class test_Graph_Dot(Test_Helper):
 
 
         (graph_dot.set_layout_engine_dot()
-                  .set_rank_dir('LR')
-                  .set_rank_sep(1)
-                  #.set_size(2)
-                  .set_node_shape_box()
-                  .set_rank_same  (['TEAM-2'  , 'TASK-177', 'GUID-4'])
-                  .set_rank_source(['TASK-166', 'a b c'])
-                  .set_rank_sink  ([ 'GUILD-8'])
                   .render_svg_to_file(self.svg_file))
 
         print()
@@ -91,20 +84,24 @@ class test_Graph_Dot(Test_Helper):
         graph_dot.render_svg_to_file(self.svg_file)
 
     def test_graph__set_rank__set_label__set_node_params(self):
-        graph_dot = Lambda_Graph().get_graph_dot('graph_SCE')
+        #graph_dot = Lambda_Graph().get_graph_dot('graph_SCE')
+        graph_dot = Graph_Dot()
+        graph_dot.graph.add_node('extra node',data={'shape': 'rectangle', 'color': 'black', 'fontcolor': 'white', 'fontsize': 10, 'width':2}) \
+                       .add_edge('extra node', 'GUILD-4', {'label': 'an label', 'color': 'red', 'fontsize': 10 ,'dir': 'both'})      \
+                       .add_edge_with_label('extra node', 'an-label-2', 'GUILD-4', { 'color': 'red', 'fontsize': 10, 'dir': 'back'})
 
-        graph_dot.graph.add_node('extra node',
-                                 data={'shape': 'rectangle', 'color': 'black', 'fontcolor': 'white', 'fontsize': 10, 'width':2})
+        graph_dot.graph.add_edge_in_direction('aaa', 'both', 'both')
+        graph_dot.graph.add_edge__back   ('aaa', 'back')
+        graph_dot.graph.add_edge__both   ('aaa', 'both')
+        graph_dot.graph.add_edge__forward('aaa', 'forward')
+        graph_dot.graph.add_edge__none   ('aaa', 'none', {'label': 'edge label'})
 
-        (graph_dot.set_layout_engine_dot()
+
+
+        (graph_dot.set_layout_engine_circo()
                   .set_rank_dir('LR')
-                  .set_label('This is a title\n\n')
-
+                  .set_label('Controlling direction of edges\n\n')
                   .set_node_params({'shape': 'box','color':'deepskyblue', 'style':'filled'})
-                  #.set_node_shape('box').set_node_param('fontcolor', 'blue')
-                  .set_rank_same  (['TEAM-2'  , 'TASK-177', 'GUID-4'])
-                  .set_rank_source(['TASK-166', 'a b c'])
-                  .set_rank_sink  ([ 'GUILD-8'])
                   .render_svg_to_file(self.svg_file))
         graph_dot.print_dot_code()
 

@@ -71,6 +71,14 @@ class Graph_Dot:
         print(self.dot_code)
         return self
 
+    def parse_into_params(self, source, skip_names):
+        params = ""
+        for param_name,param_value in source.items():
+            if param_name in skip_names   : continue
+            if param_value:
+                params += f'{param_name}="{param_value}" '
+
+        return params
     def render(self):
         self.dot_code = DIGRAPH_START
         (
@@ -85,15 +93,7 @@ class Graph_Dot:
         for node in self.graph.nodes():
             key    = node.get('key')
             label  = node.get('value') or key
-            #shape  = node.get('shape')
-            #color  = node.get('color')
-            params = ""
-            for param_name,param_value in node.items():
-                if param_name == 'key'  : continue          # key should not be set here
-                params += f'{param_name}="{param_value}" '
-
-            #if shape: params += f'shape="{shape}" '
-            #if color: params += f'color="{color}" '
+            params = self.parse_into_params(node, ['key'])
 
             if params:
                 self.add_line(f'"{key}" [{params}]')
@@ -105,7 +105,8 @@ class Graph_Dot:
         for edge in self.graph.edges():
             from_key = self.edge_link(edge.get('from'))
             to_key   = self.edge_link(edge.get('to'))
-            self.add_line(f' {from_key} -> {to_key}')
+            params = self.parse_into_params(edge, ['from','to'])
+            self.add_line(f' {from_key} -> {to_key} [{params}]')
 
         self.add_ranks()
         self.add_extra_dot_code()
