@@ -84,7 +84,7 @@ class Graph_Dot:
 
         for node in self.graph.nodes():
             key    = node.get('key')
-            label  = node.get('label') or key
+            label  = node.get('value') or key
             #shape  = node.get('shape')
             #color  = node.get('color')
             params = ""
@@ -96,7 +96,7 @@ class Graph_Dot:
             #if color: params += f'color="{color}" '
 
             if params:
-                self.add_line(f'"{key}" ["label"="{label}" {params}]')
+                self.add_line(f'"{key}" [{params}]')
             else:
                 self.add_line(f'"{key}" ["label"="{label}"]')
 
@@ -155,6 +155,7 @@ class Graph_Dot:
     def render_svg_to_file(self, target_file):
         result = self.render_svg()
         svg = result.get('svg')
+        print(result.get('error'))
         if svg:
             file_create(target_file, svg)
             return {'status:':'ok', 'svg_file': target_file }
