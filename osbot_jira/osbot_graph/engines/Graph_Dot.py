@@ -1,17 +1,20 @@
 from osbot_aws.apis.Lambda import Lambda
 from osbot_utils.utils.Files import file_create
 
+LEFT_PADDING  = '             '      # using spaces instead of tabs ('/t') creates more consistent results
+DIGRAPH_START = 'digraph G { \n'
+DIGRAPH_END   = '          }'
 
 class Graph_Dot:
 
     def __init__(self,graph):
-        self.graph         = graph
-        self.layout_engine = 'fdp'
-        self.dot_code      = ""
-        self.label         = ""
-        self.node_params   = {}
-        self.rank_dir      = None
-        self.ranks         = {}
+        self.graph           = graph
+        self.layout_engine   = 'fdp'
+        self.dot_code        = ""
+        self.label           = ""
+        self.node_params     = {}
+        self.rank_dir        = None
+        self.ranks           = {}
 
     def add_label(self):
         if self.label:
@@ -19,8 +22,8 @@ class Graph_Dot:
                 .add_line('labelloc = "t"')            # default to put label at the top
         return self
 
-    def add_line(self, value):                      # todo: refactor all add_*** methods into separate 'build' class
-        self.dot_code += f'\t\t\t{value} \n'
+    def add_line(self, value=''):                      # todo: refactor all add_*** methods into separate 'build' class
+        self.dot_code += f'{LEFT_PADDING}{value} \n'
         return self
 
     def add_rand_dir(self):
@@ -50,7 +53,7 @@ class Graph_Dot:
         return self
 
     def render(self):
-        self.dot_code = "digraph G { \n"
+        self.dot_code = DIGRAPH_START
         (
             self.add_rand_dir()
                 .add_label()
@@ -68,18 +71,18 @@ class Graph_Dot:
             if params:
                 self.add_line(f'"{key}" ["label"="{key}" {params}]')
             else:
-            #self.dot_code += f'\t\t\t"{key}"\n'
                 self.add_line(f'"{key}" ["label"="{key}"]')
 
-        self.dot_code += '\t\t\t####### Edges #######\n'
+        self.add_line().add_comment('###### Edges #######')
+
         for edge in self.graph.edges():
             from_key = edge.get('from')
             to_key   = edge.get('to')
-            self.dot_code += f'\t\t\t"{from_key}" -> "{to_key}"\n'
+            self.add_line(f'"{from_key}" -> "{to_key}"')
 
         self.add_ranks()
 
-        self.dot_code +='\t\t   }'
+        self.dot_code += DIGRAPH_END
         return self.dot_code
 
     def set_layout_engine(self, engine):
