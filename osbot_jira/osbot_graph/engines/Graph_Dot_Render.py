@@ -1,9 +1,11 @@
 LEFT_PADDING  = '             '      # using spaces instead of tabs ('/t') creates more consistent results
-DIGRAPH_START = 'digraph G { \n'
-DIGRAPH_END   = '          }'
+#DIGRAPH_START = 'digraph G { \n'
+DIGRAPH_END   = '          }'        # todo: fix padding for sub-graphs
 
 class Graph_Dot_Render:
-    def __init__(self, graph, sub_graphs):
+    def __init__(self, graph, sub_graphs, graph_name='G', graph_type='digraph'):
+        self.graph_name      = graph_name
+        self.graph_type      = graph_type
         self.dot_code        = ""
         self.extra_dot_code  = ""
         self.label           = ""
@@ -42,7 +44,7 @@ class Graph_Dot_Render:
     # render main
 
     def render(self):
-        self.dot_code = DIGRAPH_START
+        self.dot_code = f'{self.graph_type} {self.graph_name} {{'
         (
             self.add_rand_dir()
                 .add_rank_sep()
@@ -76,6 +78,13 @@ class Graph_Dot_Render:
 
         self.dot_code += DIGRAPH_END
         return self.dot_code
+
+    def add_sub_graphs(self):
+        for sub_graph in self.sub_graphs:
+            self.add_line().add_line(sub_graph.render.render())
+        return self
+
+
     # render methods
 
     def add_concentrate(self):
@@ -100,11 +109,6 @@ class Graph_Dot_Render:
     def add_size(self):
         if self.size:
             self.add_line(f'size = "{self.size},{self.size}"')
-        return self
-
-    def add_sub_graphs(self):
-        for sub_graph in self.sub_graphs:
-            print('adding subgraph')
         return self
 
     def add_rand_dir(self):

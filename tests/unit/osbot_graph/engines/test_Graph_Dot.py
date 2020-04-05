@@ -93,8 +93,6 @@ class test_Graph_Dot(Test_Helper):
         graph_dot.graph.add_edge__forward('aaa', 'forward')
         graph_dot.graph.add_edge__none   ('aaa', 'none', {'label': 'edge label'})
 
-
-
         (graph_dot.set_layout_engine_dot()
                   .set_rank_dir('LR')
                   .set_label('Controlling direction of edges\n\n')
@@ -104,18 +102,60 @@ class test_Graph_Dot(Test_Helper):
         graph_dot.print_dot_code()
 
     def test_sub_graphs(self):
-        dot_code = """subgraph cluster_0 {
-                        style=filled;
-                        color=lightgrey;
-                        node [style=filled,color=white];
-                        a0 -> a1 -> a2 -> a3;
-                        label = "process #1";
-                      }"""
+        # dot_code = """subgraph cluster_0 {
+        #                 style=filled;
+        #                 color=lightgrey;
+        #                 node [style=filled,color=white];
+        #                 a0 -> a1 -> a2 -> a3;
+        #                 label = "process #1";
+        #                }
+        #
+        #                subgraph cluster_1 {
+        #                 node [style=filled];
+        #                 b0 -> b1 -> b2 -> b3;
+        #                 label = "process #2";
+        #                 color=blue
+        #               }
+        #
+        #               start -> a0;
+        #               start -> b0;
+        #               a1 -> b3;
+        #               b2 -> a3;
+        #               a3 -> a0;
+        #               a3 -> end;
+        #               b3 -> end;
+        #
+        #               start [shape=Mdiamond];
+        #               end [shape=Msquare];
+        #               """
 
-        subgraph  = Graph_Dot()
+        subgraph_1 = Graph_Dot(graph_name = 'cluster_F1', graph_type='subgraph')
 
-        graph_dot = Graph_Dot()
+        (subgraph_1.add_edges([('a0','a1'),('a1','a2'),('a2','a3')])
+                   .set_node_params({'style':'filled', 'color':'white'})
+                   .set_extra_dot_code("""style=filled; color=lightgrey;""")
+                   .set_label('process #1'))
 
-        graph_dot.set_extra_dot_code(dot_code).set_layout_engine_dot()
+        subgraph_2 = Graph_Dot(graph_name='cluster_G1', graph_type='subgraph')
+        (subgraph_2.add_edges([('b0', 'b1'), ('b1', 'b2'), ('b2', 'b3')])
+                   .set_node_params({'style':'filled'})
+                   .set_extra_dot_code("""color=blue;""")
+                   .set_label('process #2'))
+
+        graph_dot = Graph_Dot().add_sub_graph(subgraph_1).add_sub_graph(subgraph_2)
+
+        (graph_dot.add_edge('start', 'a0' )
+                  .add_edge('start', 'b0' )
+                  .add_edge('a1'   , 'b3' )
+                  .add_edge('b2'   , 'a3' )
+                  .add_edge('a3'   , 'a0' )
+                  .add_edge('a3'   , 'end')
+                  .add_edge('b3'   , 'end')
+                  .add_node('start',{'shape': 'Mdiamond'})
+                  .add_node('end'  ,{'shape': 'Msquare' }))
+
+
+        #graph_dot.set_extra_dot_code(dot_code).set_layout_engine_dot()
+        graph_dot.set_layout_engine_dot()
         graph_dot.render_svg_to_file(self.svg_file)
         graph_dot.print_dot_code()

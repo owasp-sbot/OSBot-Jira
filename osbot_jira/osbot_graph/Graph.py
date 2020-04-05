@@ -36,8 +36,8 @@ class Graph:
                 self.add_edge_with_label(*edge)
         return self
 
-    def add_node(self, key:str, data=None):
-        self.node_add(key, data)
+    def add_node(self, key:str, params=None):
+        self.node_add(key, params)
         return self
 
     def add_node_record(self, key, label):                  # to do add label parser

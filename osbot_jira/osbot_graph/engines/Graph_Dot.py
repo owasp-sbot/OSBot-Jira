@@ -6,20 +6,27 @@ from osbot_utils.utils.Files import file_create
 
 class Graph_Dot:
 
-    def __init__(self, graph=None, graph_name='G'):
+    def __init__(self, graph=None, graph_name='G', graph_type='digraph'):
         self.graph           = graph or Graph()
-        self.graph_name      = graph_name
         self.layout_engine   = 'fdp'
         self.sub_graphs      = []
-        self.render = Graph_Dot_Render(self.graph, self.sub_graphs)
+        self.render = Graph_Dot_Render(self.graph, self.sub_graphs, graph_name, graph_type)
 
-
-    def print_dot_code(self):
-        print(self.render.dot_code)
+    def add_node(self,key:str, params=None):
+        self.graph.add_node(key, params)
         return self
 
+    def add_edge(self, from_key:str, to_key:str, params:dict=None):
+        self.graph.add_edge(from_key, to_key ,params )
+        return self
+
+    def add_edges(self, edges):
+        self.graph.add_edges(edges)
+        return self
+
+    def add_sub_graph     (self,      subgraph ): self.sub_graphs.append(subgraph)           ; return self
     def set_layout_engine (self,      engine   ): self.layout_engine = engine                ; return self
-    def set_node_shape    (self,      value    ): self.set_node_param('shape', value) ; return self
+    def set_node_shape    (self,      value    ): self.set_node_param('shape', value)        ; return self
 
     def set_concentrate   (self,               ): self.render.concentrate      = True        ; return self
     def set_extra_dot_code(self,      value    ): self.render.extra_dot_code   = value       ; return self
@@ -63,3 +70,6 @@ class Graph_Dot:
 
         return {'status:':'error', 'error': result.get('error') }
 
+    def print_dot_code(self):
+        print(self.render.dot_code)
+        return self
