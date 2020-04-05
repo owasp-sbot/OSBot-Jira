@@ -107,7 +107,7 @@ class Graph_Dot:
 
     def render_svg(self):
         params = { 'dot':self.render(), 'layout_engine' : self.layout_engine}
-        return Lambda('gw_bot.lambdas.dot_to_png').invoke(params)
+        return Lambda('gw_bot.lambdas.dot_to_svg').invoke(params)
 
     def render_svg_to_file(self, target_file):
         result = self.render_svg()

@@ -104,13 +104,8 @@ class Graph_View:
             if issue:
                 for label in issue.get('Labels'):
                     summary    = issue.get('Summary')
-                    #issue_type = issue.get('Issue Type')
-                    #self.graph.puml.add_card(label,label)
-
                     self.graph.puml.add_card(summary, key)
-
                     self.graph.puml.add_edge(label, key)
-                    #Dev.pprint(issue.get('Labels'))
 
         self.graph.puml.enduml()
         return self.puml()
@@ -195,7 +190,6 @@ class Graph_View:
         for item in schema.values():
             new_graph.add_node(item.get('from_issue_type'))
             new_graph.add_node(item.get('to_issue_type'))
-            #new_graph.add_edge(item.get('from_issue_type'), "{0} \\n<size:7>(x{1})".format(item.get('link_name'),item.get('count')),item.get('to_issue_type'))
             new_graph.add_edge(item.get('from_issue_type'), item.get('link_name'),item.get('to_issue_type'))
 
         self.graph = new_graph
