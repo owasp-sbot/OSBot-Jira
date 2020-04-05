@@ -218,9 +218,9 @@ class GS_Bot_Jira:
             text = f':red_circle: sorry depths bigger than 5 are not supported (since 5 will already give you the only graph)'
             return {"text": text, "attachments": []}
 
-        direction = 'all'       # change behaviour to only show all
+        #direction = 'all'       # change behaviour to only show all
 
-        graph = Lambda_Graph().graph_links(target, direction, depth)
+        graph = Lambda_Graph().graph_links(target, depth)
         if graph is None:
             text = f':red_circle: graph not created for target `{target}`'
             return {"text": text, "attachments": []}

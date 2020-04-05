@@ -140,26 +140,16 @@ class Lambda_Graph():
         graph = self.get_gs_graph___by_type(graph_name)
         return Lambda('gw_bot.lambdas.puml_to_slack').invoke({"puml"   : graph.get_puml(), "channel": channel})
 
-    def graph_links(self, target, direction, depth):
+    def graph_links(self, target, depth=1):
         if target is None:
             return None
-        graph = self.get_gs_graph___by_name(target)   # check if the value provided is a saved graph
+        graph = self.get_gs_graph___by_name(target)             # check if the value provided is a saved graph
         if graph is not None:                                   # if it exists
             keys = graph.nodes                                  # set keys to graph nodes
         else:                                                   # if not
             keys = target.upper().split(",")                    # use value as keys
 
         graph = GS_Graph()
-
-        if direction == 'up':
-            graph.set_links_path_mode_to_up()
-        elif direction == 'down':
-            graph.set_links_path_mode_to_down()
-        elif direction == 'children':
-            graph.set_puml_link_types_to_add(['is parent of'])
-        elif direction == 'parents':
-            graph.set_puml_link_types_to_add(['is child of'])
-
         graph.add_all_linked_issues(keys, depth)
         return graph
 

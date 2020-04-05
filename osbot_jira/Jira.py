@@ -38,8 +38,8 @@ class Jira:
         query = self.elk_to_slack().get_search_query(params)
         return self.api_issues().search_using_lucene(query)
 
-    def graph_links(self, target, direction, depth):
-        return self.lambda_graph().graph_links(target, direction, depth)
+    def graph_links(self, target, depth):
+        return self.lambda_graph().graph_links(target, depth)
 
         #params = ['links', source, direction, depth]
         #€return self.gs_bot_jira.cmd_links(params, save_graph=False)

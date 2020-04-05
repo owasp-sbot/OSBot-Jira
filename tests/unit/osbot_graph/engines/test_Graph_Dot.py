@@ -70,14 +70,12 @@ class test_Graph_Dot(Test_Helper):
 
         graph_dot = Lambda_Graph().get_graph_dot(graph_name)
 
-        graph_dot.graph.add_node('test', data={'shape':'record', 'label':'<f0> left|<f1> middle|<f2> right'})
-        graph_dot.graph.add_edge('test:f2','GUID-4')
 
         (graph_dot.set_layout_engine_dot()
-                  #.set_rank_sep(0.1)
-                  .set_size(2)
-                  #.set_node_shape_box()
-                  #.set_rank_dir('LR')
+                  .set_rank_dir('LR')
+                  .set_rank_sep(1)
+                  #.set_size(2)
+                  .set_node_shape_box()
                   .set_rank_same  (['TEAM-2'  , 'TASK-177', 'GUID-4'])
                   .set_rank_source(['TASK-166', 'a b c'])
                   .set_rank_sink  ([ 'GUILD-8'])
