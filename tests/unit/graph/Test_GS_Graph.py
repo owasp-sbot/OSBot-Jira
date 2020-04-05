@@ -176,7 +176,7 @@ class Test_GS_Graph(TestCase):
 
     def test_graph(self):
         self.result = self.graph.add_node('aaa').graph().nodes()
-        
+
 
     def test_remove_with_links(self):
 

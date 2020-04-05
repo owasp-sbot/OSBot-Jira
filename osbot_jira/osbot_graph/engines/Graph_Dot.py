@@ -85,11 +85,15 @@ class Graph_Dot:
         for node in self.graph.nodes():
             key    = node.get('key')
             label  = node.get('label') or key
-            shape  = node.get('shape')
-            color  = node.get('color')
+            #shape  = node.get('shape')
+            #color  = node.get('color')
             params = ""
-            if shape: params += f'shape="{shape}" '
-            if color: params += f'color="{color}" '
+            for key,value in node.items():
+                if key == 'key'  : continue
+                params += f'{key}="{value}" '
+
+            #if shape: params += f'shape="{shape}" '
+            #if color: params += f'color="{color}" '
 
             if params:
                 self.add_line(f'"{key}" ["label"="{label}" {params}]')
@@ -151,7 +155,6 @@ class Graph_Dot:
     def render_svg_to_file(self, target_file):
         result = self.render_svg()
         svg = result.get('svg')
-        print(result.get('error'))
         if svg:
             file_create(target_file, svg)
             return {'status:':'ok', 'svg_file': target_file }

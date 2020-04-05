@@ -93,9 +93,13 @@ class test_Graph_Dot(Test_Helper):
     def test_graph__set_rank__set_label__set_node_params(self):
         graph_dot = Lambda_Graph().get_graph_dot('graph_SCE')
 
+        graph_dot.graph.add_node('extra node',
+                                 data={'shape': 'rectangle', 'color': 'black', 'fontcolor': 'white', 'fontsize': 10, 'width':2})
+
         (graph_dot.set_layout_engine_dot()
                   .set_rank_dir('LR')
                   .set_label('This is a title\n\n')
+
                   .set_node_params({'shape': 'box','color':'deepskyblue', 'style':'filled'})
                   #.set_node_shape('box').set_node_param('fontcolor', 'blue')
                   .set_rank_same  (['TEAM-2'  , 'TASK-177', 'GUID-4'])
