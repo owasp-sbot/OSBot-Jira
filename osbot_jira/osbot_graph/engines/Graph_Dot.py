@@ -15,11 +15,16 @@ class Graph_Dot:
         self.extra_dot_code  = ""
         self.label           = ""
         self.node_params     = {}
+        self.concentrate     = None
         self.size            = None
         self.rank_dir        = None
         self.rank_sep        = None
         self.ranks           = {}
 
+    def add_concentrate(self):
+        if self.concentrate:
+            self.add_line('concentrate=true')
+        return self
     def add_extra_dot_code(self):
         if self.extra_dot_code:
             self.dot_code += self.extra_dot_code
@@ -52,6 +57,7 @@ class Graph_Dot:
 
     def add_comment(self, value):
         return self.add_line(f'#{value} \n')
+
 
     def add_node_params(self):
         if self.node_params:
@@ -87,6 +93,7 @@ class Graph_Dot:
                 .add_size()
                 .add_label()
                 .add_node_params()
+                .add_concentrate()
                 .add_comment ('###### Nodes #######')
          )
 
@@ -108,8 +115,9 @@ class Graph_Dot:
             params = self.parse_into_params(edge, ['from','to'])
             self.add_line(f' {from_key} -> {to_key} [{params}]')
 
-        self.add_ranks()
-        self.add_extra_dot_code()
+        (self.add_ranks()
+             .add_extra_dot_code())
+
         self.dot_code += DIGRAPH_END
         return self.dot_code
 
@@ -120,6 +128,7 @@ class Graph_Dot:
         else:
             return f'"{edge_node}"'
 
+    def set_concentrate   (self,               ): self.concentrate      = True        ; return self
     def set_extra_dot_code(self,      value    ): self.extra_dot_code   = value       ; return self
     def set_label         (self,      value    ): self.label            = value       ; return self
     def set_layout_engine (self,      engine   ): self.layout_engine = engine         ; return self

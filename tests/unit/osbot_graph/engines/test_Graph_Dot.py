@@ -98,10 +98,11 @@ class test_Graph_Dot(Test_Helper):
 
 
 
-        (graph_dot.set_layout_engine_circo()
+        (graph_dot.set_layout_engine_dot()
                   .set_rank_dir('LR')
                   .set_label('Controlling direction of edges\n\n')
                   .set_node_params({'shape': 'box','color':'deepskyblue', 'style':'filled'})
+                  .set_concentrate()
                   .render_svg_to_file(self.svg_file))
         graph_dot.print_dot_code()
 
