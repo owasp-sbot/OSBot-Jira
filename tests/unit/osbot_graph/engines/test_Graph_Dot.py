@@ -74,9 +74,6 @@ class test_Graph_Dot(Test_Helper):
         (graph_dot.set_layout_engine_dot()
                   .render_svg_to_file(self.svg_file))
 
-        print()
-        print(graph_dot.render())
-
     def test_from_records(self):
         graph_dot = Graph_Dot()
         graph_dot.graph.add_node('aaaa')
@@ -106,19 +103,19 @@ class test_Graph_Dot(Test_Helper):
                   .render_svg_to_file(self.svg_file))
         graph_dot.print_dot_code()
 
-    def test_bug_in_jupyter(self):
-        graph = Lambda_Graph().graph_links('OUTCOME-97').graph()
+    def test_sub_graphs(self):
+        dot_code = """subgraph cluster_0 {
+                        style=filled;
+                        color=lightgrey;
+                        node [style=filled,color=white];
+                        a0 -> a1 -> a2 -> a3;
+                        label = "process #1";
+                      }"""
 
-        graph_dot = Graph_Dot(graph)
-        graph_dot.graph.add_node('extra node', data={'shape': 'rectangle',
-                                                     'color': 'black',
-                                                     'fontcolor': 'white',
-                                                     'fontsize': '10',
-                                                     'width': '2'})
-        graph_dot.graph.add_edge('TEAM-2', 'extra node')
-        (graph_dot.set_layout_engine_dot()
-         .set_rank_dir('LR')
-         .set_label('\nThis is the title of this Graph\n\n')
-         .set_node_params({'shape': 'box', 'color': 'deepskyblue', 'style': 'filled'}))
+        subgraph  = Graph_Dot()
+
+        graph_dot = Graph_Dot()
+
+        graph_dot.set_extra_dot_code(dot_code).set_layout_engine_dot()
         graph_dot.render_svg_to_file(self.svg_file)
         graph_dot.print_dot_code()
