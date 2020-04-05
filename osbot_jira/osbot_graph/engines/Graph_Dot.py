@@ -13,6 +13,7 @@ class Graph_Dot:
         self.dot_code        = ""
         self.label           = ""
         self.node_params     = {}
+        self.size            = None
         self.rank_dir        = None
         self.ranks           = {}
 
@@ -24,6 +25,11 @@ class Graph_Dot:
 
     def add_line(self, value=''):                      # todo: refactor all add_*** methods into separate 'build' class
         self.dot_code += f'{LEFT_PADDING}{value} \n'
+        return self
+
+    def add_size(self):
+        if self.size:
+            self.add_line(f'size = "{self.size},{self.size}"')
         return self
 
     def add_rand_dir(self):
@@ -56,6 +62,7 @@ class Graph_Dot:
         self.dot_code = DIGRAPH_START
         (
             self.add_rand_dir()
+                .add_size()
                 .add_label()
                 .add_node_params()
                 .add_comment ('###### Nodes #######')
@@ -99,6 +106,7 @@ class Graph_Dot:
     def set_node_params(self,      params): self.node_params      = params      ; return self
     def set_node_param (self, key, value ): self.node_params[key] = value       ; return self
     def set_node_shape (self,      value ): self.set_node_param('shape', value) ; return self
+    def set_size       (self,      value ): self.size             = value       ; return self
     def set_rank_dir   (self,      value ): self.rank_dir         = value       ; return self
 
     def set_rank       (self, rank, node_ids): self.ranks[rank] = node_ids; return self

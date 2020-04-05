@@ -41,7 +41,8 @@ class test_Graph_Dot(Test_Helper):
 
         graph_dot = Lambda_Graph().get_graph_dot(graph_name)
 
-        (graph_dot.set_layout_engine_dot()
+        (graph_dot.set_layout_engine_circo()
+                  .set_size(2)
                   .set_rank_dir('LR')
                   .set_rank_same  (['TEAM-2'  , 'TASK-177', 'GUID-4'])
                   .set_rank_source(['TASK-166', 'a b c'])
