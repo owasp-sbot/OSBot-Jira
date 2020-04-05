@@ -5,6 +5,7 @@ from pbx_gs_python_utils.utils.Json     import Json
 
 from osbot_jira.api.API_Issues          import API_Issues
 from osbot_jira.api.graph.GS_Graph_Puml import GS_Graph_Puml
+from osbot_jira.osbot_graph.Graph import Graph
 from osbot_utils.decorators.Lists import index_by
 
 
@@ -187,6 +188,10 @@ class GS_Graph:
 
     def get_puml             (self):
         return self.puml.puml
+
+    def graph(self):
+        return Graph().add_nodes(self.nodes) \
+                      .add_edges(self.edges)
 
     def issues__values_by_field(self, field_name):
         results = []

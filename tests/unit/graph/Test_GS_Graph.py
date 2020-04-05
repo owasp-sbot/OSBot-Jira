@@ -3,10 +3,9 @@ import textwrap
 import unittest
 from unittest        import TestCase
 
-from pbx_gs_python_utils.utils.Dev import Dev
-from pbx_gs_python_utils.utils.slack.API_Slack import API_Slack
-
+from gw_bot.api.API_Slack import API_Slack
 from osbot_jira.api.graph.GS_Graph import GS_Graph
+from osbot_utils.utils.Dev import Dev
 
 
 class Test_GS_Graph(TestCase):
@@ -175,6 +174,10 @@ class Test_GS_Graph(TestCase):
 
 
 
+    def test_graph(self):
+        self.result = self.graph.add_node('aaa').graph().nodes()
+        
+
     def test_remove_with_links(self):
 
         (self.graph  .add_node("RISK-424")
@@ -292,21 +295,21 @@ class Test_GS_Graph(TestCase):
         graph.render_puml_and_save_tmp()
 
 
-    def test__create_graph_with_epic_data__assignee(self):
-        keys = ['SEC-9696']
-        graph = self.graph
-        (graph  .set_links_path_mode_to_down()
-                .add_all_linked_issues(keys, 1)
-                .add_nodes_from_epics()
-                .add_all_linked_issues()
-                .set_puml_node_text_value('Assignee')
-        )
-        self.graph.render_puml()
-        self.graph.puml.save_tmp()
-
-        #graph.render_puml_and_save_tmp()
-
-        API_Slack('DDKUZTK6X').puml_to_slack(graph.puml.puml)
+    # def test__create_graph_with_epic_data__assignee(self):
+    #     keys = ['SEC-9696']
+    #     graph = self.graph
+    #     (graph  .set_links_path_mode_to_down()
+    #             .add_all_linked_issues(keys, 1)
+    #             .add_nodes_from_epics()
+    #             .add_all_linked_issues()
+    #             .set_puml_node_text_value('Assignee')
+    #     )
+    #     self.graph.render_puml()
+    #     self.graph.puml.save_tmp()
+    #
+    #     #graph.render_puml_and_save_tmp()
+    #
+    #     API_Slack('DDKUZTK6X').puml_to_slack(graph.puml.puml)
 
 
     def test__create_graph_with_up_down_data(self):
