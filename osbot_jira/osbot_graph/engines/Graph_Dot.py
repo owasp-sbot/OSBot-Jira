@@ -88,9 +88,9 @@ class Graph_Dot:
             #shape  = node.get('shape')
             #color  = node.get('color')
             params = ""
-            for key,value in node.items():
-                if key == 'key'  : continue
-                params += f'{key}="{value}" '
+            for param_name,param_value in node.items():
+                if param_name == 'key'  : continue          # key should not be set here
+                params += f'{param_name}="{param_value}" '
 
             #if shape: params += f'shape="{shape}" '
             #if color: params += f'color="{color}" '
