@@ -1,12 +1,10 @@
 import json
 from unittest import TestCase
 
-from pbx_gs_python_utils.utils.Dev import Dev
-from pbx_gs_python_utils.utils.Local_Cache import use_local_cache_if_available, save_result_to_local_cache
-
 from gw_bot.helpers.Test_Helper import Test_Helper
 from osbot_jira.api.graph.Filters import Filters
 from osbot_jira.api.graph.GS_Graph import GS_Graph
+from osbot_utils.utils.Dev import Dev
 
 
 class test_Filters(Test_Helper):
@@ -22,9 +20,6 @@ class test_Filters(Test_Helper):
             Dev.pprint(self.result)
 
     # helper methods
-
-    @use_local_cache_if_available
-    #@save_result_to_local_cache
     def get_graph_json(self,graph_name):
         return self.filters.lambda_graph().load_gs_graph(graph_name).to_json(store_issues=True)
 

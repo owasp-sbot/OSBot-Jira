@@ -1,6 +1,4 @@
 from api_jira.API_Jira_Sheets_Sync import API_Jira_Sheets_Sync
-from utils.Dev import Dev
-from utils.Local_Cache import use_local_cache_if_available
 from utils.Misc import Misc
 
 

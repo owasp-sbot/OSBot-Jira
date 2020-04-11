@@ -155,14 +155,6 @@ class Graph_Filters:
         slack_message(text, [], channel, team_id)
 
 
-    # @use_local_cache_if_available
-    # def offline_data(self,graph_name):
-    #     graph = Graph_Filters._get_graph(graph_name)
-    #     issues = graph.get_nodes_issues()
-    #     return graph.nodes,graph.edges,issues
-
-
-
     @staticmethod
     def group_by_field(team_id=None, channel=None, params=None):
         if len(params) < 2:

@@ -111,7 +111,6 @@ class API_Jira:
         #     }
         return data
 
-    #@use_local_cache_if_available
     def fields(self):
         if self._fields is None:
             self._fields = self.jira().fields()
@@ -206,7 +205,6 @@ class API_Jira:
     def issue_worklogs(self, key):
         return self.jira().worklogs(key)
 
-    #@use_local_cache_if_available
     def issue(self, id):
         return self.issue_no_cache(id)
 
@@ -227,8 +225,6 @@ class API_Jira:
             log_error(str(error), 'API_Jira | issue')
         return None
 
-    #@use_local_cache_if_available
-    #@save_result_to_local_cache
     def issue_changes_log_only_status(self, jql, start_at = 0, max = -1):
         keys = self.search_just_return_keys(jql)
         if max > 0:
@@ -304,8 +300,6 @@ class API_Jira:
             projects[project.key]= project
         return projects
 
-    #@use_local_cache_if_available
-    #@save_result_to_local_cache
     def search(self, jql, start_at = 0, max = -1):
         return self.search_no_cache(jql,start_at,max)
 

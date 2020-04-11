@@ -7,8 +7,6 @@ from gw_bot.helpers.Lambda_Helpers   import slack_message, log_to_elk
 from osbot_jira.api.graph.GS_Graph   import GS_Graph
 from osbot_jira.osbot_graph.Graph    import Graph
 from osbot_jira.osbot_graph.engines.Graph_Dot import Graph_Dot
-from osbot_utils.decorators.Method_Wrappers import cache
-from osbot_utils.utils.Local_Cache import use_local_cache_if_available
 from osbot_utils.utils.Misc import random_string_and_numbers
 
 

@@ -76,7 +76,6 @@ class API_Issues:
             results[issue['Key']] = issue
         return results
 
-    #@use_local_cache_if_available
     def issues_all_indexes(self):
         issues = {}
         issues.update(self.issues_all('jira'))
@@ -84,8 +83,6 @@ class API_Issues:
         issues.update(self.issues_all('sec_project'))
         return issues
 
-    # @use_local_cache_if_available
-    # #@save_result_to_local_cache
     # def issues_all_cached(self, index='jira'):
     #     return self.issues_all(index)
 
@@ -96,8 +93,6 @@ class API_Issues:
     #     issues.update(self.issues_all_cached('sec_project'))
     #     return issues
 
-    #@use_local_cache_if_available
-    #@save_result_to_local_cache
     def labels(self):
         query = { "_source": ["Key","Labels"]}
         data  = {}
@@ -110,8 +105,6 @@ class API_Issues:
                     data[label].append(key)
         return data
 
-    #@use_local_cache_if_available
-    #@save_result_to_local_cache
     def link_types(self, index="all"):
         query   = {"_source": ["Key", "Issue Links"], }
         original_index = self.elastic().get_index()
@@ -173,31 +166,6 @@ class API_Issues:
         if size is None  : size = 10000
         results = self.elastic().search_using_lucene(query, size)
         return list(results)                                        # convert to list due since it seems easier for callers to have it already normalised (and not in a generator)
-
-    #@use_local_cache_if_available
-    #@save_result_to_local_cache
-    # def stakeholders(self):             # used to calculate the org chart
-    #     has_stakeholders = self.link_types().get('has Stakeholder')
-    #     stakeholders_by_id = {}
-    #     for key, stakeholders in has_stakeholders.items():
-    #         for stakeholder in stakeholders:
-    #             if stakeholders_by_id.get(stakeholder) is None: stakeholders_by_id[stakeholder] = []
-    #             stakeholders_by_id[stakeholder].append(key)
-    #
-    #     data = {}
-    #
-    #     for key in stakeholders_by_id:
-    #         issue = self.issue(key)
-    #         if issue.get('Issue Links') is None: continue           # there was not data for this issue (happens when moved or deleted and the x-ref mappings have not been updated)
-    #         summary = issue.get('Summary')
-    #         del issue.get('Issue Links')['_all']
-    #         data[summary] = {
-    #             'Key'           : key                      ,
-    #              'Labels'        : issue.get('Summary')     ,
-    #             'Issue Links'   : issue.get('Issue Links')
-    #         }
-    #     return data
-
 
     def resolve_es_index(self, key):
         return 'jira'
