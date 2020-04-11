@@ -158,6 +158,6 @@ class Lambda_Graph():
             graph = self.get_gs_graph___by_name(graph_name)
             if graph:
                 return True
-            print(f'[{wait_count}] not there yet so sleeping for {wait_for_ms}')
+            #print(f'[{wait_count}] not there yet so sleeping for {wait_for_ms}')
             sleep(wait_for_ms/1000)
         return False
