@@ -29,24 +29,6 @@ class test_sow(Test_Helper):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #    for this to work run this command on the tests folder
 #         pip3 install -t _lambda_dependencies/jira jira
 #    def test_update_dependency(self):
