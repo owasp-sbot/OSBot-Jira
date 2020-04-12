@@ -67,7 +67,6 @@ class API_Issues:
     def issues_updated_in_last(self,period):        # can be 1h , 1d, 1w
         return self.elastic().get_data_between_dates("Updated","now-{0}".format(period),"now")
 
-    #@save_result_to_local_cache
     def issues_all(self, index = 'jira'):
         self.elastic().index = index
         query = { "query": {"match_all": {}}}
