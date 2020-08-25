@@ -1,12 +1,12 @@
 import json
-from pbx_gs_python_utils.plantuml.Puml  import Puml
-from pbx_gs_python_utils.utils.Files    import Files
-from pbx_gs_python_utils.utils.Json     import Json
 
 from osbot_jira.api.API_Issues          import API_Issues
 from osbot_jira.api.graph.GS_Graph_Puml import GS_Graph_Puml
+from osbot_jira.api.plantuml.Puml import Puml
 from osbot_jira.osbot_graph.Graph import Graph
 from osbot_utils.decorators.Lists import index_by
+from osbot_utils.utils.Files import Files
+from osbot_utils.utils.Json import Json
 
 
 class GS_Graph:

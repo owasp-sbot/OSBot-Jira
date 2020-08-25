@@ -1,8 +1,7 @@
-from pbx_gs_python_utils.plantuml.Puml          import Puml
-from pbx_gs_python_utils.plantuml.Puml_Table    import Puml_Table
-
 from gw_bot.elastic.Elastic_Search import Elastic_Search
 from gw_bot.helpers.Lambda_Helpers import log_error
+from osbot_jira.api.plantuml.Puml import Puml
+from osbot_jira.api.plantuml.Puml_Table import Puml_Table
 
 
 class API_Issues:

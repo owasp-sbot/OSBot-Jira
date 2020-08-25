@@ -1,5 +1,5 @@
 from osbot_jira.api.plantuml.API_Plant_UML import API_Plant_UML
-from osbot_utils.utils.Misc             import Misc
+from osbot_utils.utils import Misc
 from osbot_utils.utils.Files            import Files
 
 
