@@ -15,7 +15,7 @@ from osbot_jira.api.graph.Graph_Commands.Nodes import Nodes
 from osbot_jira.api.graph.Lambda_Graph import Lambda_Graph
 from osbot_utils.utils import Misc
 
-Lambda_Graph_Commands_version = "v0.33 (GW)"
+Lambda_Graph_Commands_version = "v0.35 (GW)"
 
 class Lambda_Graph_Commands:
 

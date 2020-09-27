@@ -17,7 +17,7 @@ from osbot_utils.utils.Misc import array_get, to_int
 class GS_Bot_Jira:
 
     def __init__(self):
-        self.version = "v0.43 (GSBot)"
+        self.version = "v0.44 (GSBot)"
 
     def cmd_add_link(self, params, team_id=None, channel=None):
             if len(params) < 4:

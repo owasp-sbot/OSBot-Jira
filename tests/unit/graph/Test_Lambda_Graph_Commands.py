@@ -3,10 +3,10 @@ import unittest
 
 from gw_bot.Deploy import Deploy
 from gw_bot.helpers.Test_Helper import Test_Helper
-from pbx_gs_python_utils.utils.Dev   import Dev
 from osbot_aws.apis.Lambda           import Lambda
 
 from osbot_jira.api.graph.Lambda_Graph_Commands import Lambda_Graph_Commands
+from osbot_utils.utils.Dev import Dev
 
 
 class Test_Lambda_Graph_Commands(Test_Helper):
@@ -34,14 +34,14 @@ class Test_Lambda_Graph_Commands(Test_Helper):
         result = Lambda_Graph_Commands().create(self.team_id, self.channel, ['graph_K90', 1, 'relates to,has RISK'], None)
         Dev.pprint(result)
 
-    @unittest.skip
-    def test_edit(self):
-        graph_name = 'graph_HDF'
-        result = Lambda_Graph_Commands().edit(self.team_id, self.channel, [graph_name],None)
-        Dev.pprint(result)
+    # @unittest.skip
+    # def test_edit(self):
+    #     graph_name = 'graph_HDF'
+    #     result = Lambda_Graph_Commands().edit(self.team_id, self.channel, [graph_name],None)
+    #     Dev.pprint(result)
 
     def test_expand(self):
-        result = json.loads(Lambda_Graph_Commands().expand(params = ['graph_K90', 1, 'relates to,has RISK']))
+        result = json.loads(Lambda_Graph_Commands().expand(params = ['graph_K90', 1, 'is fact of']))
 
         self.result = set(result) == {'puml', 'edges', 'graph_name', 'graph_or_key', 'nodes', 'depth'}
 
