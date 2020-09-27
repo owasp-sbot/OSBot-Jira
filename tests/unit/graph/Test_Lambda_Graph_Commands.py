@@ -60,11 +60,11 @@ class Test_Lambda_Graph_Commands(Test_Helper):
     def test_last_10(self):
         Lambda_Graph_Commands().last(None,None, [])
 
-    def test_save(self):
-        Lambda_Graph_Commands().save(self.channel, ['aaa','bbb'], None)
+    # def test_save(self):
+    #     Lambda_Graph_Commands().save(self.channel, ['aaa','bbb'], None)
 
     def test_mindmap(self):
-        Dev.pprint(Lambda_Graph_Commands().mindmap(self.team_id, self.channel, params=['graph_OJF','200','500']))
+        Dev.pprint(Lambda_Graph_Commands().mindmap(self.team_id, self.channel, params=['graph_K90','200','500']))
 
     def test_mindmap__for_issue(self):
         Dev.pprint(Lambda_Graph_Commands().mindmap(self.team_id, self.channel, params=['GSCS-14']))
