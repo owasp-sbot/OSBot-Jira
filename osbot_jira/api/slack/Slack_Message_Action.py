@@ -1,5 +1,5 @@
 from gw_bot.api.API_Slack import API_Slack
-from gw_bot.helpers.Lambda_Helpers import slack_message
+from osbot_aws.helpers.Lambda_Helpers import slack_message
 
 from osbot_jira.api.slack.dialogs.Jira_Create_Issue import Jira_Create_Issue
 

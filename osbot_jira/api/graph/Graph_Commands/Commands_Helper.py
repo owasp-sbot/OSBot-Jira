@@ -1,7 +1,7 @@
 import pprint
 
 from gw_bot.api.slack.API_Slack_Attachment import API_Slack_Attachment
-from gw_bot.helpers.Lambda_Helpers import slack_message, log_to_elk
+from osbot_aws.helpers.Lambda_Helpers import slack_message, log_to_elk
 
 
 class Commands_Helper():

@@ -1,6 +1,6 @@
 import json
 
-from gw_bot.helpers.Lambda_Helpers              import slack_message
+from osbot_aws.helpers.Lambda_Helpers import slack_message
 from osbot_jira.api.graph.GS_Graph              import GS_Graph
 from osbot_jira.api.graph.Lambda_Graph          import Lambda_Graph
 

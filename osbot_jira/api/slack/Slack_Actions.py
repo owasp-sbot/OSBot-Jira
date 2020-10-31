@@ -2,7 +2,7 @@ import json
 
 from gw_bot.api.API_Slack import API_Slack
 from osbot_aws.apis.Lambda                          import Lambda
-from gw_bot.helpers.Lambda_Helpers                  import slack_message, log_to_elk
+from osbot_aws.helpers.Lambda_Helpers import slack_message, log_to_elk
 from pbx_gs_python_utils.utils.Misc                 import Misc
 from osbot_jira.api.slack.views.Jira_Slack_Actions  import Jira_Slack_Actions
 from osbot_jira.api.slack.Slack_Jira_Search         import Slack_Jira_Search

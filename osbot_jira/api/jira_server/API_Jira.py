@@ -8,7 +8,7 @@ from osbot_aws.apis.Secrets import Secrets
 #  jira().search_users
 #       users = jira._jira.search_users("%", maxResults = 1000)  # works in cloud server
 #       users = jira._jira.search_users(".", maxResults = 1000)  # works in hosted server
-from gw_bot.helpers.Lambda_Helpers import log_info, log_error
+from osbot_aws.helpers.Lambda_Helpers import log_info, log_error
 
 
 class API_Jira:

@@ -6,7 +6,7 @@ from osbot_aws.apis.Secrets import Secrets
 
 def upload_png_file(team_id, channel_id, file):
     import requests
-    from gw_bot.helpers.Lambda_Helpers import log_to_elk
+    from osbot_aws.helpers.Lambda_Helpers import log_to_elk
     log_to_elk("[upload_png_file]: {0} {1} {2}".format(team_id,channel_id,file))
     bot_token = resolve_bot_token(team_id)
     my_file = {

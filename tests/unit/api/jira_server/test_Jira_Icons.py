@@ -1,4 +1,4 @@
-from gw_bot.helpers.Test_Helper import Test_Helper
+from osbot_aws.helpers.Test_Helper import Test_Helper
 from osbot_jira.api.jira_server.Jira_Icons import Jira_Icons
 from osbot_utils.utils.Files import folder_exists, file_exists
 

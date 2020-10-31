@@ -1,13 +1,11 @@
 import  datetime
 from    time import time, localtime, strftime
 
-from osbot_aws.apis.Secrets import Secrets
-
 from    pbx_gs_python_utils.utils.Dev import Dev
 from    pbx_gs_python_utils.utils.Local_Cache               import *
 #from    pbx_gs_python_utils.utils.Log_To_Elk                import log_error, log_info
 from gw_bot.elastic.Elastic_Search import Elastic_Search
-from gw_bot.helpers.Lambda_Helpers import log_info, slack_message, log_error
+from osbot_aws.helpers.Lambda_Helpers import log_info, log_error
 from osbot_jira.api.jira_server.API_Jira import API_Jira
 from osbot_jira.api.jira_server.API_Jira_Rest import API_Jira_Rest
 

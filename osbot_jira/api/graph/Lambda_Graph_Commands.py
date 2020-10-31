@@ -2,12 +2,10 @@ import json
 import pprint
 
 from gw_bot.api.slack.API_Slack_Attachment import API_Slack_Attachment
-from gw_bot.elastic.Save_To_ELK import Save_To_ELK
 from osbot_aws.apis.S3 import S3
 from osbot_aws.apis.Lambda           import Lambda
 
-from gw_bot.api.Slack_Commands_Helper import Slack_Commands_Helper
-from gw_bot.helpers.Lambda_Helpers import slack_message
+from osbot_aws.helpers.Lambda_Helpers import slack_message
 from osbot_jira.api.graph.GS_Graph import GS_Graph
 from osbot_jira.api.graph.Graph_Commands.Commands_Helper import Commands_Helper
 from osbot_jira.api.graph.Graph_Commands.Graph_Filters import Graph_Filters

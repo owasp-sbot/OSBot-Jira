@@ -2,7 +2,7 @@ import json
 
 import requests
 
-from gw_bot.helpers.Lambda_Helpers import log_error
+from osbot_aws.helpers.Lambda_Helpers import log_error
 from osbot_aws.apis.Secrets import Secrets
 from osbot_utils.decorators.Lists import index_by
 from osbot_utils.utils.Dev import Dev

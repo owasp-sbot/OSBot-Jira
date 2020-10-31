@@ -1,5 +1,5 @@
 from osbot_aws.apis.Lambda import Lambda
-from gw_bot.helpers.Lambda_Helpers import slack_message
+from osbot_aws.helpers.Lambda_Helpers import slack_message
 from pbx_gs_python_utils.utils.Misc import Misc
 
 

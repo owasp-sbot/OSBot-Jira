@@ -3,7 +3,7 @@ from time import sleep
 
 from osbot_aws.apis.Lambda           import Lambda
 from gw_bot.elastic.Save_To_ELK      import Save_To_ELK
-from gw_bot.helpers.Lambda_Helpers   import slack_message, log_to_elk
+from osbot_aws.helpers.Lambda_Helpers import slack_message, log_to_elk
 from osbot_jira.api.graph.GS_Graph   import GS_Graph
 from osbot_jira.osbot_graph.Graph    import Graph
 from osbot_jira.osbot_graph.engines.Graph_Dot import Graph_Dot

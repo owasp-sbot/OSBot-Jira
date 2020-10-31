@@ -1,4 +1,4 @@
-from gw_bot.helpers.Test_Helper                     import Test_Helper
+from osbot_aws.helpers.Test_Helper import Test_Helper
 from osbot_jira.api.graph.Lambda_Graph import Lambda_Graph
 from osbot_jira.osbot_graph.Graph import Graph
 from osbot_jira.osbot_graph.engines.Graph_Dot       import Graph_Dot

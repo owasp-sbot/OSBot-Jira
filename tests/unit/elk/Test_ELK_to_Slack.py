@@ -1,7 +1,7 @@
 from unittest import  TestCase
 
 from osbot_aws.apis.Lambda import Lambda
-from gw_bot.helpers.Lambda_Helpers import slack_message
+from osbot_aws.helpers.Lambda_Helpers import slack_message
 from osbot_jira.api.elk.Elk_To_Slack import ELK_to_Slack
 
 

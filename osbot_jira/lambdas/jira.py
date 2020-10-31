@@ -4,7 +4,7 @@ from osbot_aws.Dependencies import load_dependencies
 
 def run(event, context):
     load_dependencies('elastic,slack,requests,jira')
-    from gw_bot.helpers.Lambda_Helpers import log_to_elk, slack_message
+    from osbot_aws.helpers.Lambda_Helpers import log_to_elk, slack_message
     try:
         from osbot_jira.api.GS_Bot_Jira import GS_Bot_Jira
         result = GS_Bot_Jira().handle_request(event)                         # invoke lambda main handler method

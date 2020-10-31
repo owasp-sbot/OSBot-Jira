@@ -2,7 +2,7 @@ from time import sleep
 
 from osbot_aws.apis.Lambda           import Lambda
 
-from gw_bot.helpers.Lambda_Helpers import slack_message
+from osbot_aws.helpers.Lambda_Helpers import slack_message
 from osbot_jira.api.graph.Filters import Filters
 from osbot_jira.api.graph.Lambda_Graph import Lambda_Graph
 

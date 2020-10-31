@@ -1,4 +1,4 @@
-from gw_bot.helpers.Test_Helper import Test_Helper
+from osbot_aws.helpers.Test_Helper import Test_Helper
 from osbot_jira.api.jira_server.API_Jira_To_Elastic import API_Jira_To_Elastic
 
 

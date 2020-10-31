@@ -2,7 +2,7 @@ import  base64
 import  tempfile
 from pbx_gs_python_utils.utils.Files import Files
 
-from gw_bot.helpers.Lambda_Helpers import log_to_elk
+from osbot_aws.helpers.Lambda_Helpers import log_to_elk
 from osbot_aws.Dependencies import load_dependency
 
 def run(event, context):
