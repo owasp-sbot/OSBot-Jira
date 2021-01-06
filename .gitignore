@@ -2,3 +2,4 @@
 *__pycache__*
 *.pytest_cache*
 _lambda_dependencies
+osbot_jira.egg-info

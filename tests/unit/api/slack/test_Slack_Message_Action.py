@@ -1,8 +1,8 @@
 from unittest import TestCase
 
-from pbx_gs_python_utils.utils.Dev import Dev
+from gw_bot.Deploy import Deploy
+from osbot_utils.utils.Dev import Dev
 
-from osbot_jira.Deploy import Deploy
 from osbot_jira.api.slack.Slack_Message_Action import Slack_Message_Action
 
 

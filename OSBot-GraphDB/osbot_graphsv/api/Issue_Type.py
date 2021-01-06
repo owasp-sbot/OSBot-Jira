@@ -1,5 +1,5 @@
-from pbx_gs_python_utils.utils.Files import Files
-from pbx_gs_python_utils.utils.Json import Json
+from osbot_utils.utils.Files import Files
+from osbot_utils.utils.Json import Json
 
 
 class Issue_Type:
@@ -15,8 +15,8 @@ class Issue_Type:
         metadata['Next Key'] += 1
         data['Key'         ] = issue_key
         data['Issue Type'  ] = self.name
-        Json.save_json_pretty(issue_path, data)
-        Json.save_json_pretty(self.path_metadata(), metadata)
+        Json.save_file_pretty(issue_path, data)
+        Json.save_file_pretty(self.path_metadata(), metadata)
         if Files.exists(issue_path):
             return { 'status': 'ok', 'data': 'Issue added ok', 'issue_key': issue_key}
         return { 'status': 'error', 'data': 'Issue not saved ok'}
@@ -24,14 +24,14 @@ class Issue_Type:
     def issue_get(self, issue_key):
         issue_path = self.path_issue(issue_key)
         if Files.exists(issue_path):
-            return Json.load_json(issue_path)
+            return Json.load_file(issue_path)
 
     def issues(self):
         data = []
         path_metadata = self.path_metadata()
         for path in Files.find(Files.path_combine(self.path(), '*.json')):
             if path != path_metadata:
-                data.append(Json.load_json(path))
+                data.append(Json.load_file(path))
         return data
 
     def create(self):
@@ -48,7 +48,7 @@ class Issue_Type:
                               'Next Key'  : 1
                            }
         path_metadata    = self.path_metadata()
-        Json.save_json_pretty(path_metadata, default_metadata)
+        Json.save_file_pretty(path_metadata, default_metadata)
         return Files.exists(path_metadata)
 
     def delete(self):
@@ -65,7 +65,7 @@ class Issue_Type:
 
     def metadata(self):
         if self.exists():
-            return Json.load_json(self.path_metadata())
+            return Json.load_file(self.path_metadata())
 
     def path(self):
         return Files.path_combine(self.file_system.folder_data,self.file_system.safe_string(self.name))

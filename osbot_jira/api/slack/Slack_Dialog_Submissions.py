@@ -1,6 +1,6 @@
 from osbot_aws.apis.Lambda import Lambda
 from osbot_aws.helpers.Lambda_Helpers import slack_message
-from pbx_gs_python_utils.utils.Misc import Misc
+from osbot_utils.utils import Misc
 
 
 class Slack_Dialog_Submissions:

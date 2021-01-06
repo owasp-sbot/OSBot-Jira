@@ -1,8 +1,5 @@
 import sys; sys.path.append('..')
 import unittest
-
-from pbx_gs_python_utils.utils.Dev import Dev
-
 from osbot_jira.api.API_Issues import API_Issues
 
 

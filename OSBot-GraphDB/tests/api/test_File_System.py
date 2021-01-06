@@ -1,7 +1,7 @@
 from unittest import TestCase
 
-from pbx_gs_python_utils.utils.Dev import Dev
-from pbx_gs_python_utils.utils.Files import Files
+from osbot_utils.utils.Dev import Dev
+from osbot_utils.utils.Files import Files
 
 from osbot_graphsv.api.Graph_SV import Graph_SV
 from osbot_graphsv.demo.Demo_Data import Demo_Data

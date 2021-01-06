@@ -1,4 +1,5 @@
 from osbot_aws.Dependencies import load_dependency
+from osbot_aws.helpers.Lambda_Helpers import log_to_elk
 
 
 def run(event, context):

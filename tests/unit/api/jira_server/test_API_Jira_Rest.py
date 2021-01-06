@@ -1,4 +1,4 @@
-from pbx_gs_python_utils.utils.Dev import Dev
+from osbot_utils.utils.Dev import Dev
 
 from osbot_aws.helpers.Test_Helper import Test_Helper
 from osbot_jira.api.jira_server.API_Jira_Rest import API_Jira_Rest

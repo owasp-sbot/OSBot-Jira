@@ -1,5 +1,5 @@
-from pbx_gs_python_utils.utils.Files import Files
-from pbx_gs_python_utils.utils.Json import Json
+from osbot_utils.utils.Files import Files
+from osbot_utils.utils.Json import Json
 
 
 class Issues:
@@ -13,7 +13,7 @@ class Issues:
         file_filter = "{0}/{1}/{2}".format(self.file_system.folder_data, issue_type_name ,'*.json')
         for path in Files.find(file_filter):
             if self.filename_metadata not in path:          # don't load metadata file
-                data.append(Json.load_json(path))
+                data.append(Json.load_file(path))
         if indexed_by is None:
             return data
         indexed_data = {}
@@ -55,5 +55,5 @@ class Issues:
     #     file_filter = Files.path_combine(self.file_system.folder_data, '**/*.json')
     #     for path in Files.find(file_filter):
     #         if self.filename_metadata not in path:          # don't load metadata file
-    #             data.append(Json.load_json(path))
+    #             data.append(Json.load_file(path))
     #     return data

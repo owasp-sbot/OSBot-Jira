@@ -1,6 +1,5 @@
 import base64
 from osbot_aws.apis.Lambda  import Lambda
-from os.path import abspath, join
 from osbot_utils.utils.Files import Files
 
 

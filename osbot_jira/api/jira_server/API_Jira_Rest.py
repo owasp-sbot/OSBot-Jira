@@ -4,9 +4,9 @@ import requests
 
 from osbot_aws.helpers.Lambda_Helpers import log_error
 from osbot_aws.apis.Secrets import Secrets
-from osbot_utils.decorators.Lists import index_by
+from osbot_utils.decorators.lists.index_by import index_by
 from osbot_utils.utils.Dev import Dev
-from osbot_utils.utils.Misc import json_load, json_dumps
+from osbot_utils.utils.Json import json_dumps, json_loads
 
 
 class API_Jira_Rest:
@@ -74,7 +74,7 @@ class API_Jira_Rest:
     @index_by
     def fields(self):
         if self._fields is None:
-            self._fields =  json_load(self.request_get('field'))
+            self._fields =  json_loads(self.request_get('field'))
         return self._fields
 
     def fields_by_id(self):
@@ -93,13 +93,13 @@ class API_Jira_Rest:
         if issue_id:
             path = f'issue/{issue_id}'
             data = self.request_delete(path)
-            return json_load(data)
+            return json_loads(data)
 
     def issue_raw(self,issue_id,fields='*all'):
         if issue_id:
             path = 'issue/{0}?fields={1}'.format(issue_id,fields)
             data = self.request_get(path)
-            return json_load(data)
+            return json_loads(data)
 
     def map_issue_links(self, issue, issue_links_raw):
         issue_links = {}
@@ -214,14 +214,14 @@ class API_Jira_Rest:
             path = 'issue/{0}/transitions'.format(issue_id)
             data = self.request_get(path)
             if data:
-                for transition in json_load(data).get('transitions'):
+                for transition in json_loads(data).get('transitions'):
                     to_data = transition.get('to')
                     items[to_data.get('name')] = to_data.get('id')
         return items
 
     def projects(self):
         projects = {}
-        data = json_load(self.request_get('issue/createmeta')).get('projects')
+        data = json_loads(self.request_get('issue/createmeta')).get('projects')
         for item in data:
             projects[item.get('key')] = item
         return projects

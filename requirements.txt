@@ -1,0 +1,17 @@
+git+https://github.com/owasp-sbot/OSBot-Utils.git
+git+https://github.com/owasp-sbot/OSBot-AWS.git
+git+https://github.com/owasp-sbot/OSBot-Elastic.git
+
+boto3
+jira
+elasticsearch
+python-dotenv
+slackclient
+
+# for development
+pytest
+pytest-cov
+coveralls
+
+# to refactor out
+git+https://github.com/filetrust/GW-Bot.git

@@ -1,9 +1,8 @@
-import unittest
 from unittest import TestCase
 
 from osbot_aws.apis.Lambda import Lambda
 from osbot_aws.helpers.Lambda_Package import Lambda_Package
-from pbx_gs_python_utils.utils.Dev import Dev
+from osbot_utils.utils.Dev import Dev
 
 class test_lambda_gsbot_gs_jira(TestCase):
 

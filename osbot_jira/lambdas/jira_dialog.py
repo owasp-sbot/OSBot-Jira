@@ -1,3 +1,8 @@
+from osbot_aws.helpers.Lambda_Helpers import log_to_elk
+
+from osbot_jira.api.slack.API_Jira_Dialog import API_Jira_Dialog
+
+
 def run(event, context):
     try:
         data    = event.get('data')

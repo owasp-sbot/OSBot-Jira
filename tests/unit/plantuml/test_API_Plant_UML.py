@@ -1,7 +1,6 @@
 from    unittest        import TestCase
 
 from osbot_jira.api.plantuml.API_Plant_UML import API_Plant_UML
-from osbot_utils.utils.Show_Img import Show_Img
 
 
 class Test_API_Plant_UML(TestCase):
@@ -22,7 +21,7 @@ class Test_API_Plant_UML(TestCase):
         puml = "@startuml \n aaa->bbb \n @enduml"
         png_file = self.plantuml.puml_to_png_using_lambda_function(puml)
 
-        Show_Img.from_path(png_file)
+        #Show_Img.from_path(png_file)
 
 
 

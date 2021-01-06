@@ -1,9 +1,5 @@
 
 import  unittest
-
-from jira import JIRA
-
-#from osbot_aws import Globals
 from osbot_jira.api.jira_server.API_Jira import API_Jira
 from osbot_utils.utils.Dev import Dev
 

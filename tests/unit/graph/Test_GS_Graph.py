@@ -1,9 +1,6 @@
 import json
-import textwrap
 import unittest
 from unittest        import TestCase
-
-from gw_bot.api.API_Slack import API_Slack
 from osbot_jira.api.graph.GS_Graph import GS_Graph
 from osbot_utils.utils.Dev import Dev
 

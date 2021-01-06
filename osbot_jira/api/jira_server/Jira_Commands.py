@@ -1,8 +1,5 @@
 # These are the methods to be called inside the Sync Server
 import json
-
-from pbx_gs_python_utils.utils.Dev import Dev
-
 from osbot_jira.api.jira_server.API_Jira import API_Jira
 
 

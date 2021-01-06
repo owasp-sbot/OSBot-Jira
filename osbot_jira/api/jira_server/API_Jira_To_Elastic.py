@@ -1,8 +1,9 @@
 from functools import lru_cache
 
 from osbot_aws.helpers.Lambda_Helpers import log_to_elk
+from osbot_elastic.Elastic_Search import Elastic_Search
+
 from osbot_jira.api.jira_server.API_Jira_Rest import API_Jira_Rest
-from gw_bot.elastic.Elastic_Search import Elastic_Search
 
 class API_Jira_To_Elastic:
 

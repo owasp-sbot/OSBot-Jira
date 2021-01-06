@@ -1,5 +1,5 @@
-from pbx_gs_python_utils.utils.Files import Files
-from pbx_gs_python_utils.utils.Json import Json
+from osbot_utils.utils.Files import Files
+from osbot_utils.utils.Json import Json
 
 from osbot_graphsv.api.Issues import Issues
 from osbot_graphsv.api.Links import Links
@@ -24,7 +24,7 @@ class Indexes_Build:
         file_filter = Files.path_combine(self.file_system.folder_data, '**/*.json')
         for path in Files.find(file_filter):
             if self.filename_metadata not in path:  # don't load metadata file
-                data = Json.load_json(path)
+                data = Json.load_file(path)
                 key  = data.get('Key')
                 all_data[key] = { 'path': path.replace(self.file_system.folder_data,'')[1:],
                                   'links': {}                                              ,
@@ -41,7 +41,7 @@ class Indexes_Build:
                 links[link_type].append(to_key)
 
 
-        Json.save_json_pretty(self.path__by_key(),all_data)
+        Json.save_file_pretty(self.path__by_key(),all_data)
         return all_data
 
     def create__by_fields_and_values(self):
@@ -54,7 +54,7 @@ class Indexes_Build:
                 if data.get(field)        is None: data[field]        = {}
                 if data[field].get(value) is None: data[field][value] = []
                 data[field][value].append(key)
-        Json.save_json_pretty(self.path__by_fields_and_values(), data)
+        Json.save_file_pretty(self.path__by_fields_and_values(), data)
         return data
 
     def create__by_values(self):
@@ -66,7 +66,7 @@ class Indexes_Build:
                     continue
                 if data.get(value) is None: data[value] = []
                 data[value].append((key , field ) )
-        Json.save_json_pretty(self.path__by_values(), data)
+        Json.save_file_pretty(self.path__by_values(), data)
         return data
 
     def create__by_link_type(self):
@@ -77,11 +77,11 @@ class Indexes_Build:
             if data[link_type].get(from_key) is None: data[link_type][from_key] = []
 
             data[link_type][from_key].append(to_key)
-            Json.save_json_pretty(self.path__by_link_type(), data)
+            Json.save_file_pretty(self.path__by_link_type(), data)
         return data
 
     def get_data_for(self,file_type):
-        return Json.load_json(self.path_for(file_type))
+        return Json.load_file(self.path_for(file_type))
 
     def path_for(self, file_type):
         return Files.path_combine(self.folder_indexes,file_type + '.json')

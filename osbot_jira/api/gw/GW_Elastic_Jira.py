@@ -1,11 +1,10 @@
 import  datetime
 from    time import time, localtime, strftime
 
-from    pbx_gs_python_utils.utils.Dev import Dev
-from    pbx_gs_python_utils.utils.Local_Cache               import *
-#from    pbx_gs_python_utils.utils.Log_To_Elk                import log_error, log_info
-from gw_bot.elastic.Elastic_Search import Elastic_Search
 from osbot_aws.helpers.Lambda_Helpers import log_info, log_error
+from osbot_elastic.Elastic_Search import Elastic_Search
+from osbot_utils.utils.Dev import Dev
+
 from osbot_jira.api.jira_server.API_Jira import API_Jira
 from osbot_jira.api.jira_server.API_Jira_Rest import API_Jira_Rest
 
@@ -111,7 +110,7 @@ class GW_Elastic_Jira:
         print(" > using {0}  , localtime: {1}".format(now,now_server))
 
         query  = 'project in ({0}) AND updated >= "{1}"'.format(self.projects,when)
-        changes = self.api_gs_jira.api_Jira.search_no_cache(query)
+        changes = self.api_Jira.search_no_cache(query)
         if len(changes) == 0:
             log_info("No issues updated since: {0}".format(when),"API_Elastic_Jira.update_index_from_jira_changes")
             return

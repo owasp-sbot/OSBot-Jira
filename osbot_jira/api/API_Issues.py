@@ -1,5 +1,6 @@
-from gw_bot.elastic.Elastic_Search import Elastic_Search
 from osbot_aws.helpers.Lambda_Helpers import log_error
+from osbot_elastic.Elastic_Search import Elastic_Search
+
 from osbot_jira.api.plantuml.Puml import Puml
 from osbot_jira.api.plantuml.Puml_Table import Puml_Table
 

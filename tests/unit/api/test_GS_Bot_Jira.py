@@ -4,8 +4,9 @@ import unittest
 from gw_bot.Deploy import Deploy
 from osbot_aws.helpers.Lambda_Helpers import slack_message
 from osbot_aws.helpers.Test_Helper import Test_Helper
+from osbot_utils.utils.Dev import Dev
+
 from osbot_jira.api.GS_Bot_Jira                 import GS_Bot_Jira
-from pbx_gs_python_utils.utils.Dev              import Dev
 from osbot_aws.apis.Lambda import Lambda
 
 
@@ -122,24 +123,24 @@ class test_GS_Bot_Jira(Test_Helper):
                                                       ' • version\n'}],
                             'text': '*Here are the `jira` commands available:*'}
 
-    def test_cmd_server(self):
-        result = self.api.cmd_server(['server','status'])
-        assert result == { 'attachments': [], 'text': '{\n    "status": "OK 12345"\n}\n'}
-
-
-    def test_cmd_up(self):
-        result = self.api.cmd_up(['links', 'IA-404', '2'], team_id='T7F3AUXGV', channel='GDL2EC3EE')
-        assert result == None # see data in channel
-
-    def test_cmd_down(self):
-        result = self.api.cmd_down(['links', 'IA-404', '2'], team_id='T7F3AUXGV', channel='GDL2EC3EE')
-        assert result == None  # see data in channel
-
-    @unittest.skip('long running test (move to sheets test)')
-    def test_cmd_sync_sheet(self):
-        file_id = '1MHU2Av4tI0FaktjWjbIpFH_zwb-804CAn-MQLuqaq1A'
-        result = self.api.cmd_sync_sheet(['', file_id], team_id='T7F3AUXGV', channel='GDL2EC3EE')
-        Dev.pprint(result)
+    # def test_cmd_server(self):
+    #     result = self.api.cmd_server(['server','status'])
+    #     assert result == { 'attachments': [], 'text': '{\n    "status": "OK 12345"\n}\n'}
+    #
+    #
+    # def test_cmd_up(self):
+    #     result = self.api.cmd_up(['links', 'IA-404', '2'], team_id='T7F3AUXGV', channel='GDL2EC3EE')
+    #     assert result == None # see data in channel
+    #
+    # def test_cmd_down(self):
+    #     result = self.api.cmd_down(['links', 'IA-404', '2'], team_id='T7F3AUXGV', channel='GDL2EC3EE')
+    #     assert result == None  # see data in channel
+    #
+    # @unittest.skip('long running test (move to sheets test)')
+    # def test_cmd_sync_sheet(self):
+    #     file_id = '1MHU2Av4tI0FaktjWjbIpFH_zwb-804CAn-MQLuqaq1A'
+    #     result = self.api.cmd_sync_sheet(['', file_id], team_id='T7F3AUXGV', channel='GDL2EC3EE')
+    #     Dev.pprint(result)
 
 
 

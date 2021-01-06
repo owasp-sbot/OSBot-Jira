@@ -1,7 +1,7 @@
 import json
 
 from osbot_aws.apis.Lambda import Lambda
-from pbx_gs_python_utils.utils.Misc import Misc
+from osbot_utils.utils import Misc
 
 from osbot_aws.helpers.Lambda_Helpers import slack_message
 from osbot_jira.api.API_Issues import API_Issues

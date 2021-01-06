@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from pbx_gs_python_utils.utils.Dev import Dev
+from osbot_utils.utils.Dev import Dev
 
 from osbot_jira.api.NGrok_Jira import NGrok_Jira
 

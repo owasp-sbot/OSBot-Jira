@@ -1,7 +1,7 @@
 import requests
 from osbot_aws.apis.Secrets import Secrets
 
-from pbx_gs_python_utils.utils.Misc import Misc
+from osbot_utils.utils.Json import json_loads
 
 
 class NGrok_Jira:
@@ -24,7 +24,7 @@ class NGrok_Jira:
         username,password = self.secrets()
         command = 'gsbot_jira'
         url = "{0}/{1}/{2}".format(self.ngrok_url,command, method)
-        return Misc.json_load(requests.get(url, auth=(username, password)).text)
+        return json_loads(requests.get(url, auth=(username, password)).text)
 
     # main api methods
 

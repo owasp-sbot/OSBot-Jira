@@ -1,8 +1,8 @@
-from unittest import TestCase
-
-from pbx_gs_python_utils.utils.Dev import Dev
-
-from osbot_jira.api.GS_Bot_Jira_Commands import GS_Bot_Jira_Commands
+# from unittest import TestCase
+#
+# from osbot_utils.utils.Dev import Dev
+#
+# from osbot_jira.api.GS_Bot_Jira_Commands import GS_Bot_Jira_Commands
 
 #NOT Used
 # class Test_GS_Bot_Jira_Commands(TestCase):

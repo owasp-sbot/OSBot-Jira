@@ -1,5 +1,5 @@
-from pbx_gs_python_utils.utils.Files import Files
-from pbx_gs_python_utils.utils.Json import Json
+from osbot_utils.utils.Files import Files
+from osbot_utils.utils.Json import Json
 
 
 class Links:
@@ -35,7 +35,7 @@ class Links:
     def all(self):
         path = self.path_links()
         if Files.exists(path):
-            return Json.load_json(path)
+            return Json.load_file(path)
         return []
 
     def add(self,from_key, link_type, to_key):
@@ -65,7 +65,7 @@ class Links:
 
     def save(self,links):
         path = self.path_links()
-        Json.save_json_pretty(path, links)
+        Json.save_file_pretty(path, links)
         return self
     def path_links(self):
         return Files.path_combine(self.file_system.folder_data,'links.json')

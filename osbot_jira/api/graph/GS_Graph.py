@@ -1,10 +1,11 @@
 import json
 
+from osbot_utils.decorators.lists.index_by import index_by
+
 from osbot_jira.api.API_Issues          import API_Issues
 from osbot_jira.api.graph.GS_Graph_Puml import GS_Graph_Puml
 from osbot_jira.api.plantuml.Puml import Puml
 from osbot_jira.osbot_graph.Graph import Graph
-from osbot_utils.decorators.Lists import index_by
 from osbot_utils.utils.Files import Files
 from osbot_utils.utils.Json import Json
 
@@ -217,7 +218,7 @@ class GS_Graph:
         return self
 
     def load(self, path):
-        data = Json.load_json(path)
+        data = Json.load_file(path)
         if data:
             self.nodes = data['nodes']
             self.edges = data['edges']
@@ -319,7 +320,7 @@ class GS_Graph:
     def save(self, path=None):
         if path is None: path = Files.temp_file('graph.json')
         data = { 'nodes': self.nodes, 'edges': self.edges }
-        return Json.save_json_pretty(path, data)
+        return Json.save_file_pretty(path, data)
 
     def render_and_save_to_elk(self, graph_name=None, graph_type=None, channel= None, user = None):      # might need to move this to a Lambda function
         from osbot_jira.api.graph.Lambda_Graph import Lambda_Graph                                       # todo: find out why this needs to be here of it fail to load the dependency (could be caused by a cyclic dependency)

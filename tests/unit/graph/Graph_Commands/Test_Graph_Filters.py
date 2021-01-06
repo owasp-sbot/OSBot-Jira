@@ -1,9 +1,7 @@
 from unittest import TestCase
 
-from osbot_aws.apis.Lambda import Lambda
-from osbot_browser.browser.Browser_Lamdba_Helper import Browser_Lamdba_Helper
 from osbot_jira.api.graph.GS_Graph import GS_Graph
-from pbx_gs_python_utils.utils.Dev import Dev
+from osbot_utils.utils.Dev import Dev
 
 from osbot_jira.api.graph.Graph_Commands.Graph_Filters import Graph_Filters
 
