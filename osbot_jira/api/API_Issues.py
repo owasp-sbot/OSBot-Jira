@@ -1,16 +1,12 @@
-import json
+from gw_bot.elastic.Elastic_Search import Elastic_Search
+from osbot_aws.helpers.Lambda_Helpers import log_error
+from osbot_jira.api.plantuml.Puml import Puml
+from osbot_jira.api.plantuml.Puml_Table import Puml_Table
 
-from osbot_aws.apis.Secrets                     import Secrets
-from pbx_gs_python_utils.utils.Lambdas_Helpers  import log_error
-
-from pbx_gs_python_utils.plantuml.Puml          import Puml
-from pbx_gs_python_utils.plantuml.Puml_Table    import Puml_Table
-from pbx_gs_python_utils.utils.Elastic_Search   import Elastic_Search
-from pbx_gs_python_utils.utils.Http             import current_host_online
 
 class API_Issues:
-    def __init__(self, index = 'jira,it_assets,sec_project'):
-        self.secrets_id = 'elastic-jira-dev-2'
+    def __init__(self, index = 'jira'):
+        self.secrets_id = 'gw-elastic-server-1'
         self.index      = index
         self._elastic   = None
 
@@ -26,27 +22,33 @@ class API_Issues:
 
     def issue(self,key):
         try:
-            self.elastic().index = self.resolve_es_index(key)
-            if self.elastic().index:
-                data = self.elastic().get_data(key.upper())
-                if data:
-                    return data['_source']
+            #self.elastic().index = self.resolve_es_index(key)
+            #if self.elastic().index:
+            data = self.elastic().get_data(key.upper())
+            if data:
+                return data['_source']
         except Exception as error:
             log_error(str(error),'API_Elastic_Lambda.issue')
         return {}
 
     def issues(self, keys):
-        issues = {}
-        keys_by_index = {}
-        for key in keys:
-            index = self.resolve_es_index(key)
-            if index:
-                if keys_by_index.get(index) is None: keys_by_index[index]=[]
-                keys_by_index[index].append(key)
-        for index, keys in keys_by_index.items():
-            matches = self.elastic().set_index(index).get_many(keys)
-            issues.update(matches)
-        return issues
+        keys = list(filter(None, keys))               # remove null values (which will cause elastic to throw an exception)
+        if len(keys)  == 0:
+            return []
+        return self.elastic().get_many(keys)
+
+        # the code below was needed when the issue were distributed across multiple elastic indexes, which is something we shouldn't support here
+        # issues = {}
+        # keys_by_index = {}
+        # for key in keys:
+        #     index = self.resolve_es_index(key)
+        #     if index:
+        #         if keys_by_index.get(index) is None: keys_by_index[index]=[]
+        #         keys_by_index[index].append(key)
+        # for index, keys in keys_by_index.items():
+        #     matches = self.elastic().set_index(index).get_many(keys)
+        #     issues.update(matches)
+        # return issues
         #return self.api.elastic.get_many(keys)              # need to add support for fetching multiple indexes
 
     def issues_created_in_last_seconds(self, seconds): return self.issues_created_in_last("{0}s".format(seconds))
@@ -64,7 +66,6 @@ class API_Issues:
     def issues_updated_in_last(self,period):        # can be 1h , 1d, 1w
         return self.elastic().get_data_between_dates("Updated","now-{0}".format(period),"now")
 
-    #@save_result_to_local_cache
     def issues_all(self, index = 'jira'):
         self.elastic().index = index
         query = { "query": {"match_all": {}}}
@@ -73,7 +74,6 @@ class API_Issues:
             results[issue['Key']] = issue
         return results
 
-    #@use_local_cache_if_available
     def issues_all_indexes(self):
         issues = {}
         issues.update(self.issues_all('jira'))
@@ -81,8 +81,6 @@ class API_Issues:
         issues.update(self.issues_all('sec_project'))
         return issues
 
-    # @use_local_cache_if_available
-    # #@save_result_to_local_cache
     # def issues_all_cached(self, index='jira'):
     #     return self.issues_all(index)
 
@@ -93,8 +91,6 @@ class API_Issues:
     #     issues.update(self.issues_all_cached('sec_project'))
     #     return issues
 
-    #@use_local_cache_if_available
-    #@save_result_to_local_cache
     def labels(self):
         query = { "_source": ["Key","Labels"]}
         data  = {}
@@ -107,15 +103,13 @@ class API_Issues:
                     data[label].append(key)
         return data
 
-    #@use_local_cache_if_available
-    #@save_result_to_local_cache
     def link_types(self, index="all"):
         query   = {"_source": ["Key", "Issue Links"], }
         original_index = self.elastic().get_index()
         results = []
         if index == "all":
-            results += self.elastic().set_index('it_assets'  ).search_using_query(query)
-            results += self.elastic().set_index('sec_project').search_using_query(query)
+            #results += self.elastic().set_index('it_assets'  ).search_using_query(query)
+            #results += self.elastic().set_index('sec_project').search_using_query(query)
             results += self.elastic().set_index('jira'       ).search_using_query(query)
         else:
             results += self.elastic().set_index(index).search_using_query(query)
@@ -171,51 +165,27 @@ class API_Issues:
         results = self.elastic().search_using_lucene(query, size)
         return list(results)                                        # convert to list due since it seems easier for callers to have it already normalised (and not in a generator)
 
-    #@use_local_cache_if_available
-    #@save_result_to_local_cache
-    # def stakeholders(self):             # used to calculate the org chart
-    #     has_stakeholders = self.link_types().get('has Stakeholder')
-    #     stakeholders_by_id = {}
-    #     for key, stakeholders in has_stakeholders.items():
-    #         for stakeholder in stakeholders:
-    #             if stakeholders_by_id.get(stakeholder) is None: stakeholders_by_id[stakeholder] = []
-    #             stakeholders_by_id[stakeholder].append(key)
-    #
-    #     data = {}
-    #
-    #     for key in stakeholders_by_id:
-    #         issue = self.issue(key)
-    #         if issue.get('Issue Links') is None: continue           # there was not data for this issue (happens when moved or deleted and the x-ref mappings have not been updated)
-    #         summary = issue.get('Summary')
-    #         del issue.get('Issue Links')['_all']
-    #         data[summary] = {
-    #             'Key'           : key                      ,
-    #              'Labels'        : issue.get('Summary')     ,
-    #             'Issue Links'   : issue.get('Issue Links')
-    #         }
-    #     return data
-
-
     def resolve_es_index(self, key):
-        if key:
-            if "SEC-"   in key:  return 'sec_project'
-            if "GSP-"   in key:  return 'it_assets'
-            if "IA-"    in key:  return 'it_assets'
-            if "TM-"    in key:  return 'it_assets'
-            if "GDPR-"  in key:  return 'it_assets'
-            if "GSOKR-" in key:  return 'it_assets'
-            if "SC-"    in key:  return 'it_assets'
-            if "GSSP-"  in key:  return 'it_assets'
-            if "RT-"    in key:  return 'it_assets'
-            if "SL-"    in key:  return 'it_assets'
-            if 'GSOS-'  in key:  return 'it_assets'
-            if 'GSCS-'  in key:  return 'it_assets'
-            if 'GSBOT-' in key:  return 'it_assets'
-            if 'GSED-'  in key:  return 'it_assets'
-            return "jira"
+        return 'jira'
+        # if key:
+        #     if "SEC-"   in key:  return 'sec_project'
+        #     if "GSP-"   in key:  return 'it_assets'
+        #     if "IA-"    in key:  return 'it_assets'
+        #     if "TM-"    in key:  return 'it_assets'
+        #     if "GDPR-"  in key:  return 'it_assets'
+        #     if "GSOKR-" in key:  return 'it_assets'
+        #     if "SC-"    in key:  return 'it_assets'
+        #     if "GSSP-"  in key:  return 'it_assets'
+        #     if "RT-"    in key:  return 'it_assets'
+        #     if "SL-"    in key:  return 'it_assets'
+        #     if 'GSOS-'  in key:  return 'it_assets'
+        #     if 'GSCS-'  in key:  return 'it_assets'
+        #     if 'GSBOT-' in key:  return 'it_assets'
+        #     if 'GSED-'  in key:  return 'it_assets'
+        #    return "jira"
 
     def set_default_indexes(self):
-        self.elastic().index = 'jira,it_assets,sec_project'
+        self.elastic().index = 'jira'
 
     ### move these to separate analysis file
 
@@ -271,7 +241,7 @@ class API_Issues:
 
     def server_url(self):
         host = self.elastic().host
-        if '5766d93460d' in host: return "https://jira.photobox.com"
+        if '5766d93460d' in host: return "https://glasswall.atlassian.net"
         return host
 
 

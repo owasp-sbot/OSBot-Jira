@@ -1,4 +1,4 @@
-from utils.aws.Lambdas import load_dependency
+from osbot_aws.Dependencies import load_dependency
 
 def run(event, context):
     load_dependency("slack")                                                # this will download the dependencies the first time the lambda function is executed

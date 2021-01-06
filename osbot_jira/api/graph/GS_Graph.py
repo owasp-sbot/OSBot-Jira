@@ -1,10 +1,12 @@
 import json
-from pbx_gs_python_utils.plantuml.Puml  import Puml
-from pbx_gs_python_utils.utils.Files    import Files
-from pbx_gs_python_utils.utils.Json     import Json
 
 from osbot_jira.api.API_Issues          import API_Issues
 from osbot_jira.api.graph.GS_Graph_Puml import GS_Graph_Puml
+from osbot_jira.api.plantuml.Puml import Puml
+from osbot_jira.osbot_graph.Graph import Graph
+from osbot_utils.decorators.Lists import index_by
+from osbot_utils.utils.Files import Files
+from osbot_utils.utils.Json import Json
 
 
 class GS_Graph:
@@ -50,11 +52,16 @@ class GS_Graph:
                                              'stakeholders_down': ['is Technical Owner' , 'is Management Owner' , 'is Business Owner' , 'is Stakeholder' , 'is manager of']}
 
 
+    def add_issue(self, key, issue):
+        if issue:
+            if self.issues is None:
+                self.issues = {}
+            self.issues[key] = issue
 
-
-    def add_node(self, key):
+    def add_node(self, key,issue=None):
         if key not in self.nodes:
             self.nodes.append(key)
+            self.add_issue(key,issue)
         return self
 
     def add_nodes(self, keys):
@@ -167,13 +174,24 @@ class GS_Graph:
         self.puml_options['link-types-to-add'] = link_types_to_add
         return self
 
-    def get_nodes_issues     (self,reload=False):
+    def get_graph_data(self):
+        return { "nodes": self.get_nodes_issues(True),
+                 "edges" : self.edges}
+    @index_by
+    def get_issues(self,reload=False):                          # better name for the method
+        return list(self.get_nodes_issues(reload).values())
+
+    def get_nodes_issues(self,reload=False):                    # depreciate
         if self.issues is None or reload is True:
             self.issues = self.api_issues.issues(self.nodes)
         return self.issues
 
     def get_puml             (self):
         return self.puml.puml
+
+    def graph(self):
+        return Graph().add_nodes(self.nodes) \
+                      .add_edges(self.edges)
 
     def issues__values_by_field(self, field_name):
         results = []
@@ -278,7 +296,8 @@ class GS_Graph:
                 (from_key, link_type, to_key) = edge
                 if from_key == key or to_key == key:
                     self.edges.remove(edge)
-        self.issues = None                              # reset this value since we modified the issues list
+        if self.issues and self.issues.get(key) is not None:
+            del self.issues[key]
         return self
 
     def remove_nodes(self, keys):
@@ -302,10 +321,13 @@ class GS_Graph:
         data = { 'nodes': self.nodes, 'edges': self.edges }
         return Json.save_json_pretty(path, data)
 
-    def render_and_save_to_elk(self, graph_name=None, graph_type=None, channel= None, user = None):                                    # might need to move this to a Lambda function
-        #from pbx_gs_python_utils.gs_elk.Lambda_Graph import Lambda_Graph
-        from osbot_jira.api.graph.Lambda_Graph import Lambda_Graph                                                                      # needs to be here of it fail to load the dependency (could be caused by a cyclic dependency)
-        return Lambda_Graph().save_gs_graph(self, graph_name, graph_type, channel, user)
+    def render_and_save_to_elk(self, graph_name=None, graph_type=None, channel= None, user = None):      # might need to move this to a Lambda function
+        from osbot_jira.api.graph.Lambda_Graph import Lambda_Graph                                       # todo: find out why this needs to be here of it fail to load the dependency (could be caused by a cyclic dependency)
+        lambda_graph = Lambda_Graph()
+        graph_name = lambda_graph.save_gs_graph(self, graph_name, graph_type, channel, user)
+        if lambda_graph.wait_for_elk_to_index_graph(graph_name):                                         # wait for ELK to index the graph (to prevent a fetch before the data is available in ELK)
+            return graph_name
+        return None
 
 
     def render_puml(self):
@@ -374,7 +396,7 @@ class GS_Graph:
         return self.puml.save_tmp()
 
     def reset_puml(self):
-        self.puml = Puml().startuml()
+        self.puml.puml = "@startuml\n"
         return self
 
     def to_json(self, puml_config=True, store_issues=False):
@@ -443,6 +465,37 @@ class GS_Graph:
     def filter(self):
         from osbot_jira.api.graph.Filters import Filters
         return Filters().setup(graph=self)
+
+    # view
+
+    def view_nodes(self,label_key=None,show_key=False, key_id='id', label_id='label'):
+        nodes = []
+        issues = self.issues or {}
+        # if issues is None:
+        #     issues = {}
+        for key in self.nodes:
+            issue = issues.get(key)
+            if issue and label_key is not None:
+                label = issue.get(label_key)
+                if label is None:
+                    label = key
+                if show_key:
+                    label = f'{key} - {label}'
+            else:
+                label = key
+            nodes.append({key_id: key, label_id: label})
+        return nodes
+
+    def view_nodes_and_edges(self,label_key=None,show_key=False):
+
+        nodes = self.view_nodes(label_key, show_key)
+        edges = []
+
+        for edge in self.edges:
+            edges.append({'from': edge[0], 'to': edge[2]})
+
+        return nodes,edges
+
 
     # LEGACY (Check and delete)
 

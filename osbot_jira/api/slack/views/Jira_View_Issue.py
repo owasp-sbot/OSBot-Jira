@@ -1,8 +1,9 @@
 import json
 
 from osbot_aws.apis.Lambda import Lambda
-from pbx_gs_python_utils.utils.Lambdas_Helpers import slack_message
 from pbx_gs_python_utils.utils.Misc import Misc
+
+from osbot_aws.helpers.Lambda_Helpers import slack_message
 from osbot_jira.api.API_Issues import API_Issues
 from osbot_jira.api.jira_server.API_Jira import API_Jira
 from osbot_jira.api.slack.blocks.API_Slack_Blocks import API_Slack_Blocks
@@ -62,12 +63,13 @@ class Jira_View_Issue():
             latest_info = self.issue.get('Latest_Information')
             description = self.issue.get('Description')
             issue_type  = self.issue.get('Issue Type')
-            key_link    = "{0}/browse/{1}".format(self.api_issues.server_url(), key)
+            jira_link = "https://glasswall.atlassian.net/browse/{0}".format(key)            # todo: put the glasswall jira url in a site config value
+            #key_link    = "{0}/browse/{1}".format(self.api_issues.server_url(), key)
 
             add_layout  = self.slack_blocks.add_layout_section
 
             #text = "*{0}*:\n<{1}|{2} - {3}>".format(issue_type,key_link,key, summary)
-            text = ":point_right: *Issue*: <{1}|{2} - {3}>".format(issue_type, key_link, key, summary)
+            text = ":point_right: *Issue*: <{1}|{2} - {3}>".format(issue_type, jira_link, key, summary)
 
             add_layout(self.issue_id).add_text(text).render()
             if latest_info:
@@ -97,15 +99,15 @@ class Jira_View_Issue():
             actions_section.render()
 
             self.slack_blocks.add_divider()
-            footer_items = [ #'Status: {0}'    .format(self.issue.get('Status')),
-                             'Rating: {0}'    .format(self.issue.get('Rating')),
-                             'Priority: {0}'  .format(self.issue.get('Priority')),
-                             'Issue Type: {0}'.format(self.issue.get('Issue Type')),
-                             'Assignee: {0}'.format(self.issue.get('Assignee')),
-                             'Labels: {0}'.format(self.issue.get('Labels')),
-                             'Creator: {0}'.format(self.issue.get('Creator')),
-                             'Created: {0}'.format(self.issue.get('Created').split('T').pop(0)),
-                             'Updated: {0}'.format(self.issue.get('Updated').split('T').pop(0))
+            footer_items = [ 'Status: *{0}*'    .format(self.issue.get('Status')),
+                             'Rating: *{0}*'    .format(self.issue.get('Rating')),
+                             'Priority: *{0}*'  .format(self.issue.get('Priority')),
+                             'Issue Type: *{0}*'.format(self.issue.get('Issue Type')),
+                             'Assignee: *{0}*'.format(self.issue.get('Assignee')),
+                             'Labels: *{0}*'.format(self.issue.get('Labels')),
+                             'Creator: *{0}*'.format(self.issue.get('Creator')),
+                             'Created: *{0}*'.format(self.issue.get('Created').split('T').pop(0)),
+                             'Updated: *{0}*'.format(self.issue.get('Updated').split('T').pop(0))
                             ]
             footer_section.add_texts(footer_items).render()
 
@@ -121,21 +123,23 @@ class Jira_View_Issue():
             #self.add_button('An Replay')
 
             self.slack_blocks.add_attachment({'text':'Issue *{0}* Status: `{1}`'.format(self.issue_id, self.issue.get('Status')),'color':'good'})
+            return True
         else:
             self.slack_blocks.add_layout_section().add_text(':red_circle: Issue not found: `{0}`'.format(self.issue_id)).render()
-        return self
+            return False
 
     def send(self):
-        result = self.slack_blocks.send_message(self.channel, self.team_id)
-        if type(result) == dict and result.get('ok') is False:
-            error_messages = result.get('response_metadata').get('messages')
-            self.send_message(':red_circle: Error in `Jira_View_Issue.send`; ```{0}```'.format(error_messages))
-        return result
+        if self.channel:
+            result = self.slack_blocks.send_message(self.channel, self.team_id)
+            if type(result) == dict and result.get('ok') is False:
+                error_messages = result.get('response_metadata').get('messages')
+                self.send_message(':red_circle: Error in `Jira_View_Issue.send`; ```{0}```'.format(error_messages))
+            return result
 
 
     def create_and_send(self):
-        self.send_message(':point_right: *Loading data for issue: `{0}`* :point_left:'.format(self.issue_id))
-        self.create()
+        if self.create():
+            self.send_message(':point_right: *Loading data for issue: `{0}`* :point_left:'.format(self.issue_id))
         return self.send()
 
     # def an_replay(self, event):
@@ -214,7 +218,8 @@ class Jira_View_Issue():
         self.issue = self.api_issues.issue(self.issue_id)
         if self.issue:
             #fields = set(self.issue)
-            fields = ['Assignee','Description', 'Labels', 'Latest Information','Summary',
+            fields = ['Summary','Description', 'Labels'
+                      #'Assignee','Description', 'Labels', 'Latest Information','Summary',
                       #'Priority','Rating','Email', 'Slack ID','Image_Url'
                       ]
             action_id = 'Jira_View_Issue::edit_field::{0}'.format(self.issue_id)
@@ -230,13 +235,13 @@ class Jira_View_Issue():
 
     def edit_field(self,action):
         try:
-            from pbx_gs_python_utils.utils.slack.API_Slack import API_Slack   # todo: check if this needs to be done here (or can be done at the top level)
             selected_option = action.get('selected_option')
             field           = selected_option.get('text').get('text')
             issue_id        = action.get('action_id').split('::').pop(3)
             trigger_id      = self.event.get('trigger_id')
             slack_dialog = Jira_Edit_Issue(issue_id, field).setup().render()
-            API_Slack(self.channel, self.team_id).slack.api_call("dialog.open", trigger_id=trigger_id, dialog=slack_dialog)
+            from gw_bot.api.API_Slack import API_Slack
+            API_Slack(self.channel, self.team_id).slack.dialog_open(trigger_id=trigger_id, dialog=slack_dialog)
         except Exception as error:
             self.send_message(':red_circle: Error in edit_field: {0}'.format(error))
 
@@ -246,7 +251,7 @@ class Jira_View_Issue():
     def screenshot(self, action):
         issue_id = action.get('value')
         payload  = {'params': ['screenshot', issue_id], 'channel': self.channel, 'team_id': self.team_id}
-        Lambda('osbot_jira.lambdas.elastic_jira').invoke_async(payload)
+        Lambda('osbot_jira.lambdas.jira').invoke_async(payload)
 
     def raw_issue_data(self, action):
         issue_id = action.get('value')
@@ -263,7 +268,7 @@ class Jira_View_Issue():
                 issue_id = selected_option.get('value')
         if issue_id:
             payload = {'params': ['issue', issue_id], 'channel': self.channel, 'team_id': self.team_id}
-            Lambda('osbot_jira.lambdas.elastic_jira').invoke_async(payload)
+            Lambda('osbot_jira.lambdas.jira').invoke_async(payload)
         else:
             self.send_message(':red_circle: Error in View Issue, no issue id found in action :{0}'.format(action))
 
@@ -272,7 +277,7 @@ class Jira_View_Issue():
             issue_id = action.get('value')
             self.send_message(':point_right: Viewing all links for issue: `{0}`'.format(issue_id))
             payload = {'params': ['links', issue_id, 'all', '1'], 'channel': self.channel, 'team_id': self.team_id}
-            Lambda('osbot_jira.lambdas.elastic_jira').invoke_async(payload)
+            Lambda('osbot_jira.lambdas.jira').invoke_async(payload)
         except Exception as error:
             self.send_message(':red_circle: Error in View Links for issue with id `{0}`: {1}'.format(issue_id, error))
 

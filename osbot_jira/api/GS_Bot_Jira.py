@@ -1,23 +1,21 @@
-import json
 import pprint
 
-from pbx_gs_python_utils.utils.Lambdas_Helpers              import slack_message
-from pbx_gs_python_utils.utils.Misc                         import Misc
-from pbx_gs_python_utils.utils.slack.API_Slack_Attachment   import API_Slack_Attachment
-
+from gw_bot.api.slack.API_Slack_Attachment import API_Slack_Attachment
+from osbot_aws.helpers.Lambda_Helpers import slack_message, log_to_elk
 from osbot_aws.apis.Lambda import Lambda
 from osbot_jira.api.API_Issues                              import API_Issues
 from osbot_jira.api.elk.Elk_To_Slack                        import ELK_to_Slack
-from osbot_jira.api.graph.Graph_View                        import Graph_View
 from osbot_jira.api.graph.Lambda_Graph                      import Lambda_Graph
 from osbot_jira.api.slack.views.Jira_Slack_Actions          import Jira_Slack_Actions
 from osbot_jira.api.slack.views.Jira_View_Issue             import Jira_View_Issue
+from osbot_utils.utils import Misc
+from osbot_utils.utils.Misc import array_get, to_int
 
 
 class GS_Bot_Jira:
 
     def __init__(self):
-        self.version = "v0.42 (GSBot)"
+        self.version = "v0.44 (GSBot)"
 
     def cmd_add_link(self, params, team_id=None, channel=None):
             if len(params) < 4:
@@ -42,33 +40,42 @@ class GS_Bot_Jira:
         return {"text": text, "attachments": attachments}
 
     def cmd_create(self, params, team_id=None, channel=None):
-        if len(params) < 3:
-            text = ":exclamation: To create an issue you need to provide the `issue type` and `summary`. For example `jira create task abc"
+        try:
+            if len(params) < 3:
+                text = ":exclamation: To create an issue you need to provide the `issue type` and `summary`. For example `jira create task abc"
+                return {"text": text, "attachments": []}
+            else:
+                params.pop(0)           # the create command
+                issue_type = params.pop(0)          #.title() # todo: find a better solution for this
+                project    = issue_type.upper()               # todo: and to address the mapping of issue types to projects
+                summary    = ' '.join(params)
+                slack_message(':point_right: Going to create an `{0}` issue, in project `{1}` with summary `{2}`'.format(issue_type, project,summary), [], channel,team_id)
+
+                #to do, move this feature to a separate lambda (which can be called to create issues
+                from osbot_aws.Dependencies import load_dependency
+                load_dependency('jira')
+                from osbot_jira.api.jira_server.API_Jira import API_Jira
+
+                # create issue
+                result = API_Jira().issue_create(project,summary,'',issue_type)
+                issue_id = "{0}".format(result)
+
+                # show issue screenshot
+                # payload = {'issue_id': issue_id,'channel': channel,'team_id': team_id, }
+                # Lambda('osbot_browser.lambdas.jira_web').invoke_async(payload)
+
+                # show issue UI
+                payload = {'params': ['issue', issue_id], "channel": channel}
+                Lambda('osbot_jira.lambdas.jira').invoke_async(payload)
+
+
+                # show link of new issue to user
+                jira_link = "https://glasswall.atlassian.net/browse/{0}".format(issue_id)
+                text = ':point_right: New issue created with id <{0}|{1}>'.format(jira_link, issue_id)
             return {"text": text, "attachments": []}
-        else:
-            params.pop(0)           # the create command
-            project = 'SEC'
-            issue_type = params.pop(0)
-            summary    = ' '.join(params)
-            slack_message(':point_right: Going to create an `{0}` issue, in project `{1}` with summary `{2}`'.format(issue_type, project,summary), [], channel,team_id)
-
-            #to do, move this feature to a separate lambda (which can be called to create issues
-            from osbot_aws.apis.Lambda import load_dependency
-            load_dependency('jira')
-            from osbot_jira.api.jira_server.API_Jira import API_Jira
-
-            # create issue
-            result = API_Jira().issue_create(project,summary,'',issue_type)
-            issue_id = "{0}".format(result)
-
-            # show issue screenshot
-            payload = {'issue_id': issue_id,'channel': channel,'team_id': team_id, }
-            Lambda('osbot_browser.lambdas.jira_web').invoke_async(payload)
-
-            # show link of new issue to user
-            jira_link = "https://jira.photobox.com/browse/{0}".format(issue_id)
-            text = ':point_right: New issue created with id <{0}|{1}>'.format(jira_link, issue_id)
-        return {"text": text, "attachments": []}
+        except Exception as error:
+            log_to_elk('jira create error',f'{error}')
+            return {'text': f':red_circle: Issue could not be created, please make sure that: \n - issue type exists\n - issue type = project type\n - Issue type CamelCase is correctly entered (you want `Task` and not `task`)', "attachments": []}
 
     def cmd_created_in_last(self, params, team_id=None, channel=None):
         elk_to_slack = ELK_to_Slack()
@@ -113,7 +120,7 @@ class GS_Bot_Jira:
                 self.cmd_table(["table", graph_name], team_id, channel)
             return {"text": text, "attachments": [{ 'text': issues_text , 'color':'good'}]}
         except Exception as error:
-            text ="Error incmd_created_between: {0}".format(error)
+            text ="Error in cmd_created_between: {0}".format(error)
             return {"text": text, "attachments": []}
 
     def cmd_updated_in_last(self, params, team_id=None, channel=None):  # refactor with cmd_created_in_last since 99% of the code is the same
@@ -143,15 +150,20 @@ class GS_Bot_Jira:
             return {"text": text, "attachments": []}
         else:
             issue_id = params.pop(1)            # position 0 is the 'issue' command
-            #return {"text": issue_id, "attachments": []}
-            return Jira_View_Issue(issue_id,channel, team_id).create_and_send()
+            jira_view_issue = Jira_View_Issue(issue_id,channel, team_id)
+            jira_view_issue.create_and_send()
+            if channel is None:
+                return jira_view_issue.issue
+
+
+
 
             #text, attachments = Jira_View_Issue(issue_id).get_actions_ui()
             #return {"text": text, "attachments": attachments}
 
 
 
-    def cmd_screenshot(self, params, team_id, channel):
+    def cmd_screenshot(self, params, team_id=None, channel=None):
         attachments = []
         if len(params) < 2:
             text = ":exclamation: you must provide an issue id "
@@ -159,110 +171,121 @@ class GS_Bot_Jira:
             params.pop(0) # remove 'issue' command
 
             issue_id = params.pop(0).upper()
-            width    = Misc.to_int(Misc.array_pop(params, 0))
-            height   = Misc.to_int(Misc.array_pop(params, 0))
+            width    = to_int(Misc.array_pop(params), None)
+            height   = to_int(Misc.array_pop(params), None)
+            delay    = to_int(Misc.array_pop(params), None)
 
             text = ':point_right: Getting screenshot for issue `{0}`'.format(issue_id)
             if width:
                 text += ' with width `{0}`'.format(width)
             if height:
                 text += ' and height `{0}`'.format(height)
+            if delay:
+                text += ' and delay `{0}`'.format(delay)
 
             payload = {
                             'issue_id': issue_id,
                             'channel' : channel ,
                             'team_id' : team_id ,
                             'width'   : width   ,
-                            'height'  : height
+                            'height'  : height  ,
+                            'delay'   : delay
                       }
             Lambda('osbot_browser.lambdas.jira_web').invoke_async(payload)
-            # previews version (that showed a plantuml table
-            # jira_link   = "https://jira.photobox.com/browse/{0}".format(key)
-            # api_issues = API_Issues()
-            # es_index   = api_issues.resolve_es_index(key)
-            # if es_index:
-            #     text        = "....._fetching data for *<{0}|{1}>* _from index:_ *{2}*".format(jira_link, key, es_index)
-            #
-            #     table       = api_issues.create_issue_table(key)
-            #
-            #     if channel:
-            #         payload = {"puml": table.puml ,
-            #                    "channel": channel,
-            #                    "team_id": team_id }
-            #         Lambda('utils.puml_to_slack').invoke_async(payload)
-            # else:
-            #     text = ":exclamation: could not find index for issue "
+
         return {"text": text, "attachments": attachments}
 
     def cmd_links(self, params, team_id=None, channel=None, user=None, only_create=False,save_graph=True):
-        attachments = []
-        if len(params) == 5: view = params.pop()
-        else               : view = None
 
-        if len(params) != 4:
-            text = ':red_circle: for the `jira links` command, you need to provide 3 parameters: ' \
-                   '\n\t\t - `jira key` ' \
-                   '\n\t\t - `direction` (up, down or any) and ' \
-                   '\n\t\t - `depth` '
-            #text += '\n\n {0}'.format(params)
-        else:
-            depth = params.pop()
-            if Misc.is_number(depth):
-                depth     = int(depth)
-                direction = params.pop()
-                target    = params.pop()
+        if len(params) < 2:
+             text = ':point_right: Hi, here are the valid parameters for the `jira links` command: ' \
+                    '\n\t\t - `jira key` '                                                           \
+                    '\n\t\t - `depth` (default to 1)'                                                \
+                    '\n\t\t - `view engine`: viva_graph (default), or plantuml'                      \
+                    '\n\t\t - `width` (of graph)'                                                    \
+                    '\n\t\t - `delay` (before screenshot)'
+             return {"text": text, "attachments": []}
 
-                if direction not in ['up', 'down','children','parents', 'all']:
-                    text = ':red_circle: Unsupported direction `{0}` for `jira links` command. Current supported values are: `all`, `up`, `down`, `children` and `parents`'.format(
-                        direction)
-                    return {"text": text, "attachments": attachments}
+        target      =        array_get(params, 1               )
+        depth       = to_int(array_get(params, 2), 1           )   # default to depth 1
+        view_engine =        array_get(params, 3, 'viva_graph' )
+        width       = to_int(array_get(params, 4), None        )
+        delay       = to_int(array_get(params, 5), None        )
 
-                graph = Lambda_Graph().graph_links(target, direction, depth)
+        if depth > 5:
+            text = f':red_circle: sorry depths bigger than 5 are not supported (since 5 will already give you the only graph)'
+            return {"text": text, "attachments": []}
 
-                graph_type = "{0}__{1}___depth_{2}".format(target, direction, depth)
+        #direction = 'all'       # change behaviour to only show all
 
-                if save_graph is False:
-                    return graph
-                graph_name = graph.render_and_save_to_elk(None, graph_type, channel, user)
-                if only_create:
-                    return graph, graph_name, depth, direction, target
+        graph = Lambda_Graph().graph_links(target, depth)
+        if graph is None:
+            text = f':red_circle: graph not created for target `{target}`'
+            return {"text": text, "attachments": []}
 
-                puml = graph.puml.puml
-                max_size = 60000
-                if channel and (not view) and len(puml) > max_size:            # only do this check when there is a channel and no view (meaning that the graph will be generated)
-                    text = ':red_circle: for the graph `{0}` with `{1}` nodes and `{2}` edges, the PlantUML code generated from your query was too big `{3}` and rendering this type of large graphs doesn\'t work well in PlantUML (max allowed is `{4}`)'\
-                                    .format(graph_name, len(graph.nodes), len(graph.edges), len(puml),max_size)
-                else:
-                    if view:                                        # if we have defined a view, render it here
-                        graph_view          = Graph_View()
-                        graph_view.graph    = graph
-                        graph_view.graph.reset_puml()
-                        graph_view.render_view(view,channel,team_id,graph_name)
-                        puml = graph_view.graph.puml.puml
-                    else:
-                        view = 'default'
+        if len(graph.edges) == 0:
+            text = f':red_circle: no graph created from `{target}` (please double check that the issue ID exists)'
+            return {"text": text, "attachments": []}
 
-                    if channel:  # if the channel value is provided return a user friendly message, if not, return the data
-                        text = ':point_right: Created graph with name `{4}`, based on _{0}_ in the direction `{1}`, with depth `{2}`, with plantuml size: `{3}`, with view `{5}`, with `{6}` nodes and `{7}` edges'\
-                                        .format(target, direction, depth, len(puml), graph_name, view, len(graph.nodes), len(graph.edges))
-                        Lambda('utils.puml_to_slack').invoke_async({"puml": puml,"channel": channel, 'team_id' : team_id})
-                    else:
-                        data = {
-                            "target"    : target     ,
-                            "direction" : direction  ,
-                            "depth"     : depth      ,
-                            "nodes"     : graph.nodes,
-                            "edges"     : graph.edges,
-                            "puml"      : puml       ,
-                            "graph_name": graph_name ,
-                            "view"      : view
-                        }
-                        text = json.dumps(data, indent=4)
+        graph_type = f"{target}___depth_{depth}"
+
+        if save_graph is False:
+            return graph
+
+        graph_name = graph.render_and_save_to_elk(None, graph_type, channel, user)
+
+        if only_create:
+            return graph, graph_name, depth, target
+
+        if channel:
+            message = f':point_right: Created graph with *name* `{graph_name}` *from* `{target}` *depth* `{depth}`'
+            slack_message(message,[],channel)
+
+            if view_engine =='plantuml':
+                params = ['show', graph_name, view_engine]
+                Lambda('osbot_jira.lambdas.graph').invoke_async({"params": params, 'data': {'team_id': team_id, 'channel': channel}})
             else:
-                text = ':red_circle: error: invalid value provided for depth `{0}`. It must be an number'.format(depth)
+                params = [view_engine, graph_name, 'default', width, delay]
+                Lambda('osbot_browser.lambdas.lambda_browser').invoke_async({"params": params, 'data': {'team_id': team_id, 'channel': channel}})
+        else:
+            return graph, graph_name, depth, target
+
+            # puml = graph.puml.puml
+            # max_size = 60000
+            # if channel and (not view) and len(puml) > max_size:            # only do this check when there is a channel and no view (meaning that the graph will be generated)
+            #     text = ':red_circle: for the graph `{0}` with `{1}` nodes and `{2}` edges, the PlantUML code generated from your query was too big `{3}` and rendering this type of large graphs doesn\'t work well in PlantUML (max allowed is `{4}`)'\
+            #                     .format(graph_name, len(graph.nodes), len(graph.edges), len(puml),max_size)
+            # else:
+            #     if view:                                        # if we have defined a view, render it here
+            #         graph_view          = Graph_View()
+            #         graph_view.graph    = graph
+            #         graph_view.graph.reset_puml()
+            #         graph_view.render_view(view,channel,team_id,graph_name)
+            #         puml = graph_view.graph.puml.puml
+            #     else:
+            #         view = 'default'
+            #
+            #     if channel:  # if the channel value is provided return a user friendly message, if not, return the data
+            #         text = ':point_right: Created graph with name `{4}`, based on _{0}_ in the direction `{1}`, with depth `{2}`, with plantuml size: `{3}`, with view `{5}`, with `{6}` nodes and `{7}` edges'\
+            #                         .format(target, direction, depth, len(puml), graph_name, view, len(graph.nodes), len(graph.edges))
+            #         Lambda('gw_bot.lambdas.puml_to_slack').invoke_async({"puml": puml,"channel": channel, 'team_id' : team_id})
+            #     else:
+            #         data = {
+            #             "target"    : target     ,
+            #             "direction" : direction  ,
+            #             "depth"     : depth      ,
+            #             "nodes"     : graph.nodes,
+            #             "edges"     : graph.edges,
+            #             "puml"      : puml       ,
+            #             "graph_name": graph_name ,
+            #             "view"      : view
+            #         }
+            #         text = json.dumps(data, indent=4)
+            #else:
+            #    text = ':red_circle: error: invalid value provided for depth `{0}`. It must be an number'.format(depth)
 
 
-        return {"text": text, "attachments": attachments}
+        #return {"text": text, "attachments": attachments}
 
     def cmd_help(self):
         commands = [func for func in dir(GS_Bot_Jira) if
@@ -276,7 +299,7 @@ class GS_Bot_Jira:
         return {"text": text, "attachments": attachments}
 
     def cmd_search(self, event):
-        Lambda('gs.elk_to_slack').invoke_async(event)
+        Lambda('osbot_jira.lambdas.elk_to_slack').invoke_async(event)
         return None
 
     def cmd_table(self, params, team_id=None, channel=None):
@@ -287,7 +310,7 @@ class GS_Bot_Jira:
             params.pop(0)                           # remove 1st command since it is 'server'
             graph_name = params.pop()
             text = ':point_right: Showing table with data created from graph `{0}`'.format(graph_name)
-            Lambda('lambdas.browser.lambda_browser').invoke_async({"params": [ "table", graph_name , 'graph_simple'], "data":{"channel" : channel, "team_id": team_id}})
+            Lambda('osbot_browser.lambdas.lambda_browser').invoke_async({"params": [ "table", graph_name , 'graph_simple'], "data":{"channel" : channel, "team_id": team_id}})
         return {"text": text, "attachments": attachments}
 
     # def cmd_server(self, params, team_id=None, channel=None):
@@ -381,10 +404,10 @@ class GS_Bot_Jira:
 
 
     def cmd_version(self, params, team_id=None, channel=None):
-        if team_id:
+        if channel:
             slack_message(self.version, [], channel, team_id)
         else:
-            return self.version
+            return {"text": self.version, "attachments":[] }
 
 
     # helpers

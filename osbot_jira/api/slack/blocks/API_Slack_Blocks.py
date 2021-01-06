@@ -1,6 +1,4 @@
-## Todo: refactor to a new OSBot_Slack (which also has the other classes currently in pbx_gs-python_utils
-from pbx_gs_python_utils.utils.slack.API_Slack import API_Slack
-
+from gw_bot.api.API_Slack import API_Slack
 from osbot_jira.api.slack.blocks.Layout_Actions import Layout_Actions
 from osbot_jira.api.slack.blocks.Layout_Context import Layout_Context
 from osbot_jira.api.slack.blocks.Layout_Image import Layout_Image
@@ -27,11 +25,12 @@ class API_Slack_Blocks:
         self.unfurl_media    = False
     # Helper methods
 
+    #NOT WORKING
     def send_message(self,channel=None, team_id=None):                      # needs to move to the main dedicated lambda function (since this version supports the Slack blocks feature)
         api_slack = API_Slack(channel=channel, team_id=team_id)
-        if  channel and team_id:                                            # to help with testing
+        if  channel :                                            # to help with testing
             self.kwargs = {
-                        'channel'        : api_slack.channel   ,
+                        #'channel'        : api_slack.channel   ,
                         'text'           : self.text           ,
                         'as_user'        : self.as_user        ,
                         'attachments'    : self.attachments    ,
@@ -47,7 +46,10 @@ class API_Slack_Blocks:
                         'unfurl_media'   : self.unfurl_media   ,
                         'username'       : self.username
                      }
-            return api_slack.slack.api_call("chat.postMessage", **self.kwargs)
+            #return api_slack.slack.chat_postMessage(api_slack.channel, **self.kwargs)
+            #return api_slack.slack.api_call("chat.postMessage", **self.kwargs)
+            return api_slack.slack.chat_postMessage(channel=api_slack.channel, blocks=self.blocks).data
+            #return api_slack.slack.chat_postMessage(channel=api_slack.channel,text=self.text, blocks=self.blocks)
         else:
             return self.text, self.blocks
 

@@ -1,9 +1,8 @@
-from pbx_gs_python_utils.utils.Misc import Misc
-from pbx_gs_python_utils.utils.slack.API_Slack import API_Slack
-from pbx_gs_python_utils.utils.slack.API_Slack_Attachment import API_Slack_Attachment
-
+from gw_bot.api.API_Slack import API_Slack
+from gw_bot.api.slack.API_Slack_Attachment import API_Slack_Attachment
 from osbot_jira.api.slack.Slack_Jira_Search import Slack_Jira_Search
 from osbot_jira.api.slack.dialogs.Jira_Create_Issue import Jira_Create_Issue
+from osbot_utils.utils import Misc
 
 
 class Jira_Slack_Actions:
@@ -27,7 +26,7 @@ class Jira_Slack_Actions:
     def create(self):                                           # this is where the current buttons exist
         self.buttons_ui.set_callback_id(self.callback_id)
         self.add_button('Create Issue')
-        self.add_button('Search')
+        #self.add_button('Search')
         #self.add_button('Search')
 
         return self
@@ -56,7 +55,7 @@ class Jira_Slack_Actions:
         channel    = event.get('channel').get('id')
         team       = event.get('team'   ).get('id')
         slack_dialog = Jira_Create_Issue().setup().render()
-        API_Slack(channel,team).slack.api_call("dialog.open", trigger_id=trigger_id, dialog=slack_dialog)
+        API_Slack(channel,team).slack.dialog_open(trigger_id=trigger_id, dialog=slack_dialog)
 
         return {"text": ":point_right: Opening `Create Issue` dialog".format(channel, team), "attachments": [], 'replace_original': False}
 

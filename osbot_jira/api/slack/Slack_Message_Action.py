@@ -1,5 +1,5 @@
-from pbx_gs_python_utils.utils.Lambdas_Helpers import slack_message
-from pbx_gs_python_utils.utils.slack.API_Slack import API_Slack
+from gw_bot.api.API_Slack import API_Slack
+from osbot_aws.helpers.Lambda_Helpers import slack_message
 
 from osbot_jira.api.slack.dialogs.Jira_Create_Issue import Jira_Create_Issue
 
@@ -21,5 +21,5 @@ class Slack_Message_Action:
             if summary    : summary = summary.replace('+', ' ')
             if description: description = description.replace('+', ' ')
             slack_dialog = Jira_Create_Issue(summary=summary, description=description).setup().render()
-            API_Slack(self.channel, self.team_id).slack.api_call("dialog.open", trigger_id=self.trigger_id, dialog=slack_dialog)
+            API_Slack(self.channel, self.team_id).slack.dialog_open(trigger_id=self.trigger_id, dialog=slack_dialog)
             return {"text": "in jira_create_issue_from_slack_message",  "attachments": [], 'replace_original': False}

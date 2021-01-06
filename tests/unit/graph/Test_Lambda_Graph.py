@@ -1,14 +1,18 @@
-from unittest import TestCase
-
 from pbx_gs_python_utils.utils.Dev import Dev
 
+from osbot_aws.helpers.Test_Helper import Test_Helper
 from osbot_jira.api.graph.GS_Graph import GS_Graph
 from osbot_jira.api.graph.Lambda_Graph import Lambda_Graph
 
 
-class Test_Lambda_Graph(TestCase):
+class Test_Lambda_Graph(Test_Helper):
     def setUp(self):
+        super().setUp()
         self.lambda_graph = Lambda_Graph()
+
+    def test_get_graph_data(self):
+        graph_name = 'graph_I3H'
+        self.result = self.lambda_graph.get_graph_data(graph_name)
 
     def test_get_gs_graph_by_name(self):
         graph = self.lambda_graph.get_gs_graph___by_name("test_save_gs_graph_____org_chart")
@@ -45,6 +49,11 @@ class Test_Lambda_Graph(TestCase):
             "data": {"channel": "DDKUZTK6X"}
         }
         self.lambda_graph.handle_lambda_event(payload)
+
+    def test_handle_lambda_event_raw_data(self):
+        graph_name = 'graph_J2O'
+        payload ={'params': ['raw_data', graph_name, 'details'], 'data': {}}
+        self.result = self.lambda_graph.handle_lambda_event(payload)
 
     def test_send_graph_to_slack___by_type(self):
         result = self.lambda_graph.send_graph_to_slack___by_type("keys___['FACT-47']__up___depth_3", "DDKUZTK6X")
@@ -84,6 +93,11 @@ class Test_Lambda_Graph(TestCase):
         graph.add_nodes(is_a_manager_nodes)
         graph.add_linked_issues_of_type('is manager of')
         graph.render_and_save_to_elk   ("test_save_gs_graph_____org_chart", "from unit test")
+
+    def test_wait_for_elk_to_index_graph(self):
+        graph    = self.lambda_graph.load_gs_graph('graph_CT6')
+        new_name = self.lambda_graph.save_gs_graph(graph)
+        self.result = self.lambda_graph.wait_for_elk_to_index_graph(new_name)
 
         #self.lambda_graph.save_gs_graph(graph, "test_save_gs_graph_____org_chart", "from unit test")
 

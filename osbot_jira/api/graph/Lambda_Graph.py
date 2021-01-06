@@ -1,12 +1,13 @@
 import pprint
+from time import sleep
 
-from osbot_aws.apis.Lambda import Lambda
-
-#from gs_elk.Lambda_Graph_Commands   import Lambda_Graph_Commands
-from osbot_jira.api.graph.GS_Graph                      import GS_Graph
-from pbx_gs_python_utils.utils.Lambdas_Helpers          import log_to_elk, slack_message
-from pbx_gs_python_utils.utils.Misc                     import Misc
-from pbx_gs_python_utils.utils.Save_To_ELK              import Save_To_ELK
+from osbot_aws.apis.Lambda           import Lambda
+from gw_bot.elastic.Save_To_ELK      import Save_To_ELK
+from osbot_aws.helpers.Lambda_Helpers import slack_message, log_to_elk
+from osbot_jira.api.graph.GS_Graph   import GS_Graph
+from osbot_jira.osbot_graph.Graph    import Graph
+from osbot_jira.osbot_graph.engines.Graph_Dot import Graph_Dot
+from osbot_utils.utils.Misc import random_string_and_numbers
 
 
 class Lambda_Graph():
@@ -19,6 +20,28 @@ class Lambda_Graph():
             self._save_to_elk    = Save_To_ELK()
         return self._save_to_elk
 
+    def get_graph(self, graph_name):
+        graph_data = self.get_graph_data(graph_name)
+        nodes = graph_data.get('nodes').keys()
+        edges = graph_data.get('edges')
+        return Graph().add_nodes(nodes)     \
+                      .add_edges(edges)
+
+    def get_graph_dot(self, graph_name):
+        return Graph_Dot(self.get_graph(graph_name))
+
+    def get_graph_data(self, graph_name):
+        graph_data = { "graph_name": graph_name ,
+                       "nodes"     : []         ,
+                       "edges"     : []         }
+        graph      = self.load_gs_graph(graph_name)
+
+        if graph:
+            graph_data['nodes'] = graph.get_nodes_issues()
+            graph_data["edges"] = graph.edges
+        return graph_data
+
+        #data['nodes'] =
     def get_gs_graph_from_most_recent_version(self, lucene_query):
         data = self.save_to_elk().get_most_recent_version_of_document(lucene_query)
         if data is None: return None
@@ -36,7 +59,7 @@ class Lambda_Graph():
     def get_graph_png___by_name(self, graph_name):
         graph = self.get_gs_graph___by_name(graph_name)
         puml = graph.puml.puml
-        puml_to_png = Lambda('utils.puml_to_png').invoke
+        puml_to_png = Lambda('gw_bot.lambdas.puml_to_png').invoke
         return puml_to_png({"puml": puml})
 
     def get_last_10_graphs(self):
@@ -47,7 +70,7 @@ class Lambda_Graph():
         return self.save_to_elk().elastic.search_using_lucene_sort_by_date(lucene_query, count)
 
     def handle_lambda_event(self, event):
-        log_to_elk("in Lambda_Graph.handle_lambda_event :{0}".format(event))
+        #log_to_elk("in Lambda_Graph.handle_lambda_event :{0}".format(event))
         data    = event.get('data')
         if data:
             channel = data.get('channel')
@@ -98,7 +121,7 @@ class Lambda_Graph():
 
     def save_graph(self, nodes, edges, extra_data = None, graph_id = None, graph_name = None, graph_type = None):
         if graph_name is None:                                          # if graph_name is not set
-            graph_name = Misc.random_string_and_numbers(3, 'graph_' )   # give it a temp name
+            graph_name = random_string_and_numbers(3, 'graph_' )   # give it a temp name
 
         graph = {
                 "name"      : graph_name ,
@@ -113,25 +136,26 @@ class Lambda_Graph():
 
     def send_graph_to_slack___by_type(self, graph_name, channel):
         graph = self.get_gs_graph___by_type(graph_name)
-        return Lambda('utils.puml_to_slack').invoke({"puml"   : graph.get_puml(), "channel": channel})
+        return Lambda('gw_bot.lambdas.puml_to_slack').invoke({"puml"   : graph.get_puml(), "channel": channel})
 
-    def graph_links(self, target, direction, depth):
-        graph = self.get_gs_graph___by_name(target)   # check if the value provided is a saved graph
+    def graph_links(self, target, depth=1):
+        if target is None:
+            return None
+        graph = self.get_gs_graph___by_name(target)             # check if the value provided is a saved graph
         if graph is not None:                                   # if it exists
             keys = graph.nodes                                  # set keys to graph nodes
         else:                                                   # if not
             keys = target.upper().split(",")                    # use value as keys
 
         graph = GS_Graph()
-
-        if direction == 'up':
-            graph.set_links_path_mode_to_up()
-        elif direction == 'down':
-            graph.set_links_path_mode_to_down()
-        elif direction == 'children':
-            graph.set_puml_link_types_to_add(['is parent of'])
-        elif direction == 'parents':
-            graph.set_puml_link_types_to_add(['is child of'])
-
         graph.add_all_linked_issues(keys, depth)
         return graph
+
+    def wait_for_elk_to_index_graph(self, graph_name, wait_count=10, wait_for_ms=100):
+        for i in range(wait_count):
+            graph = self.get_gs_graph___by_name(graph_name)
+            if graph:
+                return True
+            #print(f'[{wait_count}] not there yet so sleeping for {wait_for_ms}')
+            sleep(wait_for_ms/1000)
+        return False

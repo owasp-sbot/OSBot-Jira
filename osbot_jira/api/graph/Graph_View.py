@@ -1,22 +1,17 @@
 import json
 
-from pbx_gs_python_utils.utils.Lambdas_Helpers  import slack_message
-
+from osbot_aws.helpers.Lambda_Helpers import slack_message
 from osbot_jira.api.graph.GS_Graph              import GS_Graph
 from osbot_jira.api.graph.Lambda_Graph          import Lambda_Graph
 
 
 class Graph_View:
 
-    def __init__(self,):
-        self.graph      = None
+    def __init__(self, graph=None):
+        self.graph          = graph
         self.lambda_graph   = Lambda_Graph()
 
     def handle_lambda_request(self, params, slack_channel=None,team_id=None):
-        if len(params) == 1:
-            graph_name = params.pop()
-            self.load_graph(graph_name).render_simple()
-
         if len(params) > 1:
             graph_name = params[0]
             view_name  = params[1]
@@ -65,6 +60,9 @@ class Graph_View:
             self.graph.reset_puml()
         return self
 
+    def puml(self):
+        return self.graph.puml.puml
+
     def print_puml(self):
         print(self.graph.puml.puml)
         return self
@@ -76,7 +74,7 @@ class Graph_View:
 
     def view_default(self):
         self.graph.render_puml()
-        return self
+        return self.puml()
 
     def view_by_issue_type(self):
 
@@ -94,7 +92,7 @@ class Graph_View:
                 self.graph.puml.add_edge(issue_type, key)
 
         self.graph.puml.enduml()
-        return self
+        return self.puml()
 
     def view_by_labels(self):
 
@@ -106,16 +104,11 @@ class Graph_View:
             if issue:
                 for label in issue.get('Labels'):
                     summary    = issue.get('Summary')
-                    #issue_type = issue.get('Issue Type')
-                    #self.graph.puml.add_card(label,label)
-
                     self.graph.puml.add_card(summary, key)
-
                     self.graph.puml.add_edge(label, key)
-                    #Dev.pprint(issue.get('Labels'))
 
         self.graph.puml.enduml()
-        return self
+        return self.puml()
 
     def view_by_status(self):
 
@@ -128,7 +121,6 @@ class Graph_View:
         for key,issue in issues.items():
             if issue:
                     summary    = issue.get('Summary')
-
                     #summary   = Misc.word_wrap_escaped(summary,30)
                     status     = issue.get('Status')
 
@@ -142,24 +134,7 @@ class Graph_View:
         for edge in edges:
             self.graph.puml.add_edge(edge[0], edge[1])
         self.graph.puml.enduml()
-        return self
-
-    def view_top_down(self): 
-        (
-                self.graph
-                    .set_puml_direction_top_down()
-                    .set_puml_show_key_in_text(False)
-                    .set_puml_show_edge_labels(False)
-                    .set_skin_param('Padding'             , 10      )
-                    .set_skin_param('DefaultFontSize'     , 40      )
-                    .set_skin_param('DefaultFontColor'    , 'white' )
-                    .set_skin_param('CardBorderColor'     , 'white' )
-                    .set_skin_param('CardBackgroundColor' , '175B73')
-                    .set_skin_param('CardBorderThickness' , 0       )
-                    .set_skin_param('Shadowing'           , False   )
-                    .render_puml()
-         )
-        return self
+        return self.puml()
 
     def view_links(self):
 
@@ -170,16 +145,13 @@ class Graph_View:
                 self.graph.notes.append(('right', id, issue_links))
                 return '{0} "{1} \\n \\n {2}" as {3}'.format(element,title, original_id, id)
 
-        #self.graph.puml.on_add_node = on_add_node
-        #self.graph.nodes = [self.graph.nodes.pop()]
-        #self.graph.edges = []
         (
             self.graph
                 .set_puml_show_key_in_text(False)
                 .set_puml_on_add_node(on_add_node)
                 .render_puml()
         )
-        return self
+        return self.puml()
 
     def view_no_keys(self):
         (
@@ -190,7 +162,7 @@ class Graph_View:
                 .set_skin_param('ArrowColor','DarkGray')
                 .render_puml()
         )
-        return self
+        return self.puml()
 
     def view_schema(self):
 
@@ -218,12 +190,11 @@ class Graph_View:
         for item in schema.values():
             new_graph.add_node(item.get('from_issue_type'))
             new_graph.add_node(item.get('to_issue_type'))
-            #new_graph.add_edge(item.get('from_issue_type'), "{0} \\n<size:7>(x{1})".format(item.get('link_name'),item.get('count')),item.get('to_issue_type'))
             new_graph.add_edge(item.get('from_issue_type'), item.get('link_name'),item.get('to_issue_type'))
 
         self.graph = new_graph
         self.graph.render_puml()
-        return self
+        return self.puml()
 
     def view_colors(self):
 
@@ -274,10 +245,29 @@ class Graph_View:
         self.graph.set_skin_param('Padding'              , '3'   )
 
         self.graph.render_puml()
-        return self
+        return self.puml()
 
-    def view_it_systems(self):
+
+    def view_top_down(self):
         self.graph.set_puml_direction_top_down()
         self.graph.render_puml()
-        return self
+        return self.puml()
+
+    def view_top_down_in_blue(self):
+        (
+                self.graph
+                    .set_puml_direction_top_down()
+                    .set_puml_show_key_in_text(False)
+                    .set_puml_show_edge_labels(False)
+                    .set_skin_param('Padding'             , 10      )
+                    .set_skin_param('DefaultFontSize'     , 40      )
+                    .set_skin_param('DefaultFontColor'    , 'white' )
+                    .set_skin_param('CardBorderColor'     , 'white' )
+                    .set_skin_param('CardBackgroundColor' , '175B73')
+                    .set_skin_param('CardBorderThickness' , 0       )
+                    .set_skin_param('Shadowing'           , False   )
+                    .render_puml()
+         )
+        return self.puml()
+
 

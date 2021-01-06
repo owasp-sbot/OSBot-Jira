@@ -1,6 +1,4 @@
 from api_jira.API_Jira_Sheets_Sync import API_Jira_Sheets_Sync
-from utils.Dev import Dev
-from utils.Local_Cache import use_local_cache_if_available
 from utils.Misc import Misc
 
 
@@ -30,7 +28,7 @@ class Sheet_Threat_Sophistication(API_Jira_Sheets_Sync):
         for key,linked_issues in issue.get('Issue Links').items():
             for linked_issue in linked_issues:
                 if linked_issue.get('Issue Type') == 'Vulnerability':
-                    link = '=HYPERLINK("https://jira.photobox.com/browse/{0}","{0}")'.format(key)
+                    link = '=HYPERLINK("https://glasswall.atlassian.net/browse/{0}","{0}")'.format(key)
                     linked_vulns.append((key, link, linked_issue.get('Summary')))
         return linked_vulns
 
@@ -174,7 +172,7 @@ class Sheet_Threat_Sophistication(API_Jira_Sheets_Sync):
         for diff_action in diff_actions:
             action    = diff_action.get('action')
             key       = diff_action.get('key')
-            key_link  = '=HYPERLINK("https://jira.photobox.com/browse/{0}","{0}")'.format(key)
+            key_link  = '=HYPERLINK("https://glasswall.atlassian.net/browse/{0}","{0}")'.format(key)
             link_key  = diff_action.get('link_key','')
             value     = diff_action.get('value')
             col       = diff_action.get('row')  # BUG these are wrong in the whole script!!!

@@ -1,14 +1,11 @@
-from unittest import TestCase
-
-from osbot_aws.apis.Lambda import Lambda
 from pbx_gs_python_utils.utils.Dev import Dev
-from pbx_gs_python_utils.utils.Lambdas_Helpers import slack_message
 
-from osbot_jira.Deploy import Deploy
+from gw_bot.Deploy import Deploy
+from osbot_aws.helpers.Test_Helper import Test_Helper
 from osbot_jira.api.slack.views.Jira_View_Issue import Jira_View_Issue
 
 
-class test_Jira_View_Issue(TestCase):
+class test_Jira_View_Issue(Test_Helper):
     def setUp(self):
         self.jira_view_issue          = Jira_View_Issue()
         self.lambda_name_jira_actions = 'osbot_jira.lambdas.slack_actions'
@@ -21,16 +18,16 @@ class test_Jira_View_Issue(TestCase):
     def test__update_lambda_all(self):
         self.test__update_lambda_elastic_jira()
         self.test__update_lambda_slack_actions()
-        self.test_updata_lambda_slack_jira_actions()
+        self.test__update_lambda_slack_jira_actions()
 
     def test__update_lambda_elastic_jira(self):
-        Deploy('osbot_jira.lambdas.elastic_jira').deploy()             # update the main jira lambda
+        Deploy().deploy_lambda__jira('osbot_jira.lambdas.jira')        # update the main jira lambda
 
     def test__update_lambda_slack_actions(self):
-        Deploy('osbot_jira.lambdas.slack_actions').deploy()            # update the lambda that handles the callbacks
+        Deploy().deploy_lambda__jira('osbot_jira.lambdas.slack_actions')       # update the lambda that handles the callbacks
 
-    def test_updata_lambda_slack_jira_actions(self):
-        Deploy('osbot_jira.lambdas.slack_jira_actions').deploy()    # used for dialog submissions
+    def test__update_lambda_slack_jira_actions(self):
+        Deploy().deploy_lambda__jira('osbot_jira.lambdas.slack_jira_actions')  # used for dialog submissions
 
     def test_create_and_send(self):
         self.test__update_lambda_slack_actions()

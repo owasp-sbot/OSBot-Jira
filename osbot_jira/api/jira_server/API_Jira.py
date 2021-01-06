@@ -2,14 +2,13 @@
 from jira import JIRA
 from osbot_aws.apis.Secrets import Secrets
 
-from pbx_gs_python_utils.utils.Lambdas_Helpers import log_info, log_error
-
 # to add
 #  jira().groups
 #  jira(),group_members
 #  jira().search_users
 #       users = jira._jira.search_users("%", maxResults = 1000)  # works in cloud server
 #       users = jira._jira.search_users(".", maxResults = 1000)  # works in hosted server
+from osbot_aws.helpers.Lambda_Helpers import log_info, log_error
 
 
 class API_Jira:
@@ -23,6 +22,9 @@ class API_Jira:
     #    return self
 
     # helper methods
+    def set_public_jira(self, server):
+        self._jira = JIRA(server)
+        return self
 
     def jira(self):
         if self._jira is None:
@@ -41,72 +43,40 @@ class API_Jira:
 
     # main methods
 
-
     def convert_issue(self, issue):
         #print('converting issue: {0}'.format(issue))
         def custom_field_value(field_id, field_name = None):
             field_value = issue.raw['fields'].get(field_id)
             if field_value:
                 if field_name:
-                    return field_value[field_name]
+                    return field_value.get(field_name)
                 else:
                     return field_value
-
-        def custom_brands_values():
-            brand_value  = issue.raw['fields'].get('customfield_12626')
-            brands_value = issue.raw['fields'].get('customfield_12501')
-            brands = []
-            if brand_value:
-                brands.append(brand_value['value'])
-            if brands_value:
-                for item in brands_value:
-                    brands.append(item['value'])
-            return list(set(brands))
 
         def components_values():
             return [i.name for i in issue.fields.components]
 
-        def likelihood():
-            value = custom_field_value('customfield_14161' , 'value'       )
-            if value:
-                value = value.split(':').pop(0)
-            return value
-
-        def split(value, separator):
-            if value:
-                items = value.split(separator)              # split by separator
-                return [item.strip() for item in items]     # trim individual results
+        # def split(value, separator):
+        #     if value:
+        #         items = value.split(separator)              # split by separator
+        #         return [item.strip() for item in items]     # trim individual results
 
         data = {    "Assignee"          : custom_field_value('assignee'          , 'name'       ) ,
-                    "Brands"            : custom_brands_values()                                  ,
                     "Components"        : components_values()                                                      ,
                     "Created"           : issue.fields.created                                    ,
-                    "Creator"           : custom_field_value('creator'           , 'name'       ) ,
+                    "Creator"           : custom_field_value('creator'           , 'displayName'       ) ,
                     "Description"       : custom_field_value('description'                      ) ,
-                    "Email"             : custom_field_value('customfield_14549'                ) ,
-                    'Epic Link'         : custom_field_value('customfield_11200'                ) ,
-                    "GDPR Article"      : split(custom_field_value('customfield_14156'),'\r\n'  ) ,
-                    "Image Url"         : custom_field_value('customfield_14551'                ) ,
                     "Issue Type"        : custom_field_value('issuetype'         , 'name'       ) ,
                     "Issue Links"       : {}                                                      ,
-                    "ISO27001 Standard" : split(custom_field_value('customfield_14157'),','     ) ,
                     "Key"               : issue.key                                               ,
                     "Labels"            : issue.fields.labels                                     ,
-                    "Latest_Information": custom_field_value("customfield_12924"                ) ,
-                    "Likelihood"        : likelihood()                                            ,
                     "Parent"            : custom_field_value('parent'            , 'key'        ) ,
                     "Priority"          : custom_field_value('priority'          , 'name'       ) ,
                     "Project"           : custom_field_value('project'           , 'name'       ) ,
-                    "Slack ID"          : custom_field_value('customfield_14548'                ) ,
                     "Summary"           : custom_field_value('summary'                          ) ,
 				    "Status"            : custom_field_value('status'            , 'name'       ) ,
-                    #'Subtasks'          : {}                                                      ,
-				    "Rating"            : custom_field_value('customfield_12639' , 'value'      ) ,
-                    "Reporter"          : custom_field_value('reporter'          , 'name'       ) ,
-                    "Risk Owner"        : custom_field_value('customfield_12622' , 'displayName') ,
-                    "Updated"           : issue.fields.updated                                    ,
-                    "Impacts"           : custom_field_value('customfield_14162' , 'value'       ),
-                    'VULN Priority'     : custom_field_value('customfield_14263' , 'value'       )}
+                    "Reporter"          : custom_field_value('reporter'          , 'displayName'       ) ,
+                    "Updated"           : issue.fields.updated                                    }
 
 
         for link in issue.fields.issuelinks:
@@ -141,7 +111,6 @@ class API_Jira:
         #     }
         return data
 
-    #@use_local_cache_if_available
     def fields(self):
         if self._fields is None:
             self._fields = self.jira().fields()
@@ -236,7 +205,6 @@ class API_Jira:
     def issue_worklogs(self, key):
         return self.jira().worklogs(key)
 
-    #@use_local_cache_if_available
     def issue(self, id):
         return self.issue_no_cache(id)
 
@@ -257,8 +225,6 @@ class API_Jira:
             log_error(str(error), 'API_Jira | issue')
         return None
 
-    #@use_local_cache_if_available
-    #@save_result_to_local_cache
     def issue_changes_log_only_status(self, jql, start_at = 0, max = -1):
         keys = self.search_just_return_keys(jql)
         if max > 0:
@@ -312,14 +278,14 @@ class API_Jira:
         return change_log
 
 
-    def issues_updated_in_last_day(self, hour=1):
-        return self.search_no_cache('project in (VULN,RISK,SEC,FACT) AND updated >= -{0}d'.format(hour))
-
-    def issues_updated_in_last_hour(self, hour=1):
-        return self.search_no_cache('project in (VULN,RISK,SEC,FACT) AND updated >= -{0}h'.format(hour))
-
-    def issues_updated_in_last_minute(self, minute=1):
-        return self.search_no_cache('project in (VULN,RISK,SEC,FACT) AND updated >= -{0}m'.format(minute))
+    # def issues_updated_in_last_day(self, hour=1):
+    #     return self.search_no_cache('project in (VULN,RISK,SEC,FACT) AND updated >= -{0}d'.format(hour))
+    #
+    # def issues_updated_in_last_hour(self, hour=1):
+    #     return self.search_no_cache('project in (VULN,RISK,SEC,FACT) AND updated >= -{0}h'.format(hour))
+    #
+    # def issues_updated_in_last_minute(self, minute=1):
+    #     return self.search_no_cache('project in (VULN,RISK,SEC,FACT) AND updated >= -{0}m'.format(minute))
 
     def jira_server_details(self):
         data     = Secrets(self.secrets_id).value_from_json_string()
@@ -334,8 +300,6 @@ class API_Jira:
             projects[project.key]= project
         return projects
 
-    #@use_local_cache_if_available
-    #@save_result_to_local_cache
     def search(self, jql, start_at = 0, max = -1):
         return self.search_no_cache(jql,start_at,max)
 
@@ -350,6 +314,7 @@ class API_Jira:
             print('searching JIRA server for {0} , starting at {1} (for a max of {2})'.format(jql, count, max))
             log_info('searching JIRA server for {0} , starting at {1} (for a max of {2})'.format(jql, count, max))
             data = self.jira().search_issues(jql, startAt=count, maxResults=max_per_query)                           # use the max we can fetch
+            total = data.total
             log_info('received {0} results from server'.format(len(data)))
             if len(data) == 0:                                                                                       # when we have received all files
                 break                                                                                                # break from the while true
@@ -359,8 +324,10 @@ class API_Jira:
                 count += 1                                                                                           # keep track of how many requests we have note (note: check if len(set(issues)) will produce the same thing)
             if max != -1 and max <= count:
                 break
-            if len(data) < max_per_query:                                                                            # also end if we didn't received max_per_query items
-                break
+            #if len(data) < max_per_query:                                                                            # also end if we didn't received max_per_query items
+            #    break
+            if len(data) == total:
+                break;
         return issues
 
     def search_just_return_keys(self, jql, start_at = 0, max = -1):

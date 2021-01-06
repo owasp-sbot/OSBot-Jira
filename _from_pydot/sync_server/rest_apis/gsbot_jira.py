@@ -1,6 +1,6 @@
 from flask_restplus import Namespace, Resource
 from osbot_jira.api.jira_server.API_Jira import API_Jira
-from pbx_gs_python_utils.utils.Lambdas_Helpers import slack_message
+from osbot_aws.helpers.Lambda_Helpers import slack_message
 
 api                = Namespace('gsbot_jira', description='GSBot Jira API')
 jira_api           = API_Jira()

@@ -1,9 +1,9 @@
 import json
 
+from gw_bot.api.API_Slack import API_Slack
 from osbot_aws.apis.Lambda                          import Lambda
-from pbx_gs_python_utils.utils.Lambdas_Helpers      import slack_message, log_to_elk
+from osbot_aws.helpers.Lambda_Helpers import slack_message, log_to_elk
 from pbx_gs_python_utils.utils.Misc                 import Misc
-from pbx_gs_python_utils.utils.slack.API_Slack      import API_Slack
 from osbot_jira.api.slack.views.Jira_Slack_Actions  import Jira_Slack_Actions
 from osbot_jira.api.slack.Slack_Jira_Search         import Slack_Jira_Search
 from osbot_jira.api.slack.Slack_Message_Action      import Slack_Message_Action
@@ -17,7 +17,7 @@ class Slack_Actions:
         trigger_id = data.get('trigger_id')
         #slack_dialog = API_Slack_Dialog().test_render()
         slack_dialog = Jira_Create_Issue().setup().render()
-        API_Slack().slack.api_call("dialog.open", trigger_id=trigger_id, dialog=slack_dialog)
+        API_Slack().slack.dialog_open(trigger_id=trigger_id, dialog=slack_dialog)
 
         return {"text": "Opening test dialog ...", "attachments": [], 'replace_original': False}
 
@@ -154,59 +154,6 @@ class Slack_Actions:
 
         return {}
 
-        # original code and tests (to remove) - see example on how to return errors
-
-
-        # log_to_elk(submission,index='slack_interaction')
-        #
-        # payload = {
-        #     "index": 'slack_interaction',
-        #     "level": 'info',
-        #     "message": 'Slack_Actions.handle_dialog_submission',
-        #     "category": 'bc',
-        #     "data": submission
-        # }
-        #
-        # from osbot_aws.apis.Lambda import Lambda
-        # return Lambda('pbx_gs_python_utils.lambdas.utils.log_to_elk').invoke(payload)
-        # slack_message("{0}".format(submission), [], channel, team_id)
-
-        # if callback_id =='jira-graph-chooser':
-        #     graph_name = data['submission'].get('graph_name')
-        #     Lambdas('pbx_gs_python_utils.lambdas.gs.elastic_jira').invoke_async({"params": ["graph", graph_name], "user": user_id, "channel": channel})
-        #
-        # elif callback_id == 'jira-view-issue-links':
-        #     self.handle_callback_jira_view_issue_links(data)
-        #
-        # elif callback_id == 'jira-view-issue-dialogue':
-        #     slack_message('jira-view-issue-dialogue: {0}'.format(data),[], channel)
-        #     key     = data.get('submission').get('key')
-        #     result  = Lambdas('pbx_gs_python_utils.lambdas.gs.elastic_jira').invoke({"params": ["issue", key], "user": user_id, "channel": channel})
-        #     slack_message(result.get('text'), result.get('attachments'), channel)
-        #
-        # elif callback_id == 'issue-search-dialog':
-        #     self.handle_callback_issue_search_dialog(data)
-        #
-        # else:
-        #message = ':point_right: message received: {0}'.format(data)
-
-        #error_message = ":red_circle: Dialog callback_id not supported: {0}".format(callback_id)
-        #slack_message(error_message, [], channel,team_id)
-            #self.api_slack.send_message(error_message, channel=channel)
-
-        # return {
-        #           "errors": [
-        #             {
-        #               "name": "name_1",
-        #               "error": "this is working 123 abc"
-        #             },
-        #             {
-        #               "name": "username",
-        #               "error": "Uh-oh. This username has been taken!"
-        #             }
-        #           ]
-        #         }
-
     def handle_dialog_suggestion(self, data):
         tmp = Misc.random_string_and_numbers()
         return {
@@ -240,8 +187,8 @@ class Slack_Actions:
     def handle_request(self, event):
 
         event = self.fix_slack_encoding(event)
-        channel = event['channel']['id']
-        team_id = event['team']['id']
+        channel = event.get('channel', {}).get('id')
+        team_id = event.get('team'   , {}).get('id')
 
         #slack_message('in handle request',[] , channel, team_id)
 

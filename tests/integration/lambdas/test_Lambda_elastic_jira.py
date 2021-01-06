@@ -1,33 +1,44 @@
-import  unittest
-
 from    osbot_aws.apis.Lambda import Lambda
-from    pbx_gs_python_utils.utils.Dev         import Dev
 
+from gw_bot.Deploy import Deploy
+from osbot_aws.helpers.Test_Helper import Test_Helper
 from osbot_jira.api.GS_Bot_Jira import GS_Bot_Jira
-from osbot_jira.lambdas.elastic_jira import run
+from osbot_jira.lambdas.jira import run
 
-class test_lambda_elastic_jira(unittest.TestCase):
+class test_lambda_elastic_jira(Test_Helper):
     def setUp(self):
-        self.jira_issues = Lambda('osbot_jira.lambdas.elastic_jira')
+        super().setUp()
+        self.jira_issues = Lambda('osbot_jira.lambdas.jira')
 
-        #from osbot_jira.Deploy import Deploy
-        #Deploy('osbot_jira.lambdas.elastic_jira').deploy()
+    def test_update_lambda(self):
+        Deploy().deploy_lambda__jira('osbot_jira.lambdas.jira')
 
     def test_invoke_directly(self):
         response = run({},{})
-        assert response == { 'attachments': [],
-                             'text': ':point_right: no command received, see `jira help` for a list of '
-                                      'available commands`'}
+        self.result = response
+        # assert response == { 'attachments': [],
+        #                      'text': ':point_right: no command received, see `jira help` for a list of '
+        #                               'available commands`'}
 
     def test_invoke_directly__version(self):
-        response = run({'params':['version']},{})
+        response = run({'params':['version']},{}).get('text')
         assert response == GS_Bot_Jira().version
 
+    def test_invoke_directly__send_to_slack(self):
+        self.result= run({'params':['issue', 'Person-42'],"channel": 'DRE51D4EM'},{})
+        #assert response == GS_Bot_Jira().version
 
-    def test_update_invoke(self):
-        key = 'RISK-424'
-        issue = self.jira_issues.invoke({"params": ['issue', key], "channel": 'GDL2EC3EE'})
-        assert issue.get('text') == '....._fetching data for *<https://jira.photobox.com/browse/RISK-424|RISK-424>* _from index:_ *jira*'
+
+
+    def test_invoke_help(self):
+        self.test_update_lambda()
+        self.result = self.jira_issues.invoke({"params": []})
+
+    def test_invoke_issue__send_to_slack(self):
+        key = 'Person_1'
+        issue = self.jira_issues.invoke({"params": ['issue', key], "channel": 'DRE51D4EM'})
+        self.result = issue
+        #assert issue.get('text') == '....._fetching data for *<https://glasswall.atlassian.net/browse/RISK-424|RISK-424>* _from index:_ *jira*'
 
     def test_update_invoke__link_links(self):
         id = 'RISK-1'

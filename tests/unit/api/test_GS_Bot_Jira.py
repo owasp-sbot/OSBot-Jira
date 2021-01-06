@@ -1,18 +1,17 @@
-import sys;
 
-from osbot_jira.Deploy import Deploy
-
-sys.path.append('..')
 import unittest
 
+from gw_bot.Deploy import Deploy
+from osbot_aws.helpers.Lambda_Helpers import slack_message
+from osbot_aws.helpers.Test_Helper import Test_Helper
 from osbot_jira.api.GS_Bot_Jira                 import GS_Bot_Jira
 from pbx_gs_python_utils.utils.Dev              import Dev
-from pbx_gs_python_utils.utils.Lambdas_Helpers  import slack_message
-from osbot_aws.apis.Lambda import Lambda, upload_dependency
+from osbot_aws.apis.Lambda import Lambda
 
 
-class test_GS_Bot_Jira(unittest.TestCase):
+class test_GS_Bot_Jira(Test_Helper):
     def setUp(self):
+        super().setUp()
         self.api     = GS_Bot_Jira()
         self.channel = 'DDKUZTK6X'                  # gsbot
         self.result = None
@@ -21,15 +20,8 @@ class test_GS_Bot_Jira(unittest.TestCase):
         if self.result is not None:
             Dev.pprint(self.result)
 
-    # def test_update_dependency(self):
-    #     upload_dependency('jira')
-    #
-
-    def test__update_lambda_elastic_jira(self):
-        Deploy('osbot_jira.lambdas.elastic_jira').deploy()             # update the main jira lambda
-
-    def test__update_lambda_slack_actions(self):
-        Deploy('osbot_jira.lambdas.slack_actions').deploy()            # update the lambda that handles the callbacks
+    def test_update_lambda(self):
+        Deploy().deploy_lambda__jira('osbot_jira.lambdas.jira')
 
     def test_handle_request(self):
         event = {}
@@ -51,7 +43,7 @@ class test_GS_Bot_Jira(unittest.TestCase):
         result = self.api.handle_request( { "params" : ["issue", "AAAA"] } )
         assert result == {  'attachments': [],
                             'text': '....._fetching data for '
-                            '*<https://jira.photobox.com/browse/AAAA|AAAA>* _from index:_ *jira*'}
+                            '*<https://glasswall.atlassian.net/browse/AAAA|AAAA>* _from index:_ *jira*'}
 
 
     def test_cmd_add_link(self):
@@ -60,9 +52,9 @@ class test_GS_Bot_Jira(unittest.TestCase):
 
 
     def test_cmd_create(self):
-        params = ['create','Task', 'an','task']
+        params = ['create','TAskasd', 'an new','task']
+        self.result = self.api.cmd_create(params)
         #self.result = self.api.cmd_create(params)
-        self.result = self.api.cmd_create(['issue','SEC-11823'],None,None)
 
 
 
@@ -78,26 +70,22 @@ class test_GS_Bot_Jira(unittest.TestCase):
 
 
     def test_cmd_issue(self):
-        #self.test__update_lambda_elastic_jira()
-        self.test__update_lambda_slack_actions()
-        self.result = self.api.cmd_issue(['issue', 'SEC-11961'])
-        slack_message(self.result.get('text'), self.result.get('attachments'),'DDKUZTK6X', 'T7F3AUXGV')
-
-    def test_cmd_issue_new(self):
-        self.test__update_lambda_elastic_jira()
+        self.test_update_lambda()
         #self.test__update_lambda_slack_actions()
-        self.result = self.api.cmd_issue_new(['issue', 'SEC-11961'],'T7F3AUXGV','DDKUZTK6X')
+        #self.result = self.api.cmd_issue(['issue', 'Task-66a'],channel='DRE51D4EM')
+        self.result = self.api.cmd_issue(['issue', 'Task-66'])
         #slack_message(self.result.get('text'), self.result.get('attachments'),'DDKUZTK6X', 'T7F3AUXGV')
 
 
 
     def test_cmd_screenshot(self):
-        result = self.api.cmd_screenshot(['issue', 'SEC-10965', '2000', '500'],'T7F3AUXGV', 'DDKUZTK6X')
+        result = self.api.cmd_screenshot(['screenshot', 'VP-1', '2000', '500', '2'], channel='DRE51D4EM')
         Dev.pprint(result.get('text'))
 
     def test_cmd_links(self):
-        result = self.api.cmd_links(['links', 'SEC-10965', 'all', '1'])
-        assert ' "target": "SEC-10965",\n' in result.get('text')
+        self.result = self.api.cmd_links(['links', 'PERSON-1', '1'],channel='DRE51D4EM')
+
+        #assert ' "target": "SEC-10965",\n' in result.get('text')
 
     def test_cmd_links_Save_Graph_False(self):
         graph = self.api.cmd_links(['links', 'SEC-10965', 'all', '1'],save_graph=False)
@@ -153,11 +141,19 @@ class test_GS_Bot_Jira(unittest.TestCase):
         result = self.api.cmd_sync_sheet(['', file_id], team_id='T7F3AUXGV', channel='GDL2EC3EE')
         Dev.pprint(result)
 
+
+
+    def test_cmd_search(self):
+        params = ['']
+        self.result = self.api.cmd_search(params)
+
+
+
     # test via lambda
 
     @unittest.skip('fix lambda target location')
     def test__cmd_links__via_lambda(self):
-        elastic_jira = Lambda('pbx_gs_python_utils.lambdas.gs.elastic_jira')
+        elastic_jira = Lambda('osbot_jira.lambdas.jira')
         payload = {"params": ["links","FACT-47", "up", "3"], "channel": "GDL2EC3EE"}
 
         result = elastic_jira.invoke(payload)
@@ -170,11 +166,14 @@ class test_GS_Bot_Jira(unittest.TestCase):
         assert ":point_right: Rendering graph for `FACT-47` in the direction `up`, with depth `3`, with plantuml size:" in text
 
     def test__cmd_server__via_lambda(self):
-        elastic_jira = Lambda('pbx_gs_python_utils.lambdas.gs.elastic_jira')
+        elastic_jira = Lambda('osbot_jira.lambdas.jira')
         payload = {"params": ["server", "status"], "channel": "DDKUZTK6X", 'team_id': 'T7F3AUXGV'}
 
         result = elastic_jira.invoke(payload)
         assert result == {'attachments': [], 'text': '{\n    "status": "OK 12345"\n}\n'}
+
+
+
 
     # Regression tests
 

@@ -1,8 +1,9 @@
-from osbot_aws.apis.Lambda import load_dependencies
+from osbot_aws.Dependencies import load_dependencies
+
 
 def run(event, context):
     try:
-        load_dependencies(["elastic-slack",'requests'])                     # load dependency (download and unzip if first run)
+        load_dependencies('elastic,slack,requests')                      # load dependency (download and unzip if first run)
         from osbot_jira.api.graph.Lambda_Graph import Lambda_Graph          # import Lambda_Graph class
         return Lambda_Graph().handle_lambda_event(event)                    # invoke lambda handler from Lambda_Graph class
     except Exception as error:

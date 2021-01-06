@@ -1,10 +1,9 @@
-from pbx_gs_python_utils.utils.slack.API_Slack_Attachment import API_Slack_Attachment
-from pbx_gs_python_utils.utils.Lambdas_Helpers            import slack_message, log_to_elk
-from pbx_gs_python_utils.utils.Lists                      import Lists
-
+from gw_bot.api.slack.API_Slack_Attachment import API_Slack_Attachment
+from osbot_aws.helpers.Lambda_Helpers import slack_message, log_to_elk
 from osbot_jira.api.API_Issues import API_Issues
 from osbot_jira.api.graph.GS_Graph import GS_Graph
 from osbot_jira.api.graph.Lambda_Graph import Lambda_Graph
+from osbot_utils.utils import Lists
 
 
 class ELK_to_Slack:
@@ -19,22 +18,25 @@ class ELK_to_Slack:
         return {
             'assign'   : 'Assignee:',
             'summary'  : 'Summary:',
-            'asset'    : 'Issue\ Type:"IT Asset" AND Summary:',
-            'entity'   : 'Issue\ Type:"Business Entity"  AND Summary:',
-            'epic'     : 'Issue\ Type:"Epic"  AND Summary:',
-            'incident' : 'Issue\ Type:"Incident" AND Summary:',
-            'meeting'  : 'Issue\ Type:Meeting AND Summary:',
-            'people'   : 'Issue\ Type:People AND Summary:',
-            'project'  : 'Issue\ Type:"GS-Project" AND Summary:',
-            'programme': 'Issue\ Type:"Programme" AND Summary:',
-            'risk'     : 'Issue\ Type:Risk AND Summary:',
-            'sc'       : 'Issue\ Type:"Security Controls AND Summary:',
-            'service'  : 'Issue\ Type:"GS Service" AND Summary:',
-            'task'     : 'Issue\ Type:"Task"  AND Summary:',
+            #'asset'    : 'Issue\\ Type:"IT Asset" AND Summary:',
+            #'entity'   : 'Issue\\ Type:"Business Entity"  AND Summary:',
+            #'epic'     : 'Issue\\ Type:"Epic"  AND Summary:',
+            #'incident' : 'Issue\\ Type:"Incident" AND Summary:',
+            #'meeting'  : 'Issue\\ Type:Meeting AND Summary:',
+            'person'   : 'Issue\ Type:Person AND Summary:',
+            #'project'  : 'Issue\\ Type:"GS-Project" AND Summary:',
+            #'programme': 'Issue\\ Type:"Programme" AND Summary:',
+            #'risk'     : 'Issue\\ Type:Risk AND Summary:',
+            #'sc'       : 'Issue\\ Type:"Security Controls AND Summary:',
+            #'service'  : 'Issue\\ Type:"GS Service" AND Summary:',
 
-            'vuln'     : 'Issue\ Type:Vulnerability AND Summary:',
-
-            'supplier': 'Project:"Supplier\ Log" AND Summary:',
+            #'vuln'     : 'Issue\\ Type:Vulnerability AND Summary:',
+            #'supplier': 'Project:"Supplier\\ Log" AND Summary:',
+            'task'       : 'Issue\ Type:"Task"  AND Summary:',
+            'squad'      : 'Issue\ Type:Squad AND Summary:',
+            'outcomes'   : 'Issue\ Type:Outcome AND Summary:',
+            'keyresult'  : 'Issue\ Type:Key Result AND Summary:',
+            'sow'        : 'Issue\ Type:Sow AND Summary:',
 
             'label'   : 'Labels:',
             'high'    : 'Rating:High      AND Summary:',
@@ -60,7 +62,7 @@ class ELK_to_Slack:
         for issue in results[0:self.default_max]:
             key         = issue['Key']
             summary     = issue['Summary']
-            jira_link   = "https://jira.photobox.com/browse/{0}".format(key)
+            jira_link   = "https://glasswall.atlassian.net/browse/{0}".format(key)
             issues_list += "<{0}|{1}>  {2} \n".format(jira_link, key, summary)
             keys.append(key)
         return issues_list
@@ -86,12 +88,11 @@ class ELK_to_Slack:
             for name in sorted(list(set(self.get_search_mappings()))):
                 text +=  '\n\t\t • `{0}` '.format(name)
             text += '\n\n:point_right: the syntax is: `jira search {type} {what to search}` (note search is done on the Summary field)'
-            slack_message(text, [], channel, team_id)
-            return
+            return slack_message(text, [], channel, team_id)
 
         query       = self.get_search_query(params)
         issues      = self.api_issues.search_using_lucene(query)
-        if team_id and channel:
+        if channel:
             if len(issues) > 0:
                 issues_text = self.get_text_with_issues_key_and_summary(issues)
                 graph_name  = self.save_issues_as_new_graph(issues)
@@ -100,10 +101,10 @@ class ELK_to_Slack:
                 self.attachments.set_text(issues_text)
                 self.attachments.set_callback_id("search-results")
 
-                slack_message(text, self.attachments.render(), channel, team_id)
+                return slack_message(text, self.attachments.render(), channel, team_id)
             else:
                 text = ":red_circle: Elk search for `{0}` had `{1}` matches".format(query, len(issues))
-                slack_message(text, self.attachments.render(), channel, team_id)
+                return slack_message(text, self.attachments.render(), channel, team_id)
 
         else:
             return issues

@@ -1,6 +1,7 @@
 from unittest import TestCase
 
 from gs_elk.Graph_Commands.Vis_JS import Vis_JS
+from osbot_aws.apis.Lambda import Lambda
 from pbx_gs_python_utils.utils.Show_Img import Show_Img
 
 
@@ -10,7 +11,7 @@ class Test_Nodes(TestCase):
         self.vis_js = Vis_JS()
 
     def test___update_lambda_function(self):
-        Lambda('lambdas.gsbot.gsbot_graph').update()
+        Lambda('osbot_jira.lambdas.graph').update()
 
     def test_saved_graph(self):
         graph_name = 'graph_MKF'

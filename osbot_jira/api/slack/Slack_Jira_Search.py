@@ -1,8 +1,4 @@
 from osbot_aws.apis.Lambda import Lambda
-from pbx_gs_python_utils.utils.Misc import Misc
-from pbx_gs_python_utils.utils.Lambdas_Helpers import slack_message
-
-from osbot_jira.api.API_Issues import API_Issues
 from osbot_jira.api.elk.Elk_To_Slack import ELK_to_Slack
 
 
@@ -49,7 +45,7 @@ class Slack_Jira_Search():
 
         issue_id = actions[0].get('selected_options')[0].get('value')
         payload = {'params': [issue_id], 'channel': channel, 'team_id': team_id}
-        Lambda('osbot_jira.lambdas.elastic_jira').invoke_async(payload)
+        Lambda('osbot_jira.lambdas.jira').invoke_async(payload)
         return {"text": ":information_source: Issue selected: {0}".format(issue_id), "attachments": [], 'replace_original': False}
 
 
@@ -65,7 +61,7 @@ class Slack_Jira_Search():
                             "callback_id": "jira_search_select_box",
                             "actions": [
                                 {
-                                    # 'action_id': 'AAAAAAAAAA',
+                                    #'action_id': 'AAAAAAAAAA',
                                     "name": "query",
                                     "text": "query",
                                     "value": "",

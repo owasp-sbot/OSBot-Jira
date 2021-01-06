@@ -1,7 +1,7 @@
 import pprint
 
-from pbx_gs_python_utils.utils.slack.API_Slack_Attachment import API_Slack_Attachment
-from pbx_gs_python_utils.utils.Lambdas_Helpers import slack_message, log_to_elk
+from gw_bot.api.slack.API_Slack_Attachment import API_Slack_Attachment
+from osbot_aws.helpers.Lambda_Helpers import slack_message, log_to_elk
 
 
 class Commands_Helper():
@@ -41,4 +41,4 @@ class Commands_Helper():
             else:
                 (text,attachments) = self.help(':red_circle: command not found `{0}`\n\n'.format(command))
 
-        slack_message(text, attachments, channel, team_id)
+        return slack_message(text, attachments, channel, team_id)
