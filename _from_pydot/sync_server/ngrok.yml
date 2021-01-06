@@ -1,8 +1,0 @@
-console_ui: false
-tunnels:
-  sync_server:
-    proto    : http
-    addr     : 5000
-    subdomain: aaaa-bbbb
-    region   : eu
-    auth     : "abc:bbbb"
