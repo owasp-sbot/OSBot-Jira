@@ -7,20 +7,35 @@ from osbot_aws.apis.Secrets import Secrets
 from osbot_utils.decorators.lists.index_by import index_by
 from osbot_utils.utils.Dev import Dev
 from osbot_utils.utils.Json import json_dumps, json_loads
+from osbot_utils.utils.Misc import env_vars
 
 
 class API_Jira_Rest:
     def __init__(self):
-        self.secrets_id = 'GS_BOT_GS_JIRA'
-        self._config      = None
-        self._fields      = None               # cache this value per request (since it is expensive and data doesn't change that much)
-        self.log_requests = False
+        self.secrets_id    = 'GS_BOT_GS_JIRA'
+        self.jira_env_vars = {'JIRA_API_EMAIL', 'JIRA_API_TOKEN', 'JIRA_API_SERVER'}
+        self._config       = None
+        self._fields       = None               # cache this value per request (since it is expensive and data doesn't change that much)
+        self.log_requests  = False
 
     def config(self):
         if self._config is None:
-            data = Secrets(self.secrets_id).value_from_json_string()
-            self._config = (data.get('server'), data.get('username'), data.get('password'))
+            if set(self.jira_env_vars).issubset(set(env_vars())):
+                self._config = self.config_using_env_vars()
+            else:
+                self._config = self.config_using_aws_secrets()
+
         return self._config
+    def config_using_aws_secrets(self):
+        data = Secrets(self.secrets_id).value_from_json_string()
+        return (data.get('server'), data.get('username'), data.get('password'))
+
+    def config_using_env_vars(self):
+        vars     = env_vars()
+        username = vars.get('JIRA_API_EMAIL')
+        password = vars.get('JIRA_API_TOKEN')
+        server   = vars.get('JIRA_API_SERVER')
+        return (server, username, password)
 
     def set_public_jira(self, server):
         self._config = (server, "", "")
@@ -126,7 +141,7 @@ class API_Jira_Rest:
             skip_types       = ['any','progress','option-with-child']
             use_display_name = ['user']
             use_name         = ['issuetype','status','project','priority', 'securitylevel']
-            use_value        = ['string', 'number','datetime', 'date']
+            use_value        = ['string', 'number','datetime', 'date','issuerestriction']
             if issue_raw:
 
                 issue_key = issue_raw['key']

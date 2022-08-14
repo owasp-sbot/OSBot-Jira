@@ -3,6 +3,7 @@ from osbot_utils.utils.Dev import Dev
 from osbot_aws.helpers.Test_Helper import Test_Helper
 from osbot_jira.api.jira_server.API_Jira_Rest import API_Jira_Rest
 
+#todo: refactor to remove hard coded fields
 
 class Test_API_Jira_Rest(Test_Helper):
 
@@ -12,6 +13,10 @@ class Test_API_Jira_Rest(Test_Helper):
 
     def test_config(self):
         assert self.api.config()[1] == 'gsbot'
+
+    def test_config_using_env_vars(self):
+        assert self.api.config_using_env_vars() == (None, None, None)           # todo add test where these values are set
+
 
     def test_fields(self):
         assert len(self.api.fields()) > 10

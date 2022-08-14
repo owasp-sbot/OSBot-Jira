@@ -9,13 +9,15 @@ from osbot_aws.apis.Secrets import Secrets
 #       users = jira._jira.search_users("%", maxResults = 1000)  # works in cloud server
 #       users = jira._jira.search_users(".", maxResults = 1000)  # works in hosted server
 from osbot_aws.helpers.Lambda_Helpers import log_info, log_error
+from osbot_utils.utils.Misc import env_vars
 
 
 class API_Jira:
     def __init__(self):
-        self.secrets_id = 'GS_BOT_GS_JIRA'
-        self._jira      = None
-        self._fields    = None                  # cache this value per request (since it is expensive and data doesn't change that much)
+        self.secrets_id    = 'GS_BOT_GS_JIRA'
+        self.jira_env_vars = {'JIRA_API_EMAIL', 'JIRA_API_TOKEN', 'JIRA_API_SERVER'}
+        self._jira         = None
+        self._fields       = None                  # cache this value per request (since it is expensive and data doesn't change that much)
 
     #@clear_local_cache_files
     #def clear_local_cache(self):
@@ -28,18 +30,33 @@ class API_Jira:
 
     def jira(self):
         if self._jira is None:
-            try:
-                server, username, password = self.jira_server_details()
-
-                original_fields = JIRA.fields                                               # patch fields function to prevent a call to it on every ctor call
-                JIRA.fields     = lambda _self: []                                          # set it to a lambda function that returns an empty array
-                self._jira      = JIRA({'server': server}, basic_auth=(username, password))
-                JIRA.fields     = original_fields                                           # restore 'fields' method
-            except Exception as error:
-                print('[API_JIRA] [error creating jira connection]: {0}'.format(error))
-
-
+            if set(self.jira_env_vars).issubset(set(env_vars())):
+                self._jira = self.jira_login_using_env_variables()
+            else:
+                self._jira = self.jira_login_using_aws_secret()
         return self._jira
+
+    def jira_login_using_aws_secret(self):
+        try:
+            server, username, password = self.jira_server_details()
+
+            original_fields = JIRA.fields                                               # patch fields function to prevent a call to it on every ctor call
+            JIRA.fields     = lambda _self: []                                          # set it to a lambda function that returns an empty array
+            jira            = JIRA({'server': server}, basic_auth=(username, password))
+            JIRA.fields     = original_fields                                           # restore 'fields' method
+            return jira
+        except Exception as error:
+            print('[API_JIRA] [error creating jira connection using AWS Secret]: {0}'.format(error))    # todo: add logger suport (instead of using print)
+    def jira_login_using_env_variables(self):
+        try:
+            vars = env_vars()
+            username = vars.get('JIRA_API_EMAIL')
+            password = vars.get('JIRA_API_TOKEN')
+            server   = vars.get('JIRA_API_SERVER')
+            jira     = JIRA({'server': server}, basic_auth=(username, password))                        # todo: see if we still need to do the JIRA method patch used in jira_login_using_aws_secret
+            return jira
+        except Exception as error:
+            print('[API_JIRA] [error creating jira connection using environment variables]: {0}'.format(error))    # todo: add logger suport (instead of using print)
 
     # main methods
 
