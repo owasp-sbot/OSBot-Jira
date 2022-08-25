@@ -5,8 +5,9 @@ import requests
 from osbot_aws.helpers.Lambda_Helpers import log_error
 from osbot_aws.apis.Secrets import Secrets
 from osbot_utils.decorators.lists.index_by import index_by
+from osbot_utils.decorators.methods.cache_on_self import cache_on_self
 from osbot_utils.utils.Dev import Dev
-from osbot_utils.utils.Json import json_dumps, json_loads
+from osbot_utils.utils.Json import json_dumps
 from osbot_utils.utils.Misc import env_vars
 
 
@@ -49,14 +50,24 @@ class API_Jira_Rest:
     def request_delete(self,path):
         return self.request_method('DELETE', path)
 
-    def request_method(self,method, path):
+    def request_method(self,method, path, data=None):
         (server, username, password)= self.config()
         if path.startswith('http') is False:
-            path = '{0}/rest/api/2/{1}'.format(server, path)
+            if server.endswith('/') is False:
+                server +='/'
+            path = '{0}rest/api/2/{1}'.format(server, path)
         if self.log_requests: Dev.pprint('get', path)
         if username and password:
             if method =='GET':
                 response = requests.get(path, auth=(username, password))
+            elif method == 'POST':
+                json_data = json_dumps(data or {})
+                headers   = {'Content-Type': 'application/json'}
+                response = requests.post(path, json_data, headers=headers, auth=(username, password))
+            elif method == 'PUT':
+                json_data = json_dumps(data or {})
+                headers   = {'Content-Type': 'application/json'}
+                response = requests.put(path, json_data, headers=headers, auth=(username, password))
             elif method == 'DELETE':
                 response = requests.delete(path, auth=(username, password))
             else:
@@ -64,34 +75,44 @@ class API_Jira_Rest:
                 return None
         else:
             response = requests.get(path)
-        if response.status_code == 200:
+        if response.status_code >= 200 or response.status_code < 300:
             if 'image/' in response.headers.get('content-type'):
                 return response.content
+            if response.headers.get('Content-Type') == 'application/json;charset=UTF-8':
+                if response.text == '':
+                    return {}
+                return response.json()
             return response.text
         else:
             log_error(f'[Error][request_get] for path {path}: {response.text}')
         return None
 
-    def request_put(self, path, data):
-        json_data = json_dumps(data)
-        (server, username, password) = self.config()
-        path = '{0}/rest/api/2/{1}'.format(server, path)
-        if self.log_requests: Dev.pprint('put', path)
-        headers = {'Content-Type': 'application/json'}
-        response = requests.put(path, json_data, headers=headers, auth=(username, password))
-        if 200 <= response.status_code < 300:
-            return True
-        Dev.pprint('[Error][request_put]: {0}'.format(response.text))
-        return False
+    def request_post(self,path, data):
+        return self.request_method('POST', path=path, data=data)
+
+    def request_put(self, path, put_data):
+        return self.request_method('PUT', path=path, data=put_data)
+
+        # json_data = json_dumps(data)
+        # (server, username, password) = self.config()
+        # path = '{0}/rest/api/2/{1}'.format(server, path)
+        # if self.log_requests: Dev.pprint('put', path)
+        # headers = {'Content-Type': 'application/json'}
+        # response = requests.put(path, json_data, headers=headers, auth=(username, password))
+        # if 200 <= response.status_code < 300:
+        #     return True
+        # Dev.pprint('[Error][request_put]: {0}'.format(response.text))
+        # return False
 
     # methods
 
     @index_by
     def fields(self):
         if self._fields is None:
-            self._fields =  json_loads(self.request_get('field'))
+            self._fields =  self.request_get('field')
         return self._fields
 
+    @cache_on_self
     def fields_by_id(self):
         fields = {}
         for field in self.fields():
@@ -104,17 +125,23 @@ class API_Jira_Rest:
             fields[field.get('name')] = field
         return fields
 
+    def issue_add_link(self, source_id, target_id, link_type):
+        path = f'issue/{source_id}'
+        put_data = {"update":{ "issuelinks":[ { "add":{ "type":{
+                                                        "name":link_type,
+                                                        },
+                                                "outwardIssue":{ "key":target_id }}}]}}
+        return self.request_put(path=path, put_data=put_data)
+
     def issue_delete(self, issue_id):
         if issue_id:
             path = f'issue/{issue_id}'
-            data = self.request_delete(path)
-            return json_loads(data)
+            return self.request_delete(path)
 
     def issue_raw(self,issue_id,fields='*all'):
         if issue_id:
             path = 'issue/{0}?fields={1}'.format(issue_id,fields)
-            data = self.request_get(path)
-            return json_loads(data)
+            return self.request_get(path)
 
     def map_issue_links(self, issue, issue_links_raw):
         issue_links = {}
@@ -197,6 +224,19 @@ class API_Jira_Rest:
                 issues[issue_id] = issue
         return issues
 
+    def issue_create(self, project, issue_type, summary, description=None, extra_fields=None):
+        path     = 'issue'
+        fields   = {  "project"    : { "key": project }   ,
+                      "summary"    : summary              ,
+                      "description": description          ,
+                      "issuetype"  : { "name": issue_type }}
+        post_data = { "fields": fields | extra_fields }
+
+        # if extra_fields:
+        #     post_data.get('fields', {}).extend(extra_fields)
+        return self.request_post(path, post_data)
+        return post_data
+
     def issue_update_field(self, issue_id, field,value):
         return self.issue_update_fields(issue_id, {field:value})
 
@@ -221,7 +261,7 @@ class API_Jira_Rest:
         if len(set(data)) == 0:
             return False
             #Dev.pprint(data)
-        return self.request_put(path, data)
+        return self.request_put(path, data) is not None
 
     def issue_status_available(self, issue_id):
         items = {}
@@ -229,14 +269,14 @@ class API_Jira_Rest:
             path = 'issue/{0}/transitions'.format(issue_id)
             data = self.request_get(path)
             if data:
-                for transition in json_loads(data).get('transitions'):
+                for transition in data.get('transitions'):
                     to_data = transition.get('to')
                     items[to_data.get('name')] = to_data.get('id')
         return items
 
     def projects(self):
         projects = {}
-        data = json_loads(self.request_get('issue/createmeta')).get('projects')
+        data = self.request_get('issue/createmeta').get('projects')
         for item in data:
             projects[item.get('key')] = item
         return projects
@@ -255,15 +295,18 @@ class API_Jira_Rest:
             path  = f'search?jql={jql}&startAt={start_at}&maxResults={max_results}'
             if self.request_get(path) is None:
                 return results
-            data  = json.loads(self.request_get(path))
-            issues = data['issues']
-            for issue in issues:
-                results.append(self.convert_issue(issue))
-            if fetch_all is False:
-                break
-            if len(issues) == 0:
-                break
-            start_at += len(issues)
+            data  = self.request_get(path)
+            if data:
+                issues = data.get('issues', [])
+                for issue in issues:
+                    results.append(self.convert_issue(issue))
+                if len(results) == data.get('total'):
+                    break
+                if fetch_all is False:
+                    break
+                if len(issues) == 0:
+                    break
+                start_at += len(issues)
 
         return results
 
