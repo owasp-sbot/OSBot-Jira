@@ -230,7 +230,7 @@ class API_Jira_Rest:
                       "summary"    : summary              ,
                       "description": description          ,
                       "issuetype"  : { "name": issue_type }}
-        post_data = { "fields": fields | extra_fields }
+        post_data = { "fields": fields | (extra_fields or {})}
 
         # if extra_fields:
         #     post_data.get('fields', {}).extend(extra_fields)
