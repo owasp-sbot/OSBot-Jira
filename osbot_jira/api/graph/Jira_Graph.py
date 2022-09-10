@@ -149,7 +149,7 @@ class Jira_Graph:
 
         return self.issues
 
-    def get_puml             (self):
+    def get_puml(self):
         return self.puml.puml
 
     def graph(self):
@@ -170,7 +170,7 @@ class Jira_Graph:
 
     def jira_get_link_types_for_existing_nodes(self, reload=False):              # in most calls of this method there are new nodes, and we want to make sure that we get the missing nodes
         issues_links = {}
-        jira_issues_links = self.jira_get_issues(reload=reload, fields='issuelinks')
+        jira_issues_links = self.jira_get_issues(reload=reload, fields='issuelinks,summary')
 
         for issue in jira_issues_links:
             key         = issue.get('Key')
@@ -298,11 +298,12 @@ class Jira_Graph:
 
     def render_puml(self):
         self.reset_puml()
+        self.jira_get_issues()                      # ensure that all issues are reloaded
         return GS_Graph_Puml(self).render_puml()
 
-    def render_puml_and_save_tmp(self):
+    def render_puml_and_save_tmp(self, use_lambda=True):
         self.render_puml()
-        return self.puml.save_tmp()
+        return self.puml.save_tmp(use_lambda=use_lambda)
 
     def render_puml_save_to_elk_and_to_tmp(self, graph_name=None):
         self.render_and_save_to_elk(graph_name)
@@ -402,3 +403,12 @@ class Jira_Graph:
             edges.append({'from': edge[0], 'to': edge[2]})
 
         return nodes,edges
+
+
+# static
+def jira_graph_expand(root_node, depth, issue_links):
+    graph = Jira_Graph()
+    graph.add_node(root_node)                     \
+         .set_puml_link_types_to_add(issue_links) \
+         .add_all_linked_issues(depth=depth)
+    return graph

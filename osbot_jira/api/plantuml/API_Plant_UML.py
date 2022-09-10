@@ -18,15 +18,19 @@ class API_Plant_UML:
     #     process = subprocess.run(base_params,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     #     return { "stdout": process.stdout.decode(), "stderr" : process.stderr.decode()}
 
-    def puml_to_png(self,puml):
-       return self.puml_to_png_using_lambda_function(puml)  # default to using lambda function
-       #return self.puml_to_png_via_local_server(puml)      # using local server
+    def puml_to_png(self,puml, use_lambda=True):
+        if use_lambda:
+            return self.puml_to_png_using_lambda_function(puml)  # default to using lambda function
+
+        return self.puml_to_png_via_local_server(puml)           # when not using Lambda, using local server (running on host or on docker)
 
     def puml_to_png_via_local_server(self, puml,target_file = None):
         if target_file is None:
             target_file = self.tmp_png_file
         data         = { "text"    :  puml }
         url          = requests.post(self.url_plantuml_server, data = data).url
+        print('----')
+        print(url)
         url_png      = url.replace('/uml/', '/png/')
         response     = requests.get(url_png)
         with open(target_file, 'wb') as f:

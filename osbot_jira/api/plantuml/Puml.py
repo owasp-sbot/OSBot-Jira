@@ -44,6 +44,8 @@ class Puml:
         self.puml += "\t{0}\n".format(line)
         return self
 
+    def get_puml(self):
+        return self.puml
     def startuml(self):
         self.puml += "@startuml\n"
         return self
@@ -57,21 +59,21 @@ class Puml:
         if id:
             return id.replace(' ','_').replace('-','_').replace(':','_').replace('/','_').replace('(','_').replace(')','_')
 
-    def png(self, path = None):
+    def png(self, path = None, use_lambda=True):
         if path:
             self.api_plantuml.tmp_png_file = path
-        self.api_plantuml.puml_to_png(self.puml)
+        self.api_plantuml.puml_to_png(puml=self.puml, use_lambda=use_lambda)
         return self
 
     def save(self, path):
         Files.write(path,self.puml)
         return self
 
-    def save_tmp(self):
+    def save_tmp(self, use_lambda=True):
         tmp_path_png = '/tmp/test_simple_diagram.png'
         tmp_path_puml = '/tmp/test_simple_diagram.puml'
-        ( self.png(tmp_path_png)
-              .save(tmp_path_puml) )
+        ( self.png (path=tmp_path_png, use_lambda=use_lambda)
+              .save(path=tmp_path_puml                      ))
         return tmp_path_png,tmp_path_puml
 
     def set_on_add_node(self, callback): self.on_add_node = callback ; return self
