@@ -1,24 +1,21 @@
 import json
-
+from osbot_jira.api.jira_server.API_Jira_Rest import API_Jira_Rest
 from osbot_utils.decorators.lists.index_by import index_by
 
-#from osbot_jira.api.API_Issues          import API_Issues
 from osbot_jira.api.graph.GS_Graph_Puml import GS_Graph_Puml
 from osbot_jira.api.plantuml.Puml import Puml
 from osbot_jira.osbot_graph.Graph import Graph
 from osbot_utils.utils.Files import Files
 from osbot_utils.utils.Json import Json
 
-
+# this is very similar to the GS_Graph class, but loads data directly from Jira instead of ElasticSearch
 class Jira_Graph:
     def __init__(self):
-        #self.api_issues            = API_Issues()
+        self.api_jira              = API_Jira_Rest()
         self.puml                  = Puml().startuml()
         self.puml_options          = {
                                         'node-text-value'     : "Summary",
-                                        'only-from-projects'  : []       ,
                                         'link-types-to-add'   : []       ,
-                                        'link-types-to-ignore': []       ,
                                         'left-to-right'       : True     ,
                                         'show-key-in-text'    : True     ,
                                         'show-edge-labels'    : True     ,
@@ -34,24 +31,6 @@ class Jira_Graph:
         self.node_type             = {}
         self.skin_params           = []
         self.create_params         = []
-
-        #self.risk_links_paths_down       = [  'is affected by', 'Requires'     , 'is used by', 'delivered by' , 'causes'       , 'is Technical Owner' , 'is Management Owner' , 'is Business Owner' , 'RISK affects', 'is fixed by', 'is mitigated by', 'is created by VULN', 'risk reduced by', 'is Vulnerable to'   , 'has VULN'    , 'RISK supported by', 'VULN is created by', 'is Stakeholder' , 'is parent of', 'is manager of', 'is created by R2', 'is created by R3', 'is created by R4']
-        #self.risk_links_paths_up         = [  'affects'       ,'Is Required by', 'uses'      , 'delivers'     , 'is caused by' , 'has Technical Owner', 'has Management Owner', 'has Business Owner', 'has RISK'    , 'fixes'      , 'mitigates'      , 'creates RISK'      , 'reduces risk of', 'is Vulnerability of', 'VULN affects', 'supports RISK'    , 'creates VULN'      , 'has Stakeholder', 'is child of' , 'is managed by', 'creates R1'      , 'creates R2'      , 'creates R3'      ]
-
-        #, 'has to be done before',
-        #, 'has to be done after',
-        # self.link_paths_other            = [ 'is blocked by','VULNThreat is created by', 'is budget item', 'Failure Implicated by',
-        #                                      'Data touches', 'Data sources used in', 'Needs','relates to', 'Missing High','Is missing',
-        #                                      'has budget item',   'Has VULNThreat', 'Is Needed by', 'Present', 'requires answer to ',
-        #                                      'Missing From (high)','Is Required by' , 'is cloned by', 'Data sources', 'duplicates',
-        #                                      'blocks', 'Implicates Failure of', 'clones', 'is duplicated by', 'System used for','is answer to' ]
-        # self.link_paths_mappings         = { 'r0_up'            : ['creates VULN'       , 'has RISK'    ,'creates RISK'    ,'creates R3'       , 'creates R2'      ,'creates R1'      ,'creates RISK'      ,'creates VULN'      ],
-        #                                      'r0_down'          : ['VULN is created by' ,                                   'is created by R4' , 'is created by R3','is created by R2','is created by VULN','VULN is created by'],
-        #                                      'risks_up'         : ['creates VULN'       ,'fixes'        ,'reduces risk of' ,'has RISK'    ,'creates RISK','creates R3'       , 'creates R2'      ,'creates R1'      ],
-        #                                      'risks_down'       : ['VULN is created by' , 'is fixed by', 'risk reduced by' ,'RISK affects',               'is created by R4' , 'is created by R3','is created by R2'],
-        #                                      'stakeholders_up'  : ['has Technical Owner', 'has Management Owner', 'has Business Owner', 'has Stakeholder', 'is managed by'],
-        #                                      'stakeholders_down': ['is Technical Owner' , 'is Management Owner' , 'is Business Owner' , 'is Stakeholder' , 'is manager of']}
-
 
     def add_issue(self, key, issue):
         if issue:
@@ -80,37 +59,19 @@ class Jira_Graph:
         for edge in edges:
             self.add_edge(edge[0], edge[1], edge[2])
 
-    # this needs to be refactored and improved (since there are now more than 10k issues)
-    # and this is called by the .add_all_linked_issues method
-    def all_link_types_per_key(self):
-        link_types = self.all_link_types()
-
-        result = {}
-        for link_type, data in link_types.items():
-            for key, items in data.items():
-                if result.get(key)            is None : result[key] = {}
-                if result[key].get(link_type) is None : result[key][link_type] = []
-                result[key][link_type] += items
-        return result
-
     def add_all_linked_issues(self, keys=None, depth = 1):
         if keys is None:
             keys = []
-        self.expand_link_types_to_add()
-        link_types_per_key   = self.all_link_types_per_key()        # this needs to be refactored and improved (since there are now more than 10k issues)
-        only_from_projects   = self.puml_options['only-from-projects']
-        link_types_to_add    = self.puml_options['link-types-to-add' ]
-        link_types_to_ignore = self.puml_options['link-types-to-ignore']
-        self.add_nodes(keys)
-        for i in range(0,depth):
-            for key in list(self.nodes):
-                data = link_types_per_key.get(key)
+        link_types_to_add    = self.puml_options['link-types-to-add' ]                                  # get mapping of link types to add
+        self.add_nodes(keys)                                                                            # add extra nodes provided in method param (to the nodes that already exist in the graph)
+        for i in range(0,depth):                                                                        # loop the amount defined in depth
+            link_types_per_key = self.jira_get_link_types_for_existing_nodes()
+            for key in list(self.nodes):                                                                # for each key in the current nodes
+                data = link_types_per_key.get(key)                                                      # get the
                 if data:
                     for issue_type, items in data.items():
                         for item in items:
-                            if only_from_projects   and item.split('-').pop(0) not in only_from_projects  : continue
                             if link_types_to_add    and issue_type             not in link_types_to_add   : continue
-                            if link_types_to_ignore and issue_type             in     link_types_to_ignore: continue
                             self.add_edge(key, issue_type, item)
                             self.add_node(item)
         return self
@@ -120,6 +81,7 @@ class Jira_Graph:
             self.add_linked_issues_of_type(link_type)
         return self
 
+    # todo: needs fixing since all_link_types doesn't exist anymore
     def add_linked_issues_of_type(self, link_type):
         link_type = link_type.strip()                                       # remove any spaces
         mappings = self.all_link_types().get(link_type)
@@ -134,6 +96,7 @@ class Jira_Graph:
                             self.nodes.append(linked_issue)
         return self
 
+    # todo: needs fixing since api_issues doesn't exist in this class
     def add_link_types_as_nodes(self, issue_types_to_ignore=None):
         if issue_types_to_ignore is None:
             issue_types_to_ignore = []
@@ -151,40 +114,39 @@ class Jira_Graph:
                             self.add_edge(link_type_node_key , "" , item)
         return self
 
-    def add_nodes_from_epics(self):
-        issues = self.get_nodes_issues()
-        self.api_issues.set_default_indexes()
-        for key, issue in issues.items():
-            if issue and issue.get('Issue Type') == 'Epic':
-                for epic_key in self.api_issues.epic_issues(key):
-                    self.add_edge(key, 'epic issue', epic_key)
-                    self.add_node(epic_key)
-        return self
+    # def add_nodes_from_epics(self):
+    #     issues = self.jira_get_nodes_issues()
+    #     self.api_issues.set_default_indexes()
+    #     for key, issue in issues.items():
+    #         if issue and issue.get('Issue Type') == 'Epic':
+    #             for epic_key in self.api_issues.epic_issues(key):
+    #                 self.add_edge(key, 'epic issue', epic_key)
+    #                 self.add_node(epic_key)
+    #     return self
 
     def edges__link_types(self):
         return sorted(list(set([edge[1] for edge in self.edges])))
 
-    def expand_link_types_to_add(self):
-        link_types_to_add = self.puml_options['link-types-to-add']
-        extra_link_types = []
-        for link in link_types_to_add:
-            extra_links = self.link_paths_mappings.get(link)
-            if extra_links:
-                extra_link_types.extend(extra_links)
-        link_types_to_add.extend(extra_link_types)
-        self.puml_options['link-types-to-add'] = link_types_to_add
-        return self
-
     def get_graph_data(self):
-        return { "nodes": self.get_nodes_issues(True),
+        return { "nodes": self.jira_get_nodes_issues(True),
                  "edges" : self.edges}
     @index_by
-    def get_issues(self,reload=False):                          # better name for the method
-        return list(self.get_nodes_issues(reload).values())
+    def jira_get_issues(self,reload=False,fields=None):                          # better name for the method
+        return list(self.jira_get_nodes_issues(reload=reload, fields=fields).values())
 
-    def get_nodes_issues(self,reload=False):                    # depreciate
+    def jira_get_nodes_issues(self,reload=False, fields=None):
         if self.issues is None or reload is True:
-            self.issues = self.api_issues.issues(self.nodes)
+            self.issues = self.api_jira.issues(issues_ids=self.nodes, fields=fields)
+        else:
+            # if we already have some issues fetched see if we have data for all of them
+            missing_nodes = []
+            for node_id in self.nodes:
+                if node_id not in self.issues:
+                    missing_nodes.append(node_id)
+            if len(missing_nodes) > 0:
+                missing_issues = self.api_jira.issues(issues_ids=missing_nodes, fields=fields)
+                self.issues.update(missing_issues)
+
         return self.issues
 
     def get_puml             (self):
@@ -196,7 +158,7 @@ class Jira_Graph:
 
     def issues__values_by_field(self, field_name):
         results = []
-        issues = self.get_nodes_issues()
+        issues = self.jira_get_nodes_issues()
         for node in self.nodes:
             issue = issues.get(node)
             if issue:
@@ -206,12 +168,15 @@ class Jira_Graph:
     def issues__issue_types(self):
         return self.issues__values_by_field('Issue Type')
 
+    def jira_get_link_types_for_existing_nodes(self, reload=False):              # in most calls of this method there are new nodes, and we want to make sure that we get the missing nodes
+        issues_links = {}
+        jira_issues_links = self.jira_get_issues(reload=reload, fields='issuelinks')
 
-    # this needs to be refactored since it is quite an expensive call (invoked quite often)
-    def all_link_types(self, index = "all"):
-        if self._link_types is None:
-            self._link_types = self.api_issues.link_types(index)
-        return self._link_types
+        for issue in jira_issues_links:
+            key         = issue.get('Key')
+            issue_links = issue.get('Issue Links')
+            issues_links[key] = issue_links
+        return issues_links
 
     def set_link_types_from_issues(self, issues):
         self._link_types = self.api_issues.link_types_from_issues(issues.values(),issues.keys())
@@ -229,7 +194,7 @@ class Jira_Graph:
 
     def nodes__field_values(self,field):
         values = []
-        issues = self.get_nodes_issues()
+        issues = self.jira_get_nodes_issues()
         for node in self.nodes:
             issue = issues.get(node)
             if issue:
@@ -335,59 +300,6 @@ class Jira_Graph:
         self.reset_puml()
         return GS_Graph_Puml(self).render_puml()
 
-        # node_text_value = self.puml_options['node-text-value' ]
-        #
-        # if self.puml_options['left-to-right']: self.puml.add_line('left to right direction')
-        # if self.puml_options['width'        ]: self.puml.add_line('scale {0} width '.format(self.puml_options['width' ]))
-        # if self.puml_options['height'       ]: self.puml.add_line('scale {0} height'.format(self.puml_options['height']))
-        #
-        # if self.issues is None:
-        #     self.issues =  self.get_nodes_issues()
-        # for key in self.nodes:
-        #     if node_text_value is None:
-        #         self.puml.add_card(key, key)
-        #     else:
-        #         issue = self.issues.get(key)
-        #         if issue:
-        #             key_text = issue.get(node_text_value)   #[0:30]
-        #             if self.puml_options['show-key-in-text']:
-        #                 line = '{1} \\n<font:10><i>{0}</i></font>'.format(key,key_text)
-        #                 if self.node_type.get(key):
-        #                     self.puml.add_node(self.node_type.get(key),line, key)
-        #                 else:
-        #                     self.puml.add_card(line, key)
-        #             else:
-        #                 line = '{0}'.format(key_text)
-        #                 if self.node_type.get(key):
-        #                     self.puml.add_node(self.node_type.get(key), line, key)
-        #                 else:
-        #                     self.puml.add_card(line, key)
-        #         else:
-        #             self.puml.add_card(key, key)
-        #
-        # for edge in self.edges:
-        #     from_key  = edge[0]
-        #     link_type = edge[1]
-        #     to_key    = edge[2]
-        #     if self.puml_options['show-edge-labels'] is False:
-        #         link_type = ""
-        #     self.puml.add_edge(from_key, to_key, 'down', link_type)
-        #
-        # for note in self.notes:
-        #     position = note[0]
-        #     key      = note[1]
-        #     text     = note[2]
-        #     line     = "\n\n\t note {0} of {1} \n {2} \n end note".format(position, key, text)
-        #     self.puml.add_line(line)
-        #
-        # self.puml.add_line('')
-        # for skin_param in self.skin_params:
-        #     line = "skinparam {0} {1}".format(skin_param[0],skin_param[1])
-        #     self.puml.add_line(line)
-        #
-        # self.puml.enduml()
-        #return self.puml
-
     def render_puml_and_save_tmp(self):
         self.render_puml()
         return self.puml.save_tmp()
@@ -415,7 +327,7 @@ class Jira_Graph:
             data = {    "nodes": self.nodes                 ,
                         "edges": self.edges                 }
         if store_issues:
-            data['issues'] = self.get_nodes_issues()
+            data['issues'] = self.jira_get_nodes_issues()
 
         return json.dumps(data)
 
@@ -438,7 +350,6 @@ class Jira_Graph:
 
 
     def set_puml_node_text_value    (self,value        ): self.puml_options['node-text-value'     ] = value             ; return self
-    def set_puml_only_from_projects (self,value        ): self.puml_options['only-from-projects'  ] = value             ; return self
     def set_puml_link_types_to_add  (self,value        ): self.puml_options['link-types-to-add'   ] = value             ; return self
     def set_puml_left_to_right      (self,value        ): self.puml_options['left-to-right'       ] = value             ; return self
     def set_puml_direction_top_down (self              ): self.puml_options['left-to-right'       ] = False             ; return self
@@ -447,10 +358,7 @@ class Jira_Graph:
     def set_puml_width              (self,value        ): self.puml_options['width'               ] = value             ; return self
     def set_puml_height             (self,value        ): self.puml_options['height'              ] = value             ; return self
     def set_puml_on_add_node        (self, callback    ): self.puml.set_on_add_node(callback)                           ; return self
-    def set_links_path_mode_to_down (self              ): self.set_puml_link_types_to_add(self.risk_links_paths_down)   ; return self
-    def set_links_path_mode_to_up   (self              ): self.set_puml_link_types_to_add(self.risk_links_paths_up  )   ; return self
     def set_nodes_and_edges         (self, nodes, edges): self.nodes = nodes; self.edges = edges                        ; return self
-    def set_link_paths_to_ignore    (self, value       ): self.puml_options['link-types-to-ignore'] = value             ; return self
     def set_skin_param              (self, name, value ): self.skin_params.append((name, value))                        ; return self
     def set_create_params           (self, value       ): self.create_params = value                                    ; return self
     def set_edges                   (self, edges       ): self.edges         = edges                                    ; return self
@@ -472,8 +380,6 @@ class Jira_Graph:
     def view_nodes(self,label_key=None,show_key=False, key_id='id', label_id='label'):
         nodes = []
         issues = self.issues or {}
-        # if issues is None:
-        #     issues = {}
         for key in self.nodes:
             issue = issues.get(key)
             if issue and label_key is not None:
@@ -496,19 +402,3 @@ class Jira_Graph:
             edges.append({'from': edge[0], 'to': edge[2]})
 
         return nodes,edges
-
-
-    # LEGACY (Check and delete)
-
-    def create_sub_graph_from_start_node(self, graph_nodes, start_node, issue_types_paths):
-        issues = self.api_issues.issues(graph_nodes)
-        link_types = self.api_issues.link_types_from_issues(issues.values(), graph_nodes)
-
-        self.issues = issues
-        self._link_types = link_types
-        self.puml_options['left-to-right'] = True
-        self.puml.add_line("scale 1")
-        self.add_node(start_node)
-        self.add_linked_issues_of_types(issue_types_paths)
-
-        self.render_puml()

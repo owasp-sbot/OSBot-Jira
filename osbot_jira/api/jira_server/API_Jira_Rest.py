@@ -3,11 +3,12 @@ import json
 import requests
 
 from osbot_aws.helpers.Lambda_Helpers import log_error
-from osbot_aws.apis.Secrets import Secrets
+from osbot_aws.apis.Secrets import Secrets                                  # todo: refactor this out of this class (so that we don't have a dependency in AWS
 from osbot_utils.decorators.lists.index_by import index_by
 from osbot_utils.decorators.methods.cache_on_self import cache_on_self
-from osbot_utils.utils.Dev import Dev
+from osbot_utils.utils.Dev import Dev, pprint
 from osbot_utils.utils.Json import json_dumps
+from osbot_utils.utils.Lists import list_chunks
 from osbot_utils.utils.Misc import env_vars
 
 
@@ -56,6 +57,7 @@ class API_Jira_Rest:
             if server.endswith('/') is False:
                 server +='/'
             path = '{0}rest/api/2/{1}'.format(server, path)
+        #print(path)
         if self.log_requests: Dev.pprint('get', path)
         if username and password:
             if method =='GET':
@@ -75,6 +77,9 @@ class API_Jira_Rest:
                 return None
         else:
             response = requests.get(path)
+        if response.status_code >= 404:
+            log_error(f'[Error][request_get][404] for path {path}: {response.text}')
+            return response.text
         if response.status_code >= 200 or response.status_code < 300:
             if 'image/' in response.headers.get('content-type'):
                 return response.content
@@ -175,7 +180,7 @@ class API_Jira_Rest:
                 issue_id  = issue_raw['id']
                 issue    = { 'Key' : issue_key , 'Id': issue_id }
                 fields   = self.fields_by_id()
-                fields_values = issue_raw.get('fields')
+                fields_values = issue_raw.get('fields') or {}
                 self.map_issue_links(issue, fields_values.get('issuelinks'))
                 if fields_values:
                     for field_id,value in fields_values.items():
@@ -215,14 +220,25 @@ class API_Jira_Rest:
         issue_raw = self.issue_raw(issue_id,fields)
         return self.convert_issue(issue_raw)
 
-
-    def issues(self,issues_ids,fields='*all'):
+    def issues(self,issues_ids,fields=None):
+        chunk_size = 100                            # split the # of issues to fetch (to handle request_get and jira limitations (that happened when trying to fetch more than 250 issues
         issues = {}
-        for issue_id in issues_ids:
-            issue = self.issue(issue_id,fields)
-            if issue:
-                issues[issue_id] = issue
+        if fields is None:
+            fields = '*all'
+
+        for chuck in list_chunks(list=issues_ids,split_by=chunk_size):
+            jql = f"key in {chuck}".replace('[', '(').replace(']', ')')
+            result = self.search(jql=jql, fields=fields)
+            for issue in result:
+                key = issue.get('Key')
+                issues[key] = issue
         return issues
+
+        #for issue_id in issues_ids:
+        #    issue = self.issue(issue_id,fields)
+        #    if issue:
+        #        issues[issue_id] = issue
+        #return issues
 
     def issue_create(self, project, issue_type, summary, description=None, extra_fields=None):
         path     = 'issue'
@@ -287,15 +303,15 @@ class API_Jira_Rest:
             icons[key] = project.get('avatarUrls').get('48x48')
         return icons
 
-    def search(self, jql='', fetch_all=True):
+    def search(self, jql='', fetch_all=True,fields='*all'):
         max_results = 100  # 100 seems to be the current limit of Jira cloud
         results = []
         start_at = 0
         while True:
-            path  = f'search?jql={jql}&startAt={start_at}&maxResults={max_results}'
-            if self.request_get(path) is None:
-                return results
+            path  = f'search?jql={jql}&startAt={start_at}&maxResults={max_results}&fields={fields}'
             data  = self.request_get(path)
+            if data is None:
+                return results
             if data:
                 issues = data.get('issues', [])
                 for issue in issues:
@@ -307,7 +323,8 @@ class API_Jira_Rest:
                 if len(issues) == 0:
                     break
                 start_at += len(issues)
-
+            else:
+                break
         return results
 
     def webhook_failed(self):

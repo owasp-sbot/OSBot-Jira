@@ -1,4 +1,4 @@
-from osbot_utils.utils.Dev import Dev
+from osbot_utils.utils.Dev import Dev, pprint
 
 from osbot_aws.helpers.Test_Helper import Test_Helper
 from osbot_jira.api.jira_server.API_Jira_Rest import API_Jira_Rest
@@ -49,9 +49,16 @@ class Test_API_Jira_Rest(Test_Helper):
         #assert set(result) == { 'Assignee', 'Created', 'Creator', 'Description', 'Issue Type', 'Key', 'Labels', 'Last Viewed', 'Priority', 'Project', 'Reporter', 'Risk Description', 'Risk Owner', 'Risk Rating', 'Risk Title', 'Status', 'Summary', 'Updated', 'Work Ratio'}
 
     def test_issues(self):
-        issues_ids = ['RISK-12','RISK-424','SL-118','IA-12']
-        result = self.api.issues(issues_ids,'key')
-        assert len(result) == 4
+        issues_ids = ['ENTITY-1','ENTITY-2','ENTITY-3','ENTITY-4']
+        fields = 'summary,issuelinks'
+        result = self.api.issues(issues_ids=issues_ids,fields=fields)
+        pprint(result)
+        #assert len(result) == 4
+        #jql = f"key in {issues_ids}".replace('[', '(').replace(']', ')')
+
+        #pprint(jql)
+        #result = self.api.search(jql=jql, fields=fields)
+        #pprint(result)
 
     def test_issue_update_field(self):
         issue_id = 'RISK-12'

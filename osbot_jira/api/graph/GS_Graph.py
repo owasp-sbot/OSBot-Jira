@@ -9,7 +9,8 @@ from osbot_jira.osbot_graph.Graph import Graph
 from osbot_utils.utils.Files import Files
 from osbot_utils.utils.Json import Json
 
-
+#todo: refactor this class to be ES_Graph (since the difference with Jira_Graph is that this class gets the data from Elastic)
+#      be careful when doing this, since there are quite a number of dependencies and code that uses GS_Graph
 class GS_Graph:
     def __init__(self):
         self.api_issues            = API_Issues()
