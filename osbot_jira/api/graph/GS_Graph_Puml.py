@@ -29,9 +29,10 @@ class GS_Graph_Puml:
             else:
                 issue = self.issues.get(key)
                 if issue:
-                    key_text = issue.get(node_text_value)   #[0:30]
+                    key_text = issue.get(node_text_value)
                     if self.puml_options['show-key-in-text']:
-                        line = '{1} \\n<font:10><i>{0}</i></font>'.format(key,key_text)
+                        #line = '{1} \\n<font:10><i>{0}</i></font>'.format(key,key_text)                # previous default formating
+                        line = f"={key_text}\\n<color:grey><size:10><i>{key}</i></size></color>"        # note: if getting weird formating errors take a look at Puml.max_title
                         if self.node_type.get(key):
                             self.puml.add_node(self.node_type.get(key),line, key)
                         else:

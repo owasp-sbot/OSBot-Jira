@@ -14,7 +14,7 @@ class Puml:
         self.available_directions = ['up', 'down','left','right']
         self.on_add_node           = None
         self.on_add_edge           = None
-        self.max_title             = 40
+        self.max_title             = 200
 
     def add_card     (self, title, id = None) : return self.add_node("card", title, id)
     def add_cloud    (self, title, id = None) : return self.add_node("cloud", title, id)
@@ -46,10 +46,10 @@ class Puml:
 
     def get_puml(self):
         return self.puml
+
     def startuml(self):
         self.puml += "@startuml\n"
         return self
-
 
     def enduml(self):
         self.puml += "@enduml\n"

@@ -130,11 +130,15 @@ class Jira_Graph:
     def get_graph_data(self):
         return { "nodes": self.jira_get_nodes_issues(True),
                  "edges" : self.edges}
+
+    def get_nodes_issues(self,reload=False,fields=None):
+        return self.jira_get_issues(reload=reload, fields=fields, index_by='Key')
+
     @index_by
     def jira_get_issues(self,reload=False,fields=None):                          # better name for the method
         return list(self.jira_get_nodes_issues(reload=reload, fields=fields).values())
 
-    def jira_get_nodes_issues(self,reload=False, fields=None):
+    def jira_get_nodes_issues(self,reload=False, fields='issuelinks,summary,issuetype'):
         if self.issues is None or reload is True:
             self.issues = self.api_jira.issues(issues_ids=self.nodes, fields=fields)
         else:
@@ -170,7 +174,7 @@ class Jira_Graph:
 
     def jira_get_link_types_for_existing_nodes(self, reload=False):              # in most calls of this method there are new nodes, and we want to make sure that we get the missing nodes
         issues_links = {}
-        jira_issues_links = self.jira_get_issues(reload=reload, fields='issuelinks,summary')
+        jira_issues_links = self.jira_get_issues(reload=reload, fields='issuelinks,summary,issuetype')
 
         for issue in jira_issues_links:
             key         = issue.get('Key')
@@ -298,6 +302,7 @@ class Jira_Graph:
 
     def render_puml(self):
         self.reset_puml()
+        self.puml.add_line('skin rose')
         self.jira_get_issues()                      # ensure that all issues are reloaded
         return GS_Graph_Puml(self).render_puml()
 
@@ -365,6 +370,11 @@ class Jira_Graph:
     def set_edges                   (self, edges       ): self.edges         = edges                                    ; return self
     def set_nodes                   (self, nodes       ): self.nodes         = nodes                                    ; return self
 
+    def set_skin_params(self, skin_params = None):
+        for (name, value) in (skin_params or []):
+            self.set_skin_param(name, value)
+        return self
+
     def stats(self):
         return  {
                  "count_nodes" : len(self.nodes    ),
@@ -406,9 +416,16 @@ class Jira_Graph:
 
 
 # static
-def jira_graph_expand(root_node, depth, issue_links):
+def create_jira_graph(root_node, depth):
+    graph = create_jira_graph_expand(root_node=root_node, depth=depth, issue_links=None)
+    graph.get_nodes_issues()
+    return graph
+
+def create_jira_graph_expand(root_node, depth, issue_links, skin_params=None):
     graph = Jira_Graph()
     graph.add_node(root_node)                     \
+         .set_skin_params(skin_params)            \
          .set_puml_link_types_to_add(issue_links) \
          .add_all_linked_issues(depth=depth)
+    graph.get_nodes_issues()
     return graph

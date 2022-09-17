@@ -9,7 +9,7 @@ from osbot_utils.decorators.methods.cache_on_self import cache_on_self
 from osbot_utils.utils.Dev import Dev, pprint
 from osbot_utils.utils.Json import json_dumps
 from osbot_utils.utils.Lists import list_chunks
-from osbot_utils.utils.Misc import env_vars
+from osbot_utils.utils.Misc import env_vars, list_set
 
 
 class API_Jira_Rest:
@@ -28,9 +28,11 @@ class API_Jira_Rest:
                 self._config = self.config_using_aws_secrets()
 
         return self._config
+
     def config_using_aws_secrets(self):
-        data = Secrets(self.secrets_id).value_from_json_string()
+        data = Secrets(self.secrets_id).value_from_json_string() or {}
         return (data.get('server'), data.get('username'), data.get('password'))
+
 
     def config_using_env_vars(self):
         vars     = env_vars()
@@ -53,6 +55,8 @@ class API_Jira_Rest:
 
     def request_method(self,method, path, data=None):
         (server, username, password)= self.config()
+        if server is None:
+            return None
         if path.startswith('http') is False:
             if server.endswith('/') is False:
                 server +='/'
@@ -303,7 +307,8 @@ class API_Jira_Rest:
             icons[key] = project.get('avatarUrls').get('48x48')
         return icons
 
-    def search(self, jql='', fetch_all=True,fields='*all'):
+    @index_by
+    def search(self, jql='', fetch_all=True, fields='*all'):
         max_results = 100  # 100 seems to be the current limit of Jira cloud
         results = []
         start_at = 0
@@ -326,6 +331,10 @@ class API_Jira_Rest:
             else:
                 break
         return results
+
+    def search__return_keys(self, jql):
+        result = self.search(jql=jql, fields = 'key', index_by='Key')
+        return list_set(result)
 
     def webhook_failed(self):
         return self.request_get('webhook/failed')
