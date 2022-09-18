@@ -8,8 +8,6 @@ from osbot_utils.utils.Misc import random_string
 class test_Jira_Graph_Jql(TestCase):
 
     def setUp(self) -> None:
-        from hb_security_jupyter.Setup import Setup
-        Setup()
         self.jql            = 'project=PROJ'
         self.jira_graph_jql = Jira_Graph_Jql(jql=self.jql)
         self.jira_graph     = self.jira_graph_jql.jira_graph

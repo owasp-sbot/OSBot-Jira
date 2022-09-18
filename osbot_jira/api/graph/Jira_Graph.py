@@ -300,14 +300,14 @@ class Jira_Graph:
         return None
 
 
-    def render_puml(self):
+    def render_puml(self,using_jira_nodes=True):
         self.reset_puml()
-        self.puml.add_line('skin rose')
-        self.jira_get_issues()                      # ensure that all issues are reloaded
-        return GS_Graph_Puml(self).render_puml()
+        self.puml.add_line('skin rose')              # todo add ability to overwrite this or move into another location (since this is applied to all graphs)
+        #self.jira_get_issues()                      # ensure that all issues are reloaded
+        return GS_Graph_Puml(self).render_puml(using_jira_nodes)
 
-    def render_puml_and_save_tmp(self, use_lambda=True):
-        self.render_puml()
+    def render_puml_and_save_tmp(self, use_lambda=True, using_jira_nodes=True):
+        self.render_puml(using_jira_nodes=False)
         return self.puml.save_tmp(use_lambda=use_lambda)
 
     def render_puml_save_to_elk_and_to_tmp(self, graph_name=None):

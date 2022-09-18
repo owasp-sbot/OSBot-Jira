@@ -3,14 +3,15 @@ from osbot_jira.api.graph.Jira_Graph import Jira_Graph
 
 class Jira_Graph_View:
 
-    def __init__(self, graph):
-        self.graph = graph
+    def __init__(self, jira_graph : Jira_Graph):
+        self.jira_graph = jira_graph
 
-    def view_schema(self):
-        issues = self.graph.get_nodes_issues(reload=False)
+    def create_schema_graph(self):
+        issues = self.jira_graph.get_nodes_issues(reload=False, fields='issuetype')
+
         schema = {}
-        puml = self.graph.puml
-        for edge in self.graph.edges:
+        puml = self.jira_graph.puml
+        for edge in self.jira_graph.edges:
             from_id   = edge[0]
             link_name = edge[1]
             to_id     = edge[2]
@@ -30,15 +31,17 @@ class Jira_Graph_View:
                                                                         'to_issue_type'   : to_issue_type }
             schema.get(schema_edge)['count'] += 1
 
-        new_graph = Jira_Graph()
-        for item in schema.values():
-            new_graph.add_node(item.get('from_issue_type'))
-            new_graph.add_node(item.get('to_issue_type'))
-            new_graph.add_edge(item.get('from_issue_type'), item.get('link_name'),item.get('to_issue_type'))
+        schema_graph = Jira_Graph()
 
-        self.graph = new_graph
-        self.graph.render_puml()
-        return self.puml()
+        for item in schema.values():
+            schema_graph.add_node(item.get('from_issue_type'))
+            schema_graph.add_node(item.get('to_issue_type'))
+            schema_graph.add_edge(item.get('from_issue_type'), item.get('link_name'),item.get('to_issue_type'))
+
+        return schema_graph
+        #self.jira_graph = new_graph
+        #self.jira_graph.render_puml()
+        #return self.puml()
 
     def puml(self):
-        return self.graph.puml.puml
+        return self.jira_graph.puml.puml

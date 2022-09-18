@@ -166,14 +166,14 @@ class API_Jira_Rest:
                     issue_links[link_type] = []
                 issue_links[link_type].append(link_key)
 
-        issue['Issue Links'] = issue_links
+        issue['Issue Links'] = issue_links                  # todo: see what is the side effect of not including this by default
         return self
 
     def convert_issue(self, issue_raw):
         if issue_raw:
             skip_fields    = ['resolution', 'votes','worklog','watches','comment',
                               'iconUrl','fixVersions', 'customfield_14238',
-                              'issuelinks'] # '% complete'
+                              'issuelinks', 'timetracking'] # '% complete'
             skip_types       = ['any','progress','option-with-child']
             use_display_name = ['user']
             use_name         = ['issuetype','status','project','priority', 'securitylevel']
@@ -181,15 +181,20 @@ class API_Jira_Rest:
             if issue_raw:
 
                 issue_key = issue_raw['key']
-                issue_id  = issue_raw['id']
-                issue    = { 'Key' : issue_key , 'Id': issue_id }
+                #issue_id  = issue_raw['id']
+                #issue    = { 'Key' : issue_key , 'Id': issue_id }
+                issue    = { 'Key' : issue_key }                    # todo: see what is the side effects of not including the Jira internal issue ID (which is not really used anywhere)
                 fields   = self.fields_by_id()
                 fields_values = issue_raw.get('fields') or {}
                 self.map_issue_links(issue, fields_values.get('issuelinks'))
                 if fields_values:
                     for field_id,value in fields_values.items():
                         if value and field_id not in skip_fields:
+                            if field_id == 'parent':
+                                issue['Parent'] = fields_values.get('parent').get('key')
+                                continue
                             field = fields.get(field_id)
+
                             issue_type = field.get('schema').get('type')
 
                             if issue_type not in skip_types:
@@ -210,18 +215,19 @@ class API_Jira_Rest:
                                                 items.append(item.get('name'))
                                     value = ",".join(items)
                                 else:
-                                    #print('>> ', field_id,issue_type)
+                                    print(">> in convert_issue")
+                                    print('>> ', field_id,issue_type)
                                     Dev.pprint(value)
                                     continue
                                 issue[issue_name] = value
-
-
                 return issue
         return {}
 
 
     def issue(self,issue_id,fields='*all'):
         issue_raw = self.issue_raw(issue_id,fields)
+        if type(issue_raw) is str: # happens  ["Issue does not exist or you do not have permission to see it."]:
+            return {}
         return self.convert_issue(issue_raw)
 
     def issues(self,issues_ids,fields=None):
@@ -296,7 +302,8 @@ class API_Jira_Rest:
 
     def projects(self):
         projects = {}
-        data = self.request_get('issue/createmeta').get('projects')
+        #data = self.request_get('issue/createmeta').get('projects')
+        data = self.request_get('project')
         for item in data:
             projects[item.get('key')] = item
         return projects
@@ -308,12 +315,16 @@ class API_Jira_Rest:
         return icons
 
     @index_by
-    def search(self, jql='', fetch_all=True, fields='*all'):
-        max_results = 100  # 100 seems to be the current limit of Jira cloud
+    def search(self, jql='', fetch_all=True, fields='*all', start_at=0, max_to_fetch=-1):
+        if -1 < max_to_fetch < 100:                 # todo improve logic of max_to_fetch since at the moment it will fetch 300 for values of 200, 210,250, 290
+            max_results = max_to_fetch              # in case the max_to_fetch is between 0 and 100 (this part is working)
+        else:
+            max_results = 100                       # 100 seems to be the current limit of Jira cloud
         results = []
-        start_at = 0
+        start_at = start_at
         while True:
             path  = f'search?jql={jql}&startAt={start_at}&maxResults={max_results}&fields={fields}'
+
             data  = self.request_get(path)
             if data is None:
                 return results
@@ -322,6 +333,8 @@ class API_Jira_Rest:
                 for issue in issues:
                     results.append(self.convert_issue(issue))
                 if len(results) == data.get('total'):
+                    break
+                if -1 < max_to_fetch <= len(results):
                     break
                 if fetch_all is False:
                     break

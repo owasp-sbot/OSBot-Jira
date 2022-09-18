@@ -20,7 +20,7 @@ class test_Jira_Graph_View(TestCase):
         #pprint(graph.issues.get('ENTITY-2'))
 
 
-        jira_graph_view = Jira_Graph_View(graph=graph)
+        jira_graph_view = Jira_Graph_View(jira_graph=graph)
         result          = jira_graph_view.view_schema()
         print(jira_graph_view.graph.get_puml())
 

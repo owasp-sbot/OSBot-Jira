@@ -14,15 +14,17 @@ class GS_Graph_Puml:
         self.puml         = graph.puml
         self.skin_params  = graph.skin_params
 
-    def render_puml(self):
+    def render_puml(self, using_jira_nodes=True):
         node_text_value = self.puml_options['node-text-value' ]
 
         if self.puml_options['left-to-right']: self.puml.add_line('left to right direction')
         if self.puml_options['width'        ]: self.puml.add_line('scale {0} width '.format(self.puml_options['width' ]))
         if self.puml_options['height'       ]: self.puml.add_line('scale {0} height'.format(self.puml_options['height']))
 
-        if self.issues is None:
+        if self.issues is None and using_jira_nodes is True:            # only reload if the issue object is not set or if the graph's nodes are not Jira IDs
             self.issues =  self.graph.get_nodes_issues()
+        else:
+            self.issues = {}
         for key in self.nodes:
             if node_text_value is None:
                 self.puml.add_card(key, key)
