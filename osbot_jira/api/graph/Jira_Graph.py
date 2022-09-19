@@ -60,7 +60,7 @@ class Jira_Graph:
         for edge in edges:
             self.add_edge(edge[0], edge[1], edge[2])
 
-    def add_all_linked_issues(self, keys=None, depth = 1):
+    def add_all_linked_issues(self, keys=None, depth = 1, add_back_links=False):
         if keys is None:
             keys = []
         edges_from = []
@@ -76,13 +76,13 @@ class Jira_Graph:
                             if link_types_to_add and issue_type not in link_types_to_add:
                                 continue
                             if not link_types_to_add and item in edges_from:
-                                continue
+                                if add_back_links is False:
+                                    continue
 
                             self.add_edge(key, issue_type, item)
                             self.add_node(item)
                             if key not in edges_from:
                                 edges_from.append(key)
-            pprint(edges_from)
         return self
 
     def add_linked_issues_of_types(self, link_types):
@@ -183,7 +183,7 @@ class Jira_Graph:
 
     def jira_get_link_types_for_existing_nodes(self, reload=False):              # in most calls of this method there are new nodes, and we want to make sure that we get the missing nodes
         issues_links = {}
-        jira_issues_links = self.jira_get_issues(reload=reload, fields='issuelinks,summary,issuetype')
+        jira_issues_links = self.jira_get_issues(reload=reload, fields='issuelinks,summary,issuetype,status')
 
         for issue in jira_issues_links:
             key         = issue.get('Key')
@@ -380,8 +380,9 @@ class Jira_Graph:
     def set_nodes                   (self, nodes       ): self.nodes         = nodes                                    ; return self
 
     def set_skin_params(self, skin_params = None):
-        for (name, value) in (skin_params or []):
-            self.set_skin_param(name, value)
+        if skin_params:
+            for (name, value) in (skin_params or []):
+                self.set_skin_param(name, value)
         return self
 
     def stats(self):
@@ -392,9 +393,12 @@ class Jira_Graph:
                 }
 
     def filter(self):
-        from osbot_jira.api.graph.Filters import Filters
-        return Filters().setup(graph=self)
+        from osbot_jira.api.graph.Jira_Graph_Filters import Jira_Graph_Filters          # cannot be a global reference due to circular dependencies
+        return Jira_Graph_Filters(jira_graph=self)
 
+    def filter_remove_nodes_from_projects(self, projects):
+        filter = self.filter()
+        filter.remove_nodes_from_projects(projects)
     # view
 
     def view_nodes(self,label_key=None,show_key=False, key_id='id', label_id='label'):
