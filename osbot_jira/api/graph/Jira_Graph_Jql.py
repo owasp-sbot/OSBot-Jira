@@ -6,10 +6,12 @@ class Jira_Graph_Jql:
 
     #def __init__(self, root_node, initial_nodes, issue_links=None, skin_params=None):
     def __init__(self, jql):
-        self.jira_graph = Jira_Graph()
-        self.api_jira   = self.jira_graph.api_jira
-        self.jql        = jql
-        self.jql_keys   = []
+        self.jira_graph  = Jira_Graph()
+        self.api_jira    = self.jira_graph.api_jira
+        self.jql         = jql
+        self.jql_keys    = []
+        self.depth       = 1
+        self.link_types  = None
         # if root_node:
         #     self.jira_graph.add_node(root_node)
         # if initial_nodes:
@@ -27,7 +29,7 @@ class Jira_Graph_Jql:
 
     def graph_expand(self, depth):
         self.jira_graph.add_all_linked_issues(depth=depth)
-        #self.jira_graph.get_nodes_issues()                 # see if we need to do this
+        self.jira_graph.get_nodes_issues()                 # see if we need to do this
         return self
 
     def render_png(self):
@@ -42,3 +44,19 @@ class Jira_Graph_Jql:
         schema_graph.render_puml_and_save_tmp(use_lambda=False)
         return schema_graph
 
+    def set_depth(self, depth):
+        self.depth = depth
+        return self
+
+    def set_link_types(self, link_types=None):
+        if link_types:
+            self.jira_graph.set_puml_link_types_to_add(link_types)
+        return self
+
+    def create_png(self):
+        (
+            self.execute_jql()
+                .set_link_types(self.link_types)
+                .graph_expand(self.depth)
+                .render_png()
+        )

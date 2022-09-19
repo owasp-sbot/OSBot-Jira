@@ -5,6 +5,7 @@ from osbot_utils.decorators.lists.index_by import index_by
 from osbot_jira.api.graph.GS_Graph_Puml import GS_Graph_Puml
 from osbot_jira.api.plantuml.Puml import Puml
 from osbot_jira.osbot_graph.Graph import Graph
+from osbot_utils.utils.Dev import pprint
 from osbot_utils.utils.Files import Files
 from osbot_utils.utils.Json import Json
 
@@ -62,6 +63,7 @@ class Jira_Graph:
     def add_all_linked_issues(self, keys=None, depth = 1):
         if keys is None:
             keys = []
+        edges_from = []
         link_types_to_add    = self.puml_options['link-types-to-add' ]                                  # get mapping of link types to add
         self.add_nodes(keys)                                                                            # add extra nodes provided in method param (to the nodes that already exist in the graph)
         for i in range(0,depth):                                                                        # loop the amount defined in depth
@@ -71,9 +73,16 @@ class Jira_Graph:
                 if data:
                     for issue_type, items in data.items():
                         for item in items:
-                            if link_types_to_add    and issue_type             not in link_types_to_add   : continue
+                            if link_types_to_add and issue_type not in link_types_to_add:
+                                continue
+                            if not link_types_to_add and item in edges_from:
+                                continue
+
                             self.add_edge(key, issue_type, item)
                             self.add_node(item)
+                            if key not in edges_from:
+                                edges_from.append(key)
+            pprint(edges_from)
         return self
 
     def add_linked_issues_of_types(self, link_types):
@@ -307,7 +316,7 @@ class Jira_Graph:
         return GS_Graph_Puml(self).render_puml(using_jira_nodes)
 
     def render_puml_and_save_tmp(self, use_lambda=True, using_jira_nodes=True):
-        self.render_puml(using_jira_nodes=False)
+        self.render_puml(using_jira_nodes=using_jira_nodes)
         return self.puml.save_tmp(use_lambda=use_lambda)
 
     def render_puml_save_to_elk_and_to_tmp(self, graph_name=None):

@@ -56,7 +56,6 @@ class Test_GS_Graph(TestCase):
     #     Dev.pprint(len(self.graph.edges))
 
     def test_add_all_linked_issues____with_color_coding_on_rating(self):
-
         issues = None
 
         def on_add_node(element,title, id, original_id):

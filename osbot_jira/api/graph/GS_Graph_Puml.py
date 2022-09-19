@@ -14,17 +14,24 @@ class GS_Graph_Puml:
         self.puml         = graph.puml
         self.skin_params  = graph.skin_params
 
-    def render_puml(self, using_jira_nodes=True):
+    def render_puml(self, using_jira_nodes=True, reload_issues=False):
         node_text_value = self.puml_options['node-text-value' ]
 
         if self.puml_options['left-to-right']: self.puml.add_line('left to right direction')
         if self.puml_options['width'        ]: self.puml.add_line('scale {0} width '.format(self.puml_options['width' ]))
         if self.puml_options['height'       ]: self.puml.add_line('scale {0} height'.format(self.puml_options['height']))
 
-        if self.issues is None and using_jira_nodes is True:            # only reload if the issue object is not set or if the graph's nodes are not Jira IDs
-            self.issues =  self.graph.get_nodes_issues()
-        else:
+        for skin_param in self.skin_params:
+            line = "skinparam {0} {1}".format(skin_param[0], skin_param[1])
+            self.puml.add_line(line)
+        self.puml.add_line('')
+
+        if using_jira_nodes is False:
             self.issues = {}
+        else:
+            if self.issues is None or reload_issues is True:            # only reload if the issue object is not set or reload_issues is set to True
+                self.issues =  self.graph.get_nodes_issues()
+
         for key in self.nodes:
             if node_text_value is None:
                 self.puml.add_card(key, key)
@@ -61,11 +68,6 @@ class GS_Graph_Puml:
             key      = note[1]
             text     = note[2]
             line     = "\n\n\t note {0} of {1} \n {2} \n end note".format(position, key, text)
-            self.puml.add_line(line)
-
-        self.puml.add_line('')
-        for skin_param in self.skin_params:
-            line = "skinparam {0} {1}".format(skin_param[0],skin_param[1])
             self.puml.add_line(line)
 
         self.puml.enduml()
