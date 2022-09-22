@@ -14,9 +14,14 @@ class Jira_Graph:
     def __init__(self):
         self.api_jira              = API_Jira_Rest()
         self.puml                  = Puml().startuml()
+        self.initial_puml_code     = "@startuml\n"
+        self.extra_puml_lines      = ""
         self.puml_options          = {
                                         'node-text-value'     : "Summary",
                                         'link-types-to-add'   : []       ,
+                                        'link-types-to-ignore': []       ,
+                                        'only-from-projects'  : []       ,
+                                        'projects-to-ignore'  : []       ,
                                         'left-to-right'       : True     ,
                                         'show-key-in-text'    : True     ,
                                         'show-edge-labels'    : True     ,
@@ -32,6 +37,8 @@ class Jira_Graph:
         self.node_type             = {}
         self.skin_params           = []
         self.create_params         = []
+        self.title                 = None
+        self.footer                = None
 
     def add_issue(self, key, issue):
         if issue:
@@ -64,7 +71,11 @@ class Jira_Graph:
         if keys is None:
             keys = []
         edges_from = []
-        link_types_to_add    = self.puml_options['link-types-to-add' ]                                  # get mapping of link types to add
+        link_types_to_add    = self.puml_options['link-types-to-add'   ]                                  # get mapping of link types to add
+        link_types_to_ignore = self.puml_options['link-types-to-ignore']
+        only_from_projects   = self.puml_options['only-from-projects'  ]
+        projects_to_ignore   = self.puml_options['projects-to-ignore'  ]
+
         self.add_nodes(keys)                                                                            # add extra nodes provided in method param (to the nodes that already exist in the graph)
         for i in range(0,depth):                                                                        # loop the amount defined in depth
             link_types_per_key = self.jira_get_link_types_for_existing_nodes()
@@ -73,8 +84,12 @@ class Jira_Graph:
                 if data:
                     for issue_type, items in data.items():
                         for item in items:
-                            if link_types_to_add and issue_type not in link_types_to_add:
-                                continue
+                            project_key = item.split('-').pop(0)
+                            if projects_to_ignore   and project_key     in projects_to_ignore  : continue
+                            if only_from_projects   and project_key not in only_from_projects  : continue
+                            if link_types_to_add    and issue_type  not in link_types_to_add   : continue
+                            if link_types_to_ignore and issue_type      in link_types_to_ignore: continue
+
                             if not link_types_to_add and item in edges_from:
                                 if add_back_links is False:
                                     continue
@@ -313,6 +328,8 @@ class Jira_Graph:
         self.reset_puml()
         self.puml.add_line('skin rose')              # todo add ability to overwrite this or move into another location (since this is applied to all graphs)
         #self.jira_get_issues()                      # ensure that all issues are reloaded
+        self.puml.add_title (self.title)
+        self.puml.add_footer(self.footer)
         return GS_Graph_Puml(self).render_puml(using_jira_nodes)
 
     def render_puml_and_save_tmp(self, use_lambda=True, using_jira_nodes=True):
@@ -324,7 +341,7 @@ class Jira_Graph:
         return self.puml.save_tmp()
 
     def reset_puml(self):
-        self.puml.puml = "@startuml\n"
+        self.puml.puml = self.initial_puml_code + self.extra_puml_lines + '\n'
         return self
 
     def to_json(self, puml_config=True, store_issues=False):
@@ -364,20 +381,25 @@ class Jira_Graph:
         return self
 
 
-    def set_puml_node_text_value    (self,value        ): self.puml_options['node-text-value'     ] = value             ; return self
-    def set_puml_link_types_to_add  (self,value        ): self.puml_options['link-types-to-add'   ] = value             ; return self
-    def set_puml_left_to_right      (self,value        ): self.puml_options['left-to-right'       ] = value             ; return self
-    def set_puml_direction_top_down (self              ): self.puml_options['left-to-right'       ] = False             ; return self
-    def set_puml_show_key_in_text   (self,value        ): self.puml_options['show-key-in-text'    ] = value             ; return self
-    def set_puml_show_edge_labels   (self,value        ): self.puml_options['show-edge-labels'    ] = value             ; return self
-    def set_puml_width              (self,value        ): self.puml_options['width'               ] = value             ; return self
-    def set_puml_height             (self,value        ): self.puml_options['height'              ] = value             ; return self
-    def set_puml_on_add_node        (self, callback    ): self.puml.set_on_add_node(callback)                           ; return self
-    def set_nodes_and_edges         (self, nodes, edges): self.nodes = nodes; self.edges = edges                        ; return self
-    def set_skin_param              (self, name, value ): self.skin_params.append((name, value))                        ; return self
-    def set_create_params           (self, value       ): self.create_params = value                                    ; return self
-    def set_edges                   (self, edges       ): self.edges         = edges                                    ; return self
-    def set_nodes                   (self, nodes       ): self.nodes         = nodes                                    ; return self
+    def set_puml_node_text_value     (self,value        ): self.puml_options['node-text-value'     ] = value             ; return self
+    def set_puml_link_types_to_add   (self,value        ): self.puml_options['link-types-to-add'   ] = value             ; return self
+    def set_puml_link_types_to_ignore(self,value        ): self.puml_options['link-types-to-ignore'] = value             ; return self
+    def set_puml_left_to_right       (self,value        ): self.puml_options['left-to-right'       ] = value             ; return self
+    def set_puml_direction_top_down  (self              ): self.puml_options['left-to-right'       ] = False             ; return self
+    def set_puml_only_from_projects  (self,value        ): self.puml_options['only-from-projects'  ] = value             ; return self
+    def set_puml_projects_to_ignore  (self,value        ): self.puml_options['projects-to-ignore'  ] = value             ; return self
+    def set_puml_show_key_in_text    (self,value        ): self.puml_options['show-key-in-text'    ] = value             ; return self
+    def set_puml_show_edge_labels    (self,value        ): self.puml_options['show-edge-labels'    ] = value             ; return self
+    def set_puml_width               (self,value        ): self.puml_options['width'               ] = value             ; return self
+    def set_puml_height              (self,value        ): self.puml_options['height'              ] = value             ; return self
+    def set_puml_on_add_node         (self, callback    ): self.puml.set_on_add_node(callback)                           ; return self
+    def set_nodes_and_edges          (self, nodes, edges): self.nodes = nodes; self.edges = edges                        ; return self
+    def set_skin_param               (self, name, value ): self.skin_params.append((name, value))                        ; return self
+    def set_create_params            (self, value       ): self.create_params = value                                    ; return self
+    def set_edges                    (self, edges       ): self.edges         = edges                                    ; return self
+    def set_nodes                    (self, nodes       ): self.nodes         = nodes                                    ; return self
+    def set_title                    (self, value       ): self.title         = value
+    def set_footer                   (self, value       ): self.footer         = value
 
     def set_skin_params(self, skin_params = None):
         if skin_params:

@@ -23,7 +23,7 @@ class Puml:
 
     def add_node(self, element, title, id = None):
 
-        title = Misc.word_wrap_escaped(title, self.max_title)
+        title = Misc.word_wrap(title, self.max_title)
 
         if self.on_add_node:                                                      # if self.on_add_element is set, then use it for the node render bit
             puml_to_add = self.on_add_node(element,title,self.fix_id(id),id)
@@ -43,6 +43,17 @@ class Puml:
     def add_line(self, line):
         self.puml += "\t{0}\n".format(line)
         return self
+
+    def add_title(self, title):
+        if title:
+            self.add_line(f"title {title}")
+        return self
+
+    def add_footer(self, footer):
+        if footer:
+            self.add_line(f"\n\tcenter footer {footer}")
+        return footer
+
 
     def get_puml(self):
         return self.puml

@@ -5,7 +5,38 @@ class Jira_Graph_Filters:
 
     def __init__(self, jira_graph: Jira_Graph):        
         self.jira_graph = jira_graph
-    
+
+    def delete_nodes(self, nodes_id):       # todo: refactor into more efficient deletion
+        for node_id in nodes_id:
+            self.delete_node(node_id)
+        return self
+
+    def delete_node(self, node_id):
+        if node_id in self.jira_graph.nodes:
+            self.jira_graph.nodes.remove(node_id)
+            edges_to_remove = []
+            for edge in self.jira_graph.edges:
+                (from_id, link_type, to_id) = edge
+                if node_id == from_id or node_id == to_id:
+                    edges_to_remove.append(edge)
+            for edge_to_remove in edges_to_remove:
+                self.jira_graph.edges.remove(edge_to_remove)
+        return self
+
+    def delete_nodes_with_no_edges(self):
+        nodes_to_delete = []
+        for node_id in self.jira_graph.nodes:
+            found = False
+            for (from_id, link_type, to_id) in self.jira_graph.edges:
+                if node_id == from_id or node_id == to_id:
+                    found = True
+                    break
+            if found is False:
+                nodes_to_delete.append(node_id)
+        for node_to_delete in nodes_to_delete:
+            #print(node_to_delete)
+            self.jira_graph.nodes.remove(node_to_delete)
+        return self
 
     def group_by_field(self, root_node, field_name):
         graph       = self.jira_graph
@@ -89,7 +120,24 @@ class Jira_Graph_Filters:
                 if field_value in values:
                     new_nodes.append(key)
             self.jira_graph.set_nodes(new_nodes)      # this version as an interesting side effect since we are not removing the edges with no nodes
-            self.only_edges_with_both_nodes()    # remove edges that don't have both links
+            #self.only_edges_with_both_nodes()    # remove edges that don't have both links
+        return self
+
+    def only_with_projects_or_field_equal_to(self, field_name, values, projects_to_keep=None, jira_fields=None):
+        if  field_name and values:
+            new_nodes = []
+            issues = self.jira_graph.get_nodes_issues(reload=True, fields=jira_fields)
+            for key, issue in issues.items():
+                project = issue.get('Project')
+                if projects_to_keep and project in projects_to_keep:
+                    new_nodes.append(key)
+                    continue
+                field_value = issue.get(field_name)
+                print(field_value)
+                if field_value in values:
+                    new_nodes.append(key)
+            self.jira_graph.set_nodes(new_nodes)      # this version as an interesting side effect since we are not removing the edges with no nodes
+            #self.only_edges_with_both_nodes()    # remove edges that don't have both links
         return self
 
 
