@@ -2,7 +2,7 @@ from hb_security_jupyter.data_utils.On_Resolve_Card_Color import On_Resolve_Card
 from osbot_jira.api.graph.Jira_Graph import Jira_Graph
 from osbot_jira.api.graph.Jira_Graph_View import Jira_Graph_View
 from osbot_jira.api.plantuml.views.Render_Puml__Jira_Graph import Render_Puml__Jira_Graph
-from osbot_utils.utils.Misc import unique
+from osbot_utils.utils.Misc import unique, date_time_now
 
 
 class Jira_Graph_Jql:
@@ -11,6 +11,7 @@ class Jira_Graph_Jql:
         self.jira_graph              = jira_graph or Jira_Graph()
         self.render_puml__jira_graph = None
         self.api_jira                = self.jira_graph.api_jira
+        self.issue_fields            = 'issuelinks,summary,issuetype'
         self.jql                     = jql
         self.jql_keys                = []
         self.projects_to_show        = None
@@ -145,9 +146,6 @@ class Jira_Graph_Jql:
         self.set_title(title)
         if footer:
             self.set_footer(footer)
-        else:
-            self.set_info_footer()
-
         return self
 
     def set_footer(self, value):
@@ -157,8 +155,9 @@ class Jira_Graph_Jql:
         return self
 
     def set_info_footer(self):
-        footer = f"JQL: {self.jql}  |  link_types: {self.link_types}  | depth: {self.depth}"
-        self.set_footer(footer)
+        if self.footer is None:
+            footer = f"JQL: <b>{self.jql}</b>  |  link_types: <b>{self.link_types}</b>  | depth: <b>{self.depth}</b> \\n # nodes: {len(self.jira_graph.nodes)}  | # edges: {len(self.jira_graph.edges)} | created at: <b>{date_time_now()}</b>"
+            self.set_footer(footer)
         return self
 
     def show_colors__entities(self):
@@ -186,25 +185,26 @@ class Jira_Graph_Jql:
                 legend_text += f"\t\t\t {link_type}\n"
             legend_text += "\tendlegend"
             self.jira_graph.extra_puml_lines += legend_text
+        return self
 
     def reload_issues_with_fields(self, fields=None):
         self.jira_graph.jira_get_nodes_issues(reload=True, fields=fields)
         return self
-    def create_jira_graph(self) -> Jira_Graph:
-        (
-            self.execute_jql()
-                .set_link_types(self.link_types)
-                .graph_expand(self.depth)
-                .filter_projects_to_show()
-                .filter_status_to_show()
-                .add_link_types_legend()
-        )
-        return self
+
+    def create_jira_graph(self):
+        return (self.execute_jql()
+                    .set_link_types(self.link_types)
+                    .graph_expand(self.depth)
+                    .filter_projects_to_show()
+                    .filter_status_to_show()
+                    .add_link_types_legend())
+
 
     def create_png(self):
-        self.create_jira_graph()
-        self.create_jira_graph_png()
-        return self
+        return (self.create_jira_graph()
+                    .reload_issues_with_fields(self.issue_fields)
+                    .set_info_footer()
+                    .create_jira_graph_png())
 
     def create_jira_graph_png(self):
         self.render_puml__jira_graph = (Render_Puml__Jira_Graph(self.jira_graph))
