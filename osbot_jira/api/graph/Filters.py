@@ -195,5 +195,5 @@ class Filters:
                         results.append(key)
 
         self.graph.set_nodes(results)
-        self.only_edges_with_both_nodes()
+        #self.only_edges_with_both_nodes()
         return self

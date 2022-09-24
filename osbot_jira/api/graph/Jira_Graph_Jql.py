@@ -22,7 +22,7 @@ class Jira_Graph_Jql:
         self.link_types              = None
         self.on_resolve_card_color   = None
         self.on_resolve_card_text    = None
-        self.title                   = None
+        self.title                   = ''
         self.footer                  = None
         self.show_project_icons      = False
         self.show_link_types_legend  = False
@@ -64,6 +64,12 @@ class Jira_Graph_Jql:
     def get_jira_graph(self):
         return self.jira_graph
 
+    def get_edges(self):
+        return self.jira_graph.edges
+
+    def get_nodes(self):
+        return self.jira_graph.nodes
+
     def set_arrow_font_size(self, value):
         return self.set_skin_param('ArrowFontSize', value)
 
@@ -72,6 +78,10 @@ class Jira_Graph_Jql:
 
     def set_depth(self, depth):
         self.depth = depth
+        return self
+
+    def set_issue_fields(self, fields):
+        self.issue_fields = fields
         return self
 
     def set_jql(self, jql):
@@ -164,8 +174,8 @@ class Jira_Graph_Jql:
         return self.set_on_resolve_card_color(On_Resolve_Card_Color.for_entities_and_projects_and_nist)
 
     def filter_projects_to_show(self):
-        (self.jira_graph.filter().only_show_issue_types(issue_types=self.projects_to_show)
-                                 .only_edges_with_both_nodes())
+        self.jira_graph.filter().only_show_issue_types(issue_types=self.projects_to_show)
+                                 #.only_edges_with_both_nodes())
         return self
 
     def filter_status_to_show(self):
@@ -185,6 +195,10 @@ class Jira_Graph_Jql:
                 legend_text += f"\t\t\t {link_type}\n"
             legend_text += "\tendlegend"
             self.jira_graph.extra_puml_lines += legend_text
+        return self
+
+    def add_nodes(self, keys):
+        self.jira_graph.add_nodes(keys)
         return self
 
     def reload_issues_with_fields(self, fields=None):

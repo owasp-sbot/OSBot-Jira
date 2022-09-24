@@ -171,7 +171,7 @@ class API_Jira_Rest:
 
     def convert_issue(self, issue_raw):
         if issue_raw:
-            skip_fields    = ['resolution', 'votes','worklog','watches','comment',
+            skip_fields    = [ 'issuerestriction','resolution', 'votes','worklog','watches','comment',
                               'iconUrl','fixVersions', 'customfield_14238',
                               'issuelinks', 'timetracking'] # '% complete'
             skip_types       = ['any','progress','option-with-child']
@@ -199,7 +199,6 @@ class API_Jira_Rest:
 
                             if issue_type not in skip_types:
                                 issue_name = field.get('name')
-
                                 if issue_type in use_display_name: value = value.get('displayName')
                                 elif issue_type in use_name      : value = value.get('name')
                                 elif issue_type in use_value     : value = value

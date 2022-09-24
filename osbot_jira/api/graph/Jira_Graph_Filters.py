@@ -233,5 +233,5 @@ class Jira_Graph_Filters:
                         results.append(key)
 
         self.jira_graph.set_nodes(results)
-        self.only_edges_with_both_nodes()
+        #self.only_edges_with_both_nodes()
         return self

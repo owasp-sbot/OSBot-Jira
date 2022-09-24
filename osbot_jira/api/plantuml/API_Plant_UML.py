@@ -29,8 +29,8 @@ class API_Plant_UML:
             target_file = self.tmp_png_file
         data         = { "text"    :  puml }
         url          = requests.post(self.url_plantuml_server, data = data).url
-        print('----')
-        print(url)
+        #print('\n >>>> Plant UML URL:')
+        #print(url)
         url_png      = url.replace('/uml/', '/png/')
         response     = requests.get(url_png)
         with open(target_file, 'wb') as f:

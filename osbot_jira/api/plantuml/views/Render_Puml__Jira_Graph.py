@@ -98,7 +98,7 @@ class Render_Puml__Jira_Graph:
         return self
 
     def set_title(self, value):
-        self.title = value
+        self.title = value or ''
         return self
 
     def set_footer(self, value):
@@ -170,8 +170,17 @@ class Render_Puml__Jira_Graph:
         status          = issue.get('Status')
         status_color    = self.resolve_status_color(status)
         summary_raw     = issue.get('Summary')
-        summary_wrapped = '\\n='.join(textwrap.wrap(summary_raw, self.summary_wrap_at))
-        return f"={summary_wrapped}\\n<color:{status_color}>{status}</color>    |    {id_jira}"
+        if summary_raw:
+            summary_wrapped = '\\n='.join(textwrap.wrap(summary_raw, self.summary_wrap_at))
+            summary_wrapped = f"={summary_wrapped}\\n"
+        else:
+            summary_wrapped = ''
+
+        if status:
+            card_text = f"{summary_wrapped}<color:{status_color}>{status}</color>    |    {id_jira}"
+        else:
+            card_text = f"{summary_wrapped}{id_jira}"
+        return card_text
 
     def resolve_status_color(self, status):
         blue_status  = ['Hired']
