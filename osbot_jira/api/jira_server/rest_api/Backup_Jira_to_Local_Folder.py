@@ -71,7 +71,8 @@ class Backup_Jira_to_Local_Folder:
             self.save_as_json(data=issue_data, target_file=file_issue)
         #pprint(issues)
 
-
+    # todo: add support for incremental backup using changes since last sync (like what happens with the Elastic sync)
+    #       the model below actually downloads ALL files which is not effective (only good when wanting to do a full backup)
     def save_jira_data(self):       # executes the entire workflow
         with Duration(print_result=False) as duration:
             self.setup()

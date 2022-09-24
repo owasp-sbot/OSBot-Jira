@@ -8,7 +8,6 @@ from osbot_utils.utils.Files import folder_exists, file_contents, file_exists
 class test_Backup_Jira_to_Local_Folder(TestCase):
 
     def setUp(self) -> None:
-        Setup()
         self.backup_jira = Backup_Jira_to_Local_Folder()
 
     def test__init__(self):
