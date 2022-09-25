@@ -3,11 +3,13 @@ from osbot_utils.testing.Duration import Duration
 from osbot_utils.utils.Dev import pprint
 from osbot_utils.utils.Files import path_combine, create_folder, folder_exists, folder_delete_all, \
     folder_delete_recursively
-from osbot_utils.utils.Json import json_save_file
-from osbot_utils.utils.Misc import date_time_now
+from osbot_utils.utils.Json import json_save_file, json_load_file
+from osbot_utils.utils.Misc import date_time_now, date_time_now_less_time_delta, date_time_less_time_delta, \
+    str_to_date_time
 
 DEFAULT_BACKUP_LOCATION = '../../../../../_jira_backup'
 FILE_NAME_STATS         = 'backup_stats.json'
+FILE_NAME_LAST_UPDATE   = 'last_update.json'
 FOLDER_NAME_ISSUES      = 'issues'
 FOLDER_NAME_METADATA    = 'metadata'
 
@@ -38,7 +40,7 @@ class Backup_Jira_to_Local_Folder:
 
     # save methods
     def save_as_json(self, data, target_file):
-        json_save_file(python_object=data, path=target_file, pretty=True)
+        json_save_file(python_object=data, path=target_file, pretty=True, sort_keys=True)
 
     def save_stats(self, duration_seconds=-1):
         stats_data = { "date_backup_created": date_time_now(return_str=True),
@@ -61,15 +63,20 @@ class Backup_Jira_to_Local_Folder:
             self.save_as_json(data=project_data, target_file=file_project_metadata)
         return self
 
-    def save_issues(self):
-        self.issues = self.api_jira_rest.search(jql="", max_to_fetch=-1)
-        for issue_data in self.issues:
-            project_name   = issue_data.get('Project')
-            issue_key      = issue_data.get('Key')
-            project_folder = path_combine(self.issues_folder, project_name)
-            file_issue     = path_combine(project_folder, f"{issue_key}.json")
-            self.save_as_json(data=issue_data, target_file=file_issue)
-        #pprint(issues)
+    def save_all_issues(self):
+        self.issues = self.api_jira_rest.search(jql="", max_to_fetch=-1)        # only do this for all issues
+        self.save_issues(self.issues)
+
+    def save_issues(self, issues):
+        for issue in issues:
+            self.save_issue(issue)
+
+    def save_issue(self, issue):
+        project_name   = issue.get('Project')
+        issue_key      = issue.get('Key')
+        project_folder = path_combine(self.issues_folder, project_name)
+        file_issue     = path_combine(project_folder, f"{issue_key}.json")
+        self.save_as_json(data=issue, target_file=file_issue)
 
     # todo: add support for incremental backup using changes since last sync (like what happens with the Elastic sync)
     #       the model below actually downloads ALL files which is not effective (only good when wanting to do a full backup)
@@ -77,5 +84,30 @@ class Backup_Jira_to_Local_Folder:
         with Duration(print_result=False) as duration:
             self.setup()
             self.save_projects_metadata()
-            self.save_issues()
+            self.save_all_issues()
         return self.save_stats(duration_seconds = duration.seconds())
+
+    def save_jira_issues_updated_since_last_update(self):
+        file_last_update = path_combine(self.target_folder, FILE_NAME_LAST_UPDATE)            # todo refactor to separate method
+        last_update = json_load_file(file_last_update)
+        query_date  = last_update.get('updated_date')
+        if query_date is None:                          # if doesn't exist go back one day
+            days    = 1
+            hours   = 0
+            minutes = 0
+            query_date = date_time_now_less_time_delta(days=days, hours=hours, minutes=minutes, date_time_format='%Y-%m-%d %H:%M')
+        else:
+            date_time = str_to_date_time(query_date)            # do this so that we pick up changes made in the last minute
+            query_date = date_time_less_time_delta(date_time, minutes=1,date_time_format='%Y-%m-%d %H:%M')
+        return self.save_jira_issues_updated_since(query_date)
+
+    def save_jira_issues_updated_since(self,query_date):
+        issues     = self.api_jira_rest.search_updated_since_query_date(query_date)
+        update_data = { "updated_date": date_time_now(),
+                        "query_date"  : query_date     ,
+                        "issue_count" : len(issues)  }
+        if len(issues) > 0:
+            self.save_issues(issues)
+            file_last_update = path_combine(self.target_folder, FILE_NAME_LAST_UPDATE)      # todo refactor to separate method
+            self.save_as_json(data=update_data, target_file=file_last_update)
+        return update_data

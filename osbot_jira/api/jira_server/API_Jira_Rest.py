@@ -9,7 +9,7 @@ from osbot_utils.decorators.methods.cache_on_self import cache_on_self
 from osbot_utils.utils.Dev import Dev, pprint
 from osbot_utils.utils.Json import json_dumps
 from osbot_utils.utils.Lists import list_chunks
-from osbot_utils.utils.Misc import env_vars, list_set
+from osbot_utils.utils.Misc import env_vars, list_set, date_time_now_less_time_delta
 
 
 class API_Jira_Rest:
@@ -19,7 +19,6 @@ class API_Jira_Rest:
         self._config             = None
         self._fields             = None               # cache this value per request (since it is expensive and data doesn't change that much)
         self.log_requests        = False
-        self.print_rest_api_path = False
 
     def config(self):
         if self._config is None:
@@ -62,9 +61,8 @@ class API_Jira_Rest:
             if server.endswith('/') is False:
                 server +='/'
             path = '{0}rest/api/2/{1}'.format(server, path)
-        if self.print_rest_api_path:
-            print(f"jira_rest_api_path: {path}")
-        if self.log_requests: Dev.pprint('get', path)
+        if self.log_requests:
+            print('jira_rest_api_path:',method, path)
         if username and password:
             if method =='GET':
                 response = requests.get(path, auth=(username, password))
@@ -173,9 +171,9 @@ class API_Jira_Rest:
 
     def convert_issue(self, issue_raw):
         if issue_raw:
-            skip_fields    = [ 'issuerestriction','resolution', 'votes','worklog','watches','comment',
-                              'iconUrl','fixVersions', 'customfield_14238',
-                              'issuelinks', 'timetracking'] # '% complete'
+            skip_fields    = [ 'workratio','lastViewed','issuerestriction','resolution', 'votes','worklog','watches','comment',
+                               'iconUrl','fixVersions', 'customfield_14238',
+                               'issuelinks', 'timetracking'] # '% complete'
             skip_types       = ['any','progress','option-with-child']
             use_display_name = ['user']
             use_name         = ['issuetype','status','project','priority', 'securitylevel']
@@ -220,6 +218,7 @@ class API_Jira_Rest:
                                     print('>> ', field_id,issue_type)
                                     Dev.pprint(value)
                                     continue
+                                #print(issue_name,field_id)
                                 issue[issue_name] = value
                 return issue
         return {}
@@ -342,6 +341,14 @@ class API_Jira_Rest:
             else:
                 break
         return results
+
+    def search_updated_since(self, days=0, hours=0, minutes=0):
+        query_date = date_time_now_less_time_delta(days=days, hours=hours, minutes=minutes, date_time_format='%Y-%m-%d %H:%M')
+        return self.search_updated_since(query_date)
+
+    def search_updated_since_query_date(self, query_date):
+        jql = f'updated >= "{query_date}"'
+        return self.search(jql=jql)
 
     def search__return_keys(self, jql):
         result = self.search(jql=jql, fields = 'key', index_by='Key')
