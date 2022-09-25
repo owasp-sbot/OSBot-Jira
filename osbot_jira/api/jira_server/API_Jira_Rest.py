@@ -14,11 +14,12 @@ from osbot_utils.utils.Misc import env_vars, list_set
 
 class API_Jira_Rest:
     def __init__(self):
-        self.secrets_id    = 'GS_BOT_GS_JIRA'
-        self.jira_env_vars = {'JIRA_API_EMAIL', 'JIRA_API_TOKEN', 'JIRA_API_SERVER'}
-        self._config       = None
-        self._fields       = None               # cache this value per request (since it is expensive and data doesn't change that much)
-        self.log_requests  = False
+        self.secrets_id          = 'GS_BOT_GS_JIRA'
+        self.jira_env_vars       = {'JIRA_API_EMAIL', 'JIRA_API_TOKEN', 'JIRA_API_SERVER'}
+        self._config             = None
+        self._fields             = None               # cache this value per request (since it is expensive and data doesn't change that much)
+        self.log_requests        = False
+        self.print_rest_api_path = False
 
     def config(self):
         if self._config is None:
@@ -61,7 +62,8 @@ class API_Jira_Rest:
             if server.endswith('/') is False:
                 server +='/'
             path = '{0}rest/api/2/{1}'.format(server, path)
-        #print(path)
+        if self.print_rest_api_path:
+            print(f"jira_rest_api_path: {path}")
         if self.log_requests: Dev.pprint('get', path)
         if username and password:
             if method =='GET':
@@ -257,10 +259,7 @@ class API_Jira_Rest:
                       "issuetype"  : { "name": issue_type }}
         post_data = { "fields": fields | (extra_fields or {})}
 
-        # if extra_fields:
-        #     post_data.get('fields', {}).extend(extra_fields)
         return self.request_post(path, post_data)
-        return post_data
 
     def issue_update_field(self, issue_id, field,value):
         return self.issue_update_fields(issue_id, {field:value})
