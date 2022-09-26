@@ -41,7 +41,7 @@ class Jira_Graph:
         self.footer                = None
 
     def add_issue(self, key, issue):
-        if issue:
+        if issue is not None:
             if self.issues is None:
                 self.issues = {}
             self.issues[key] = issue
@@ -53,8 +53,11 @@ class Jira_Graph:
         return self
 
     def add_nodes(self, keys):
-        for key in keys:
-            self.add_node(key)
+        if type(keys) is str:                       # if case a string was sent instead of an array
+            self.add_node(keys)
+        else:
+            for key in keys:
+                self.add_node(key)
         return self
 
     def add_edge(self, from_key, link_type, to_key):
@@ -283,16 +286,32 @@ class Jira_Graph:
         self.edges = new_edges
         return self
 
-    def remove_node(self,key):
+    def remove_node(self,key, remove_edges=False, remove_from_nodes=False, remove_to_nodes=False):
+        from_nodes = []
+        to_nodes   = []
         if key in self.nodes:
             self.nodes.remove(key)
             for edge in list(self.edges):
-                (from_key, link_type, to_key) = edge
+                (from_key, _, to_key) = edge
                 if from_key == key or to_key == key:
-                    self.edges.remove(edge)
+                    from_nodes.append(from_key)
+                    to_nodes  .append(to_key)
+                    if remove_edges:
+                        self.edges.remove(edge)
+
         if self.issues and self.issues.get(key) is not None:
             del self.issues[key]
+
+        if remove_from_nodes:
+            for from_node in from_nodes:
+                self.remove_node(from_node, remove_edges=remove_edges)
+
+        if remove_to_nodes:
+            for to_node in to_nodes:
+                self.remove_node(to_node, remove_edges=remove_edges)
+
         return self
+
 
     def remove_nodes(self, keys):
         for key in keys:

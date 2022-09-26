@@ -5,7 +5,7 @@ from osbot_utils.utils.Files import path_combine, create_folder, folder_exists, 
     folder_delete_recursively
 from osbot_utils.utils.Json import json_save_file, json_load_file
 from osbot_utils.utils.Misc import date_time_now, date_time_now_less_time_delta, date_time_less_time_delta, \
-    str_to_date_time
+    str_to_date_time, list_set, list_index_by
 
 DEFAULT_BACKUP_LOCATION = '../../../../../_jira_backup'
 FILE_NAME_STATS         = 'backup_stats.json'
@@ -102,10 +102,12 @@ class Backup_Jira_to_Local_Folder:
         return self.save_jira_issues_updated_since(query_date)
 
     def save_jira_issues_updated_since(self,query_date):
-        issues     = self.api_jira_rest.search_updated_since_query_date(query_date)
-        update_data = { "updated_date": date_time_now(),
-                        "query_date"  : query_date     ,
-                        "issue_count" : len(issues)  }
+        issues      = self.api_jira_rest.search_updated_since_query_date(query_date)
+        issues_keys = list_set(list_index_by(issues, "Key"))
+        update_data = { "updated_date": date_time_now()  ,
+                        "query_date"  : query_date       ,
+                        "issue_count" : issues_keys      ,
+                        "issues_ids"  : issues           }
         if len(issues) > 0:
             self.save_issues(issues)
             file_last_update = path_combine(self.target_folder, FILE_NAME_LAST_UPDATE)      # todo refactor to separate method

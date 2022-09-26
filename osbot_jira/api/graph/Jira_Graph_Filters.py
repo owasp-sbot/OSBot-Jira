@@ -1,15 +1,13 @@
 from osbot_jira.api.graph.Jira_Graph import Jira_Graph
 from osbot_utils.utils import Misc
+from osbot_utils.utils.Dev import pprint
+from osbot_utils.utils.Misc import list_set, unique
+
 
 class Jira_Graph_Filters:
 
     def __init__(self, jira_graph: Jira_Graph):        
         self.jira_graph = jira_graph
-
-    def delete_nodes(self, nodes_id):       # todo: refactor into more efficient deletion
-        for node_id in nodes_id:
-            self.delete_node(node_id)
-        return self
 
     def delete_node(self, node_id):
         if node_id in self.jira_graph.nodes:
@@ -21,6 +19,23 @@ class Jira_Graph_Filters:
                     edges_to_remove.append(edge)
             for edge_to_remove in edges_to_remove:
                 self.jira_graph.edges.remove(edge_to_remove)
+        return self
+
+    def delete_nodes(self, nodes_id):       # todo: refactor into more efficient deletion
+        for node_id in nodes_id:
+            self.delete_node(node_id)
+        return self
+
+    def delete_nodes_from(self, field, value):
+        graph = self.jira_graph
+        issues = graph.issues
+        nodes_to_delete = []
+        for node_id in self.jira_graph.nodes:
+            node_issue  = issues.get(node_id, {})
+            field_value = node_issue.get(field)
+            if field_value == value:
+                nodes_to_delete.append(node_id)
+        self.delete_nodes(nodes_to_delete)
         return self
 
     def delete_nodes_with_no_edges(self):
@@ -38,9 +53,107 @@ class Jira_Graph_Filters:
             self.jira_graph.nodes.remove(node_to_delete)
         return self
 
+    def expand_edges_with_same__to_id(self, depth = 10):
+        for i in range(0,depth):
+            graph = self.jira_graph
+            issues = graph.issues
+            to_ids = {}
+            for edge in graph.edges:
+                (from_id, _, to_id) = edge
+                if to_ids.get(to_id) is None:
+                    to_ids[to_id] = []
+                to_ids[to_id].append(edge)
+            same_to_ids = {}
+            for key, edges in to_ids.items():
+                if len(edges) > 1:
+                    same_to_ids[key] = edges
+            new_edges       = []
+            new_nodes       = {}
+            nodes_to_remove = []
+
+            for key, edges in same_to_ids.items():
+                for edge in edges:
+                    (from_id, link_type, to_id) = edge
+                    new_unique_key = f"{from_id}__{to_id}"
+                    issue          = issues.get(to_id)
+
+                    new_nodes[new_unique_key] = issue
+                    new_edges.append((from_id       , link_type, new_unique_key))
+                    new_edges.append((new_unique_key, link_type, to_id         ))
+                    nodes_to_remove.append(to_id)
+                    graph.edges.remove(edge)
+
+            for key, issue in new_nodes.items():
+                graph.add_node(key, issue)
+
+            graph.edges.extend(new_edges)
+
+            index_by_from_id = {}
+            index_by_to_id   = {}
+            for edge in graph.edges:
+                (from_id, _, to_id) = edge
+                if index_by_from_id.get(from_id) is None:
+                    index_by_from_id[from_id] = []
+                index_by_from_id[from_id].append(edge)
+
+                if index_by_to_id.get(to_id) is None:
+                    index_by_to_id[to_id] = []
+                index_by_to_id[to_id].append(edge)
+
+            for node_to_remove in unique(nodes_to_remove):
+                from_ids_edges = index_by_from_id.get(node_to_remove, [])
+                to_ids_edges   = index_by_to_id.get  (node_to_remove, [])
+
+                for from_id_edge in from_ids_edges:
+                    (_,link_type, to_id) = from_id_edge
+                    for to_id_edge in to_ids_edges:
+                        (from_id,_,_) = to_id_edge
+                        graph.edges.append((from_id, link_type, to_id))
+            self.delete_nodes(nodes_to_remove)
+        return self
+    def group_by_link_type(self):
+        graph       = self.jira_graph
+        edges       = graph.edges
+        new_edges   = []
+        edges_by_link_type = {}
+        for edge in edges:
+            (_, link_type, _) = edge
+            if edges_by_link_type.get(link_type) is None:
+                edges_by_link_type[link_type] = []
+            edges_by_link_type[link_type].append(edge)
+
+        for link_type, edges in edges_by_link_type.items():
+            self.jira_graph.add_node(link_type, {})
+            for edge in edges:
+                (from_id, _, to_id) = edge
+                new_edges.append((from_id  , '', link_type))
+                new_edges.append((link_type, '', to_id))
+
+        graph.edges = unique(new_edges)
+        return self
+
+    def group_by_status(self, only_for_project=None):
+        issues = self.jira_graph.issues
+        graph  = self.jira_graph
+        new_nodes= []
+        new_edges = []
+        for edge in graph.edges:
+            (from_id, _, to_id) = edge
+            to_issue = issues.get(to_id, {})
+            status   = to_issue.get('Status')
+            if only_for_project and only_for_project != to_issue.get('Project'):
+                new_edges.append(edge)
+            else:
+                new_edges.append((from_id, '', status))
+                new_edges.append((status , '', to_id))
+                new_nodes.append(status)
+        graph.edges = unique(new_edges)
+        graph.nodes.extend(unique(new_nodes))
+        return self
+
     def group_by_field(self, root_node, field_name):
         graph       = self.jira_graph
-        issues      = graph.get_nodes_issues()  # resolve current node's issues
+        issues      = graph.get_nodes_issues()  # resolve current node's issues     # todo, this will not work with the current mode where have cached all issues in the issues field
         nodes       = graph.nodes               # save current nodes
         edges       = graph.edges               # save current edges
         graph.nodes = []                        # reset nodes
@@ -198,6 +311,7 @@ class Jira_Graph_Filters:
     def remove_nodes_with_issue_types(self, issue_types):
         return self.remove_field_equal_to('Issue Type', issue_types)
 
+    #todo: see if this filter still works
     def remove_nodes_from_projects(self, projects):
         return self.remove_field_equal_to('Project', projects)
 

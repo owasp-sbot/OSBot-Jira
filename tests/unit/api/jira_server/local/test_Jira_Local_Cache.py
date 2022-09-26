@@ -3,7 +3,7 @@ from importlib.util import find_spec
 from unittest import TestCase
 
 import osbot_jira
-from osbot_jira.api.jira_server.local.Jira_Local_Folder import Jira_Local_Folder
+from osbot_jira.api.jira_server.local.Jira_Local_Cache import Jira_Local_Cache
 from osbot_utils.utils.Dev import pprint
 from osbot_utils.utils.Files import folder_exists
 from osbot_utils.utils.Json import json_load_file
@@ -13,7 +13,7 @@ from osbot_utils.utils.Misc import list_set
 class test_Jira_Local_Folder(TestCase):
 
     def setUp(self) -> None:
-        self.jira_local_folder = Jira_Local_Folder()
+        self.jira_local_folder = Jira_Local_Cache()
 
     def test__init__(self):
         assert folder_exists(self.jira_local_folder.folder_osbot_jira   )

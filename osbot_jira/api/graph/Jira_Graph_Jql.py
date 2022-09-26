@@ -1,6 +1,7 @@
 from hb_security_jupyter.data_utils.On_Resolve_Card_Color import On_Resolve_Card_Color
 from osbot_jira.api.graph.Jira_Graph import Jira_Graph
 from osbot_jira.api.graph.Jira_Graph_View import Jira_Graph_View
+from osbot_jira.api.jira_server.local.Jira_Local_Cache import Jira_Local_Cache
 from osbot_jira.api.plantuml.views.Render_Puml__Jira_Graph import Render_Puml__Jira_Graph
 from osbot_utils.utils.Misc import unique, date_time_now
 
@@ -11,7 +12,7 @@ class Jira_Graph_Jql:
         self.jira_graph              = jira_graph or Jira_Graph()
         self.render_puml__jira_graph = None
         self.api_jira                = self.jira_graph.api_jira
-        self.issue_fields            = 'issuelinks,summary,issuetype'
+        self.issue_fields            = None                         # issues fields data are only reloaded when this value is set
         self.jql                     = jql
         self.jql_keys                = []
         self.projects_to_show        = None
@@ -34,6 +35,17 @@ class Jira_Graph_Jql:
         #     self.jira_graph.set_puml_link_types_to_add(issue_links)
         # if skin_params:
         #     self.jira_graph.set_skin_params(issue_links)
+        self.jira_graph.api_jira.log_requests = True
+
+    def add_node(self, key):
+        if key:
+            self.jira_graph.add_node(key)
+        return self
+
+    def remove_node(self, key, remove_edges=False, remove_from_nodes=False, remove_to_nodes=False):
+        if key:
+            self.jira_graph.remove_node(key, remove_edges=remove_edges, remove_from_nodes=remove_from_nodes, remove_to_nodes=remove_to_nodes)
+        return self
 
     def execute_jql(self):
         if self.jql:
@@ -64,11 +76,20 @@ class Jira_Graph_Jql:
     def get_jira_graph(self):
         return self.jira_graph
 
+    def get_issues(self):
+        return self.jira_graph.issues
+
     def get_edges(self):
         return self.jira_graph.edges
 
+    def get_edges_count(self):
+        return len(self.get_edges())
+
     def get_nodes(self):
         return self.jira_graph.nodes
+
+    def get_nodes_count(self):
+        return len(self.get_nodes())
 
     def set_arrow_font_size(self, value):
         return self.set_skin_param('ArrowFontSize', value)
@@ -146,6 +167,10 @@ class Jira_Graph_Jql:
         self.on_resolve_card_text = on_resolve_card_text
         return self
 
+    def set_issues(self, issues):
+        self.jira_graph.issues = issues
+        return self
+
     def set_title(self, value):
         self.title = f"\\n{value}\\n"
         self.set_skin_param('TitleFontSize', 75)
@@ -201,11 +226,12 @@ class Jira_Graph_Jql:
         self.jira_graph.add_nodes(keys)
         return self
 
-    def reload_issues_with_fields(self, fields=None):
-        self.jira_graph.jira_get_nodes_issues(reload=True, fields=fields)
+    def reload_issues_with_fields(self):
+        if self.issue_fields:                   # only reload if this field is set, note that when running with live queries this will have some performance implications for large number of nodes
+            self.jira_graph.jira_get_nodes_issues(reload=True, fields=self.issue_fields)
         return self
 
-    def create_jira_graph(self):
+    def render_jira_graph(self):
         return (self.execute_jql()
                     .set_link_types(self.link_types)
                     .graph_expand(self.depth)
@@ -214,11 +240,13 @@ class Jira_Graph_Jql:
                     .add_link_types_legend())
 
 
-    def create_png(self):
-        return (self.create_jira_graph()
-                    .reload_issues_with_fields(self.issue_fields)
-                    .set_info_footer()
-                    .create_jira_graph_png())
+    def render_and_create_png(self, create_png=True):
+        self.render_jira_graph()
+        if create_png:
+            (self.reload_issues_with_fields()
+                 .set_info_footer()
+                 .create_jira_graph_png())
+        return self
 
     def create_jira_graph_png(self):
         self.render_puml__jira_graph = (Render_Puml__Jira_Graph(self.jira_graph))
@@ -231,4 +259,16 @@ class Jira_Graph_Jql:
                                      .set_footer(self.footer)
                                      .render()
                                      .save_as_png())
+        return self
+
+    def print_nodes_edges_count(self):
+        print("******* Nodes and Edges count for current Jira Graph *********")
+        print(f"{self.get_nodes_count()} nodes | {self.get_edges_count()} edges")
+        return self
+
+
+    def use_cache(self, value=True):
+        if value:
+            cached_issues = Jira_Local_Cache().all_issues(index_by='Key')
+            self.set_issues(cached_issues)
         return self

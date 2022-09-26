@@ -1,6 +1,7 @@
 import osbot_jira
+from osbot_utils.decorators.lists.index_by import index_by
 from osbot_utils.utils.Dev import pprint
-from osbot_utils.utils.Files import path_combine, files_list, sub_folders, folders_names, folder_create
+from osbot_utils.utils.Files import path_combine, files_list, sub_folders, folders_names, folder_create, parent_folder
 from osbot_utils.utils.Json import json_load_file, json_save_file
 
 DEFAULT_JIRA_LOCATION       = '../_jira_backup'
@@ -10,10 +11,11 @@ FOLDER_NAME_METADATA        = 'metadata'
 FILE_NAME_STATS             = 'backup_stats.json'
 FILE_NAME_CACHE_ALL_ISSUES  = 'cache_all_issues.json'
 
-class Jira_Local_Folder:
+class Jira_Local_Cache:
 
     def __init__(self):
-        self.folder_osbot_jira    = osbot_jira.__path__.pop()
+        #self.folder_osbot_jira    = osbot_jira.__path__.pop()
+        self.folder_osbot_jira    = parent_folder(osbot_jira.__file__)
         self.folder_jira          = path_combine(self.folder_osbot_jira, DEFAULT_JIRA_LOCATION )
         self.folder_jira_issues   = path_combine(self.folder_jira, FOLDER_NAME_ISSUES    )
         self.folder_jira_metadata = path_combine(self.folder_jira, FOLDER_NAME_METADATA  )
@@ -30,6 +32,7 @@ class Jira_Local_Folder:
     def cache_create_all_issues(self):
         issues = self.load_all_issues()
         json_save_file(python_object=issues, path=self.path_cache_all_issues())
+        print(f"Re-created cache with {len(issues)} issues")
         return self
 
     def cache_get_all_issues(self):
@@ -50,3 +53,7 @@ class Jira_Local_Folder:
             issue = json_load_file(path_issue_file)
             issues.append(issue)
         return issues
+
+    @index_by
+    def all_issues(self):
+        return self.cache_get_all_issues()

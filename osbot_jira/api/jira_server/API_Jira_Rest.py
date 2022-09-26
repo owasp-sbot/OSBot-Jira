@@ -6,6 +6,7 @@ from osbot_aws.helpers.Lambda_Helpers import log_error
 from osbot_aws.apis.Secrets import Secrets                                  # todo: refactor this out of this class (so that we don't have a dependency in AWS
 from osbot_utils.decorators.lists.index_by import index_by
 from osbot_utils.decorators.methods.cache_on_self import cache_on_self
+from osbot_utils.testing.Duration import Duration
 from osbot_utils.utils.Dev import Dev, pprint
 from osbot_utils.utils.Json import json_dumps
 from osbot_utils.utils.Lists import list_chunks
@@ -231,17 +232,18 @@ class API_Jira_Rest:
         return self.convert_issue(issue_raw)
 
     def issues(self,issues_ids,fields=None):
-        chunk_size = 100                            # split the # of issues to fetch (to handle request_get and jira limitations (that happened when trying to fetch more than 250 issues
-        issues = {}
-        if fields is None:
-            fields = '*all'
+        with Duration(prefix="Fetch issues", print_result=False):
+            chunk_size = 100                            # split the # of issues to fetch (to handle request_get and jira limitations (that happened when trying to fetch more than 250 issues
+            issues = {}
+            if fields is None:
+                fields = '*all'
 
-        for chuck in list_chunks(list=issues_ids,split_by=chunk_size):
-            jql = f"key in {chuck}".replace('[', '(').replace(']', ')')
-            result = self.search(jql=jql, fields=fields)
-            for issue in result:
-                key = issue.get('Key')
-                issues[key] = issue
+            for chuck in list_chunks(list=issues_ids,split_by=chunk_size):
+                jql = f"key in {chuck}".replace('[', '(').replace(']', ')')
+                result = self.search(jql=jql, fields=fields)
+                for issue in result:
+                    key = issue.get('Key')
+                    issues[key] = issue
         return issues
 
         #for issue_id in issues_ids:
