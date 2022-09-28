@@ -1,3 +1,0 @@
-[submodule "OSBot-GraphDB/GraphSV-demo-data"]
-	path = OSBot-GraphDB/GraphSV-demo-data
-	url = git@github.com:owasp-sbot/GraphSV-demo-data.git
