@@ -129,14 +129,13 @@ class Render_Puml__Jira_Graph:
         if self.on_resolve_card_color:
             return self.on_resolve_card_color(issue)
         issue_type = upper(issue.get('Issue Type'))
-        if issue_type == 'PERSON'               : return 'lightblue'
+        if issue_type == 'PERSON'               : return 'azure'
         if issue_type == 'CONTROL'              : return 'lightgreen'
         if issue_type == 'PENTEST'              : return 'MistyRose'
         if issue_type == 'SQUAD'                : return 'LightGoldenRodYellow'
         if issue_type == 'SUPPLIER'             : return 'LightGrey'
         if issue_type == 'RISK'                 : return 'LightCoral'
         if issue_type == 'VULN'                 : return 'LightPink'
-        #if issue_type == 'PERSON'               : return 'LightSalmon'
         if issue_type == 'PROJECT'              : return 'LightCyan'
         if issue_type == 'TEAM'                 : return 'LightSkyBlue'
         if issue_type == 'ROLE'                 : return 'LightSteelBlue'
@@ -158,9 +157,13 @@ class Render_Puml__Jira_Graph:
         if issue_type == 'ACTION'               : return 'MediumAquaMarine'
         if issue_type == 'POLICY'               : return 'MintCream'
         if issue_type == 'DECISION'             : return 'Moccasin'
-        # if issue_type == '': return 'LightSeaGreen'
-        # if issue_type == '':  return 'Azure'
-        # if issue_type == '':  return 'Aquamarine'
+        if issue_type == 'RACI'                 : return 'LightSeaGreen'
+        if issue_type == 'QUESTION'             : return 'Azure'
+        if issue_type == 'SLACK'                : return 'MintCream'
+
+        # 'Aquamarine'
+        # if issue_type == '': return 'LightSalmon'
+        # if issue_type == '':  return 'lightblue'
 
         print(issue_type)
         return 'white'

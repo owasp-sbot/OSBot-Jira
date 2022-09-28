@@ -106,8 +106,8 @@ class Backup_Jira_to_Local_Folder:
         issues_keys = list_set(list_index_by(issues, "Key"))
         update_data = { "updated_date": date_time_now()  ,
                         "query_date"  : query_date       ,
-                        "issue_count" : issues_keys      ,
-                        "issues_ids"  : issues           }
+                        "issue_count" : len(issues_keys),
+                        "issues_ids"  : issues_keys     }
         if len(issues) > 0:
             self.save_issues(issues)
             file_last_update = path_combine(self.target_folder, FILE_NAME_LAST_UPDATE)      # todo refactor to separate method
