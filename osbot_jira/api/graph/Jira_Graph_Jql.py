@@ -1,4 +1,3 @@
-from hb_security_jupyter.data_utils.On_Resolve_Card_Color import On_Resolve_Card_Color
 from osbot_jira.api.graph.Jira_Graph import Jira_Graph
 from osbot_jira.api.graph.Jira_Graph_View import Jira_Graph_View
 from osbot_jira.api.jira_server.local.Jira_Local_Cache import Jira_Local_Cache
@@ -194,9 +193,6 @@ class Jira_Graph_Jql:
             footer = f"JQL: <b>{self.jql}</b>  |  link_types: <b>{self.link_types}</b>  | depth: <b>{self.depth}</b> \\n # nodes: {len(self.jira_graph.nodes)}  | # edges: {len(self.jira_graph.edges)} | created at: <b>{date_time_now()}</b>"
             self.set_footer(footer)
         return self
-
-    def show_colors__entities(self):
-        return self.set_on_resolve_card_color(On_Resolve_Card_Color.for_entities_and_projects_and_nist)
 
     def filter_projects_to_show(self):
         self.jira_graph.filter().only_show_issue_types(issue_types=self.projects_to_show)
