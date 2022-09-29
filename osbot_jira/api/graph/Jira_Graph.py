@@ -5,7 +5,6 @@ from osbot_utils.decorators.lists.index_by import index_by
 from osbot_jira.api.graph.GS_Graph_Puml import GS_Graph_Puml
 from osbot_jira.api.plantuml.Puml import Puml
 from osbot_jira.osbot_graph.Graph import Graph
-from osbot_utils.utils.Dev import pprint
 from osbot_utils.utils.Files import Files
 from osbot_utils.utils.Json import Json
 
@@ -103,43 +102,43 @@ class Jira_Graph:
                                 edges_from.append(key)
         return self
 
-    def add_linked_issues_of_types(self, link_types):
-        for link_type in link_types:
-            self.add_linked_issues_of_type(link_type)
-        return self
+    # def add_linked_issues_of_types(self, link_types):
+    #     for link_type in link_types:
+    #         self.add_linked_issues_of_type(link_type)
+    #     return self
 
     # todo: needs fixing since all_link_types doesn't exist anymore
-    def add_linked_issues_of_type(self, link_type):
-        link_type = link_type.strip()                                       # remove any spaces
-        mappings = self.all_link_types().get(link_type)
-        if mappings:
-            for key in list(self.nodes):                                    # for each key provided (it is important to pin the self.nodes here since that value is changed below)
-                linked_issues = mappings.get(key)
-                if linked_issues:
-                    for linked_issue in linked_issues:
-                        edge = (key, link_type, linked_issue)
-                        if not edge in self.edges:
-                            self.edges.append(edge)
-                            self.nodes.append(linked_issue)
-        return self
+    # def add_linked_issues_of_type(self, link_type):
+    #     link_type = link_type.strip()                                       # remove any spaces
+    #     mappings = self.all_link_types().get(link_type)
+    #     if mappings:
+    #         for key in list(self.nodes):                                    # for each key provided (it is important to pin the self.nodes here since that value is changed below)
+    #             linked_issues = mappings.get(key)
+    #             if linked_issues:
+    #                 for linked_issue in linked_issues:
+    #                     edge = (key, link_type, linked_issue)
+    #                     if not edge in self.edges:
+    #                         self.edges.append(edge)
+    #                         self.nodes.append(linked_issue)
+    #     return self
 
     # todo: needs fixing since api_issues doesn't exist in this class
-    def add_link_types_as_nodes(self, issue_types_to_ignore=None):
-        if issue_types_to_ignore is None:
-            issue_types_to_ignore = []
-        if self.issues is None:
-            self.issues = self.api_issues.issues(self.nodes)
-        issue_types_to_ignore.append('_all')
-        for key in self.nodes:
-            issue = self.issues.get(key)
-            if issue:
-                for link_type, items in issue['Issue Links'].items():
-                    if link_type not in issue_types_to_ignore:
-                        link_type_node_key = "{0} - {1}".format(key,link_type)
-                        for item in items:
-                            self.add_edge(key, "", link_type_node_key)
-                            self.add_edge(link_type_node_key , "" , item)
-        return self
+    # def add_link_types_as_nodes(self, issue_types_to_ignore=None):
+    #     if issue_types_to_ignore is None:
+    #         issue_types_to_ignore = []
+    #     if self.issues is None:
+    #         self.issues = self.api_issues.issues(self.nodes)
+    #     issue_types_to_ignore.append('_all')
+    #     for key in self.nodes:
+    #         issue = self.issues.get(key)
+    #         if issue:
+    #             for link_type, items in issue['Issue Links'].items():
+    #                 if link_type not in issue_types_to_ignore:
+    #                     link_type_node_key = "{0} - {1}".format(key,link_type)
+    #                     for item in items:
+    #                         self.add_edge(key, "", link_type_node_key)
+    #                         self.add_edge(link_type_node_key , "" , item)
+    #     return self
 
     # def add_nodes_from_epics(self):
     #     issues = self.jira_get_nodes_issues()
@@ -151,6 +150,22 @@ class Jira_Graph:
     #                 self.add_node(epic_key)
     #     return self
 
+    def edges_from(self, key):
+        edges_from = []
+        for edge in self.edges:
+            (_, _, to_id) = edge
+            if to_id == key:
+                edges_from.append(edge)
+        return edges_from
+
+    def edges_to(self, key):
+        edges_to = []
+        for edge in self.edges:
+            (from_id, _, to_id) = edge
+            if from_id == key:
+                edges_to.append(edge)
+        return edges_to
+
     def edges__link_types(self):
         return sorted(list(set([edge[1] for edge in self.edges])))
 
@@ -159,7 +174,13 @@ class Jira_Graph:
                  "edges" : self.edges}
 
     def get_nodes_issues(self,reload=False,fields=None):
-        return self.jira_get_issues(reload=reload, fields=fields, index_by='Key')
+        self.jira_get_issues(reload=reload, fields=fields, index_by='Key')
+        nodes_issues = {}
+        for node in self.nodes:
+            issue = self.issues.get(node)
+            if issue:
+                nodes_issues[node]=issue
+        return nodes_issues
 
     @index_by
     def jira_get_issues(self,reload=False,fields=None):                          # better name for the method
@@ -209,9 +230,9 @@ class Jira_Graph:
             issues_links[key] = issue_links
         return issues_links
 
-    def set_link_types_from_issues(self, issues):
-        self._link_types = self.api_issues.link_types_from_issues(issues.values(),issues.keys())
-        return self
+    # def set_link_types_from_issues(self, issues):
+    #     self._link_types = self.api_issues.link_types_from_issues(issues.values(),issues.keys())
+    #     return self
 
     def load(self, path):
         data = Json.load_file(path)
@@ -220,8 +241,21 @@ class Jira_Graph:
             self.edges = data['edges']
         return self
 
-    def nodes__ratings(self):
-        return self.nodes__field_values('Rating')
+    # def nodes__ratings(self):
+    #     return self.nodes__field_values('Rating')
+    def nodes_from(self, key):
+        nodes_from = []
+        for (from_id, _, to_id) in self.edges:
+            if to_id == key:
+                nodes_from.append(from_id)
+        return nodes_from
+
+    def nodes_to(self, key):
+        nodes_from = []
+        for (from_id, _, to_id) in self.edges:
+            if from_id == key:
+                nodes_from.append(to_id)
+        return nodes_from
 
     def nodes__field_values(self,field):
         values = []
@@ -286,36 +320,49 @@ class Jira_Graph:
         self.edges = new_edges
         return self
 
-    def remove_node(self,key, remove_edges=False, remove_from_nodes=False, remove_to_nodes=False):
-        from_nodes = []
-        to_nodes   = []
-        if key in self.nodes:
-            self.nodes.remove(key)
-            for edge in list(self.edges):
-                (from_key, _, to_key) = edge
-                if from_key == key or to_key == key:
-                    from_nodes.append(from_key)
-                    to_nodes  .append(to_key)
-                    if remove_edges:
-                        self.edges.remove(edge)
+    def delete_edge(self,edge):
+        if edge in self.edges:
+            self.edges.remove(edge)
+        return self
 
-        if self.issues and self.issues.get(key) is not None:
-            del self.issues[key]
+    def delete_edges(self, edges):
+        for edge in edges:
+            self.delete_edge(edge)
+        return self
 
-        if remove_from_nodes:
-            for from_node in from_nodes:
-                self.remove_node(from_node, remove_edges=remove_edges)
+    def delete_node(self, key, delete_edges=False, delete_from_nodes=False, delete_to_nodes=False):
+        self.filter().delete_node(key, delete_edges=delete_edges, delete_from_nodes=delete_from_nodes, delete_to_nodes=delete_to_nodes)
 
-        if remove_to_nodes:
-            for to_node in to_nodes:
-                self.remove_node(to_node, remove_edges=remove_edges)
+        # if key:
+        #     from_nodes = []
+        #     to_nodes   = []
+        #     if key in self.nodes:
+        #         self.nodes.remove(key)
+        #         for edge in list(self.edges):
+        #             (from_key, _, to_key) = edge
+        #             if from_key == key or to_key == key:
+        #                 from_nodes.append(from_key)
+        #                 to_nodes  .append(to_key)
+        #                 if remove_edges:
+        #                     self.edges.remove(edge)
+        #
+        #     if self.issues and self.issues.get(key) is not None:
+        #         del self.issues[key]
+        #
+        #     if remove_from_nodes:
+        #         for from_node in from_nodes:
+        #             self.remove_node(from_node, remove_edges=remove_edges)
+        #
+        #     if remove_to_nodes:
+        #         for to_node in to_nodes:
+        #             self.remove_node(to_node, remove_edges=remove_edges)
 
         return self
 
 
     def remove_nodes(self, keys):
         for key in keys:
-            self.remove_node(key)
+            self.delete_node(key)
         return self
 
     def remove_node_and_its_childen(self,key):
@@ -441,6 +488,10 @@ class Jira_Graph:
         filter = self.filter()
         filter.remove_nodes_from_projects(projects)
     # view
+
+    def query(self):
+        from osbot_jira.api.graph.Jira_Graph_Query import Jira_Graph_Query          # cannot be a global reference due to circular dependencies
+        return Jira_Graph_Query(jira_graph=self)
 
     def view_nodes(self,label_key=None,show_key=False, key_id='id', label_id='label'):
         nodes = []

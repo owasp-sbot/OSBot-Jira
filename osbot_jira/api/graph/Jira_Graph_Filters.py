@@ -9,21 +9,75 @@ class Jira_Graph_Filters:
     def __init__(self, jira_graph: Jira_Graph):        
         self.jira_graph = jira_graph
 
-    def delete_node(self, node_id):
-        if node_id in self.jira_graph.nodes:
-            self.jira_graph.nodes.remove(node_id)
-            edges_to_remove = []
-            for edge in self.jira_graph.edges:
-                (from_id, link_type, to_id) = edge
-                if node_id == from_id or node_id == to_id:
-                    edges_to_remove.append(edge)
-            for edge_to_remove in edges_to_remove:
-                self.jira_graph.edges.remove(edge_to_remove)
+    def colapse_node(self, key, include_from_links=False, include_to_links=True):
+        graph = self.jira_graph
+        edges_from      = graph.edges_from(key)
+        edges_to        = graph.edges_to(key)
+        edges_to_add    = []
+        edges_to_delete = []
+        for edge_from in edges_from:
+            (from_id, from_link_type,_) =  edge_from
+            edges_to_delete.append(edge_from)
+            for edge_to in edges_to:
+                (_,to_link_type, to_id) = edge_to
+                if include_from_links:
+                    edges_to_add.append((from_id, from_link_type, to_id))
+                if include_to_links:
+                    edges_to_add.append((from_id, to_link_type, to_id))
+                edges_to_delete.append(edge_to)
+        edges_to_add = unique(edges_to_add)
+        graph.add_edges   (edges_to_add   )
+        graph.delete_edges(edges_to_delete)
+        self.delete_node(key)
         return self
 
-    def delete_nodes(self, nodes_id):       # todo: refactor into more efficient deletion
+    def colapse_nodes(self, keys, include_from_links=False, include_to_links=True):
+        for key in keys:
+            self.colapse_node(key, include_from_links=include_from_links, include_to_links=include_to_links)
+        return self
+
+    def delete_node(self,key, delete_edges=False, delete_from_nodes=False, delete_to_nodes=False):
+        if key:
+            from_nodes = []
+            to_nodes   = []
+            if key in self.jira_graph.nodes:
+                self.jira_graph.nodes.remove(key)
+                for edge in list(self.jira_graph.edges):
+                    (from_key, _, to_key) = edge
+                    if from_key == key or to_key == key:
+                        from_nodes.append(from_key)
+                        to_nodes  .append(to_key)
+                        if delete_edges:
+                            self.jira_graph.edges.remove(edge)
+
+            if self.jira_graph.issues and self.jira_graph.issues.get(key) is not None:
+                del self.jira_graph.issues[key]
+
+            if delete_from_nodes:
+                for from_node in from_nodes:
+                    self.delete_node(from_node, delete_edges=delete_edges)
+
+            if delete_to_nodes:
+                for to_node in to_nodes:
+                    self.delete_node(to_node, delete_edges=delete_edges)
+
+        return self
+
+    # def delete_node(self, node_id):
+    #     if node_id in self.jira_graph.nodes:
+    #         self.jira_graph.nodes.remove(node_id)
+    #         edges_to_remove = []
+    #         for edge in self.jira_graph.edges:
+    #             (from_id, link_type, to_id) = edge
+    #             if node_id == from_id or node_id == to_id:
+    #                 edges_to_remove.append(edge)
+    #         for edge_to_remove in edges_to_remove:
+    #             self.jira_graph.edges.remove(edge_to_remove)
+    #     return self
+
+    def delete_nodes(self, nodes_id,delete_edges=False, delete_from_nodes=False, delete_to_nodes=False):       # todo: refactor into more efficient deletion
         for node_id in nodes_id:
-            self.delete_node(node_id)
+            self.delete_node(node_id, delete_edges=delete_edges, delete_from_nodes=delete_from_nodes,delete_to_nodes=delete_to_nodes)
         return self
 
     def delete_nodes_from(self, field, value):
@@ -109,8 +163,9 @@ class Jira_Graph_Filters:
                     for to_id_edge in to_ids_edges:
                         (from_id,_,_) = to_id_edge
                         graph.edges.append((from_id, link_type, to_id))
-            self.delete_nodes(nodes_to_remove)
+            self.delete_nodes(nodes_to_remove, delete_edges=True)
         return self
+
     def group_by_link_type(self):
         graph       = self.jira_graph
         edges       = graph.edges

@@ -41,9 +41,8 @@ class Jira_Graph_Jql:
             self.jira_graph.add_node(key)
         return self
 
-    def remove_node(self, key, remove_edges=False, remove_from_nodes=False, remove_to_nodes=False):
-        if key:
-            self.jira_graph.remove_node(key, remove_edges=remove_edges, remove_from_nodes=remove_from_nodes, remove_to_nodes=remove_to_nodes)
+    def delete_node(self, key, delete_edges=False, delete_from_nodes=False, delete_to_nodes=False):
+        self.jira_graph.delete_node(key, delete_edges=delete_edges, delete_from_nodes=delete_from_nodes, delete_to_nodes=delete_to_nodes)
         return self
 
     def execute_jql(self):
@@ -51,6 +50,12 @@ class Jira_Graph_Jql:
             self.jql_keys = self.api_jira.search__return_keys(jql=self.jql)
             self.jira_graph.add_nodes(self.jql_keys)
         return self
+
+    def filter(self):
+        return self.jira_graph.filter()
+
+    def query(self):
+        return self.jira_graph.query()
 
     def graph_expand(self, depth):
         self.jira_graph.add_all_linked_issues(depth=depth)
