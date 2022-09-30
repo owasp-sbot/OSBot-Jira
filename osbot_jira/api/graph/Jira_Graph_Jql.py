@@ -101,6 +101,9 @@ class Jira_Graph_Jql:
     def set_card_font_size(self, value):
         return self.set_skin_param('CardFontSize', value)
 
+    def set_edge_font_size(self, value):
+        return self.set_skin_param('ArrowFontSize', value)
+
     def set_depth(self, depth):
         self.depth = depth
         return self

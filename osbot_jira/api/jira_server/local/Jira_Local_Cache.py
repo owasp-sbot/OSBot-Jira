@@ -29,10 +29,11 @@ class Jira_Local_Cache:
         folder_create(self.folder_jira_cache    )
 
 
-    def cache_create_all_issues(self):
+    def cache_create_all_issues(self, print_message=False):
         issues = self.load_all_issues()
         json_save_file(python_object=issues, path=self.path_cache_all_issues())
-        print(f"Re-created cache with {len(issues)} issues")
+        if print_message:
+            print(f"Re-created cache with {len(issues)} issues")
         return self
 
     def cache_get_all_issues(self):

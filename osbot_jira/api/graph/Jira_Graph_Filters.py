@@ -36,6 +36,12 @@ class Jira_Graph_Filters:
             self.colapse_node(key, include_from_links=include_from_links, include_to_links=include_to_links)
         return self
 
+    def colapse_nodes_to(self, key):
+        nodes_to = self.jira_graph.nodes_to(key)
+        for key in nodes_to:
+            self.colapse_node(key)
+        return self
+
     def delete_node(self,key, delete_edges=False, delete_from_nodes=False, delete_to_nodes=False):
         if key:
             from_nodes = []

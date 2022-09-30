@@ -170,7 +170,7 @@ class Render_Puml__Jira_Graph:
 
     def resolve_card_text(self, issue):
         if self.on_resolve_card_text:
-            return self.on_resolve_card_text(issue)
+            return self.on_resolve_card_text(issue) or '.'      # PlantUml doesn't support empty nodes (so if value is None , return one space)
         id_jira         = issue.get('Key')
         status          = issue.get('Status')
         status_color    = self.resolve_status_color(status)
