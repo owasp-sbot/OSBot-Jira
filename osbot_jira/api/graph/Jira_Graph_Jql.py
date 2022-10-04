@@ -26,6 +26,8 @@ class Jira_Graph_Jql:
         self.footer                  = None
         self.show_project_icons      = False
         self.show_link_types_legend  = False
+        self.footer_font_size        = 35
+        self.title_font_size         = 75
         # if root_node:
         #     self.jira_graph.add_node(root_node)
         # if initial_nodes:
@@ -104,6 +106,19 @@ class Jira_Graph_Jql:
     def set_edge_font_size(self, value):
         return self.set_skin_param('ArrowFontSize', value)
 
+    def set_footer_font_size(self, value):
+        self.footer_font_size = value
+        return self
+
+    def set_title_font_size(self, value):
+        self.title_font_size = value
+        return self
+
+    def set_title_and_footer_font_size(self, value):
+        self.set_title_font_size(value)
+        self.set_footer_font_size(value)
+        return self
+
     def set_depth(self, depth):
         self.depth = depth
         return self
@@ -180,7 +195,7 @@ class Jira_Graph_Jql:
 
     def set_title(self, value):
         self.title = f"\\n{value}\\n"
-        self.set_skin_param('TitleFontSize', 75)
+        self.set_skin_param('TitleFontSize', self.title_font_size)
         self.set_skin_param('TitleFontColor', 'darkblue')
         return self
 
@@ -191,7 +206,7 @@ class Jira_Graph_Jql:
         return self
 
     def set_footer(self, value):
-        self.set_skin_param('FooterFontSize', 35)
+        self.set_skin_param('FooterFontSize', self.footer_font_size)
         self.set_skin_param('FooterFontColor', 'darkblue')
         self.footer = f"\\n\\n{value}\\n"
         return self
