@@ -160,12 +160,13 @@ class Render_Puml__Jira_Graph:
         if issue_type == 'RACI'                 : return 'LightSeaGreen'
         if issue_type == 'QUESTION'             : return 'Azure'
         if issue_type == 'SLACK'                : return 'MintCream'
+        if issue_type == 'DATE'                 : return 'LightBlue'
 
         # 'Aquamarine'
         # if issue_type == '': return 'LightSalmon'
         # if issue_type == '':  return 'lightblue'
 
-        print(issue_type)
+        print(f'[Render_Puml__Jira_Graph]no card color for: {issue_type}')
         return 'white'
 
     def resolve_card_text(self, issue):

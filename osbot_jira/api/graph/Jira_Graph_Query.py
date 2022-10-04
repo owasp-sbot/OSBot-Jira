@@ -21,6 +21,29 @@ class Jira_Graph_Query:
                 matches.append(node)
         return matches
 
-
     def edges(self):
         return self.jira_graph.edges
+
+    def nodes_adjacent_to_ids(self):
+        result = {}
+        for (from_id, _, to_id) in self.edges():
+            if result.get(from_id) is None:
+                result[from_id] = []
+            if result.get(to_id) is None:
+                result[to_id] = []
+            result[from_id].append(to_id)
+        return result
+
+    def nodes_with_no_adjacent_to_ids(self):
+        result = []
+        for to_id, adjacent_ids in self.nodes_adjacent_to_ids().items():
+            if len(adjacent_ids) == 0:
+                result.append(to_id)
+        return result
+
+    def nodes_with_adjacent_to_ids(self):
+        result = []
+        for to_id, adjacent_ids in self.nodes_adjacent_to_ids().items():
+            if len(adjacent_ids) > 0:
+                result.append(to_id)
+        return result

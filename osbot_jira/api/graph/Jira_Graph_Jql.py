@@ -198,7 +198,10 @@ class Jira_Graph_Jql:
 
     def set_info_footer(self):
         if self.footer is None:
-            footer = f"JQL: <b>{self.jql}</b>  |  link_types: <b>{self.link_types}</b>  | depth: <b>{self.depth}</b> \\n # nodes: {len(self.jira_graph.nodes)}  | # edges: {len(self.jira_graph.edges)} | created at: <b>{date_time_now()}</b>"
+            footer = ''
+            if self.jql:
+                footer = f"JQL: <b>{self.jql}</b>  |  "
+            footer += f"link_types: <b>{self.link_types}</b>  | depth: <b>{self.depth}</b> \\n # nodes: <b>{len(self.jira_graph.nodes)}</b>  | # edges: <b>{len(self.jira_graph.edges)}</b> | created at: <b>{date_time_now()}</b>"
             self.set_footer(footer)
         return self
 
