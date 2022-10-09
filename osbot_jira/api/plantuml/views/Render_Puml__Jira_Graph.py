@@ -134,7 +134,7 @@ class Render_Puml__Jira_Graph:
         if issue_type == 'PENTEST'              : return 'MistyRose'
         if issue_type == 'SQUAD'                : return 'LightGoldenRodYellow'
         if issue_type == 'SUPPLIER'             : return 'LightGrey'
-        if issue_type == 'RISK'                 : return 'LightCoral'
+        if issue_type == 'RISK'                 : return 'MistyRose'# 'LightCoral'
         if issue_type == 'VULN'                 : return 'LightPink'
         if issue_type == 'PROJECT'              : return 'LightCyan'
         if issue_type == 'TEAM'                 : return 'LightSkyBlue'
@@ -161,6 +161,7 @@ class Render_Puml__Jira_Graph:
         if issue_type == 'QUESTION'             : return 'Azure'
         if issue_type == 'SLACK'                : return 'MintCream'
         if issue_type == 'DATE'                 : return 'LightBlue'
+        if issue_type == 'PCIDSS'               : return 'MintCream'
 
         # 'Aquamarine'
         # if issue_type == '': return 'LightSalmon'
@@ -171,7 +172,9 @@ class Render_Puml__Jira_Graph:
 
     def resolve_card_text(self, issue):
         if self.on_resolve_card_text:
-            return self.on_resolve_card_text(issue) or '.'      # PlantUml doesn't support empty nodes (so if value is None , return one space)
+            card_text = self.on_resolve_card_text(issue)
+            if card_text is not None:                         # if on_resolve_card_text returns None, return the default card_text
+                return card_text
         id_jira         = issue.get('Key')
         status          = issue.get('Status')
         status_color    = self.resolve_status_color(status)

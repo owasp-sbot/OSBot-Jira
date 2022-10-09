@@ -81,8 +81,8 @@ class Puml:
         return self
 
     def save_tmp(self, use_lambda=True):
-        tmp_path_png = '/tmp/test_simple_diagram.png'
-        tmp_path_puml = '/tmp/test_simple_diagram.puml'
+        tmp_path_png = '/tmp/jira_graph.png'
+        tmp_path_puml = '/tmp/jira_graph.puml'
         ( self.png (path=tmp_path_png, use_lambda=use_lambda)
               .save(path=tmp_path_puml                      ))
         return tmp_path_png,tmp_path_puml

@@ -2,7 +2,7 @@ from osbot_jira.api.jira_server.API_Jira_Rest import API_Jira_Rest
 from osbot_utils.testing.Duration import Duration
 from osbot_utils.utils.Dev import pprint
 from osbot_utils.utils.Files import path_combine, create_folder, folder_exists, folder_delete_all, \
-    folder_delete_recursively
+    folder_delete_recursively, folder_create
 from osbot_utils.utils.Json import json_save_file, json_load_file
 from osbot_utils.utils.Misc import date_time_now, date_time_now_less_time_delta, date_time_less_time_delta, \
     str_to_date_time, list_set, list_index_by
@@ -76,6 +76,7 @@ class Backup_Jira_to_Local_Folder:
         issue_key      = issue.get('Key')
         project_folder = path_combine(self.issues_folder, project_name)
         file_issue     = path_combine(project_folder, f"{issue_key}.json")
+        folder_create(project_folder)               # make sure folder exists
         self.save_as_json(data=issue, target_file=file_issue)
 
     # todo: add support for incremental backup using changes since last sync (like what happens with the Elastic sync)
