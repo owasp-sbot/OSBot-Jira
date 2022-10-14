@@ -9,7 +9,7 @@ class Plotly_ICicle:
         self.figure            = None
         self.icicle            = None
         self.jpg_scale         = 1.0
-        self.jpg_path          = f"/tmp/plotly.jpg"
+        self.jpg_path          = f"/tmp/icicle-graph.jpg"
         self.issue_value_key   = 'Summary'
         #self.colorscale        = ['lightBlue','darkBlue']
         self.text_color        = "black"
