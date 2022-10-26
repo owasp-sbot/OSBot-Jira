@@ -2,32 +2,34 @@ from osbot_jira.api.graph.Jira_Graph import Jira_Graph
 from osbot_jira.api.graph.Jira_Graph_View import Jira_Graph_View
 from osbot_jira.api.jira_server.local.Jira_Local_Cache import Jira_Local_Cache
 from osbot_jira.api.plantuml.views.Render_Puml__Jira_Graph import Render_Puml__Jira_Graph
-from osbot_utils.utils.Misc import unique, date_time_now
+from osbot_utils.utils.Lists import list_chunks
+from osbot_utils.utils.Misc import unique, date_time_now, word_wrap_escaped, list_set
 
 
 class Jira_Graph_Jql:
 
     def __init__(self, jql = None, jira_graph=None):
-        self.jira_graph              = jira_graph or Jira_Graph()
-        self.render_puml__jira_graph = None
-        self.api_jira                = self.jira_graph.api_jira
-        self.issue_fields            = None                         # issues fields data are only reloaded when this value is set
-        self.jql                     = jql
-        self.jql_keys                = []
-        self.projects_to_show        = None
-        self.status_to_show          = None
-        self.skin_params             = {}
-        self.depth                   = 1
-        self.summary_wrap_at         = 50
-        self.link_types              = None
-        self.on_resolve_card_color   = None
-        self.on_resolve_card_text    = None
-        self.title                   = ''
-        self.footer                  = None
-        self.show_project_icons      = False
-        self.show_link_types_legend  = False
-        self.footer_font_size        = 35
-        self.title_font_size         = 75
+        self.jira_graph               = jira_graph or Jira_Graph()
+        self.render_puml__jira_graph  = None
+        self.api_jira                 = self.jira_graph.api_jira
+        self.issue_fields             = None                         # issues fields data are only reloaded when this value is set
+        self.jql                      = jql
+        self.jql_keys                 = []
+        self.projects_to_show         = None
+        self.status_to_show           = None
+        self.skin_params              = {}
+        self.depth                    = 1
+        self.summary_wrap_at          = 50
+        self.link_types               = None
+        self.link_types_to_ignore     = None
+        self.on_resolve_card_color    = None
+        self.on_resolve_card_text     = None
+        self.title                    = ''
+        self.footer                   = None
+        self.show_project_icons       = False
+        self.show_link_types_legend   = False
+        self.footer_font_size         = 35
+        self.title_font_size          = 75
         # if root_node:
         #     self.jira_graph.add_node(root_node)
         # if initial_nodes:
@@ -59,7 +61,7 @@ class Jira_Graph_Jql:
     def query(self):
         return self.jira_graph.query()
 
-    def graph_expand(self, depth):
+    def graph_expand(self, depth=1):
         self.jira_graph.add_all_linked_issues(depth=depth)
         self.jira_graph.get_nodes_issues()                 # see if we need to do this
         return self
@@ -70,14 +72,10 @@ class Jira_Graph_Jql:
     def render_png__schema(self):
         jira_graph_view = Jira_Graph_View(jira_graph=self.jira_graph)
         schema_graph = jira_graph_view.create_schema_graph()
-        #schema_graph.set_puml_left_to_right(False)
-        schema_graph.set_skin_param('linetype', 'polyline')
-        #schema_graph.set_skin_param('linetype', 'ortho')
+        schema_graph.set_skin_param('linetype', 'polyline')  # ortho
         schema_graph.render_puml_and_save_tmp(use_lambda=False)
         return schema_graph
 
-    def filter(self):
-        return self.jira_graph.filter()
 
     def get_jira_graph(self):
         return self.jira_graph
@@ -141,6 +139,7 @@ class Jira_Graph_Jql:
         return self
 
     def set_link_types_to_ignore(self, link_types):
+        self.link_types_to_ignore = link_types
         self.jira_graph.set_puml_link_types_to_ignore(link_types)
         return self
 
@@ -216,7 +215,15 @@ class Jira_Graph_Jql:
             footer = ''
             if self.jql:
                 footer = f"JQL: <b>{self.jql}</b>  |  "
-            footer += f"link_types: <b>{self.link_types}</b>  | depth: <b>{self.depth}</b> \\n # nodes: <b>{len(self.jira_graph.nodes)}</b>  | # edges: <b>{len(self.jira_graph.edges)}</b> | created at: <b>{date_time_now()}</b>"
+            if self.link_types:
+                footer += f"Link types to follow: <b>{self.link_types}</b>  |  "
+            if self.link_types_to_ignore:
+                footer += f"Link types to Ignore: "
+                for chunk in list_chunks(self.link_types_to_ignore, 3):
+                    print(chunk)
+                    footer += f"<b>{chunk}</b> \\n"
+                footer += ' | '
+            footer += f"depth: <b>{self.depth}</b> | # nodes: <b>{len(self.jira_graph.nodes)}</b>  | # edges: <b>{len(self.jira_graph.edges)}</b> | created at: <b>{date_time_now()}</b>"
             self.set_footer(footer)
         return self
 
@@ -294,3 +301,4 @@ class Jira_Graph_Jql:
             cached_issues = Jira_Local_Cache().all_issues(index_by='Key')
             self.set_issues(cached_issues)
         return self
+

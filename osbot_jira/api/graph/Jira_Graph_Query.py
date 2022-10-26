@@ -24,6 +24,15 @@ class Jira_Graph_Query:
     def edges(self):
         return self.jira_graph.edges
 
+    def edges_from_id(self, id):
+        result = {}
+        for (from_id, link_type, to_id) in self.edges():
+            if from_id == id:
+                if result.get(link_type) is None:
+                    result[link_type] = []
+                result[link_type].append(to_id)
+        return result
+
     def nodes_adjacent_to_ids(self):
         result = {}
         for (from_id, _, to_id) in self.edges():
