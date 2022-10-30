@@ -2,6 +2,7 @@ from osbot_jira.api.graph.Jira_Graph import Jira_Graph
 from osbot_jira.api.graph.Jira_Graph_View import Jira_Graph_View
 from osbot_jira.api.jira_server.local.Jira_Local_Cache import Jira_Local_Cache
 from osbot_jira.api.plantuml.views.Render_Puml__Jira_Graph import Render_Puml__Jira_Graph
+from osbot_utils.utils.Json import json_dumps
 from osbot_utils.utils.Lists import list_chunks
 from osbot_utils.utils.Misc import unique, date_time_now, word_wrap_escaped, list_set
 
@@ -9,27 +10,31 @@ from osbot_utils.utils.Misc import unique, date_time_now, word_wrap_escaped, lis
 class Jira_Graph_Jql:
 
     def __init__(self, jql = None, jira_graph=None):
-        self.jira_graph               = jira_graph or Jira_Graph()
-        self.render_puml__jira_graph  = None
-        self.api_jira                 = self.jira_graph.api_jira
-        self.issue_fields             = None                         # issues fields data are only reloaded when this value is set
-        self.jql                      = jql
-        self.jql_keys                 = []
-        self.projects_to_show         = None
-        self.status_to_show           = None
-        self.skin_params              = {}
-        self.depth                    = 1
-        self.summary_wrap_at          = 50
-        self.link_types               = None
-        self.link_types_to_ignore     = None
-        self.on_resolve_card_color    = None
-        self.on_resolve_card_text     = None
-        self.title                    = ''
-        self.footer                   = None
-        self.show_project_icons       = False
-        self.show_link_types_legend   = False
-        self.footer_font_size         = 35
-        self.title_font_size          = 75
+        self.jira_graph                   = jira_graph or Jira_Graph()
+        self.render_puml__jira_graph      = None
+        self.api_jira                     = self.jira_graph.api_jira
+        self.issue_fields                 = None                         # issues fields data are only reloaded when this value is set
+        self.jql                          = jql
+        self.jql_keys                     = []
+        self.projects_to_show             = None
+        self.status_to_show               = None
+        self.skin_params                  = {}
+        self.depth                        = 1
+        self.summary_wrap_at              = 50
+        self.link_types                   = None
+        self.link_types_to_ignore         = None
+        self.on_resolve_card_color        = None
+        self.on_resolve_card_text         = None
+        self.title                        = ''
+        self.footer                       = None
+        self.show_project_icons           = False
+        self.show_link_types_legend       = False
+        self.show_link_types_as_notes     = False
+        self.show_summary_in_notes        = False
+        self.show_existing_edges_in_notes = False
+        self.link_types_as_notes_position = 'bottom'  # bottom, top, left, right
+        self.footer_font_size             = 35
+        self.title_font_size              = 75
         # if root_node:
         #     self.jira_graph.add_node(root_node)
         # if initial_nodes:
@@ -81,7 +86,7 @@ class Jira_Graph_Jql:
         return self.jira_graph
 
     def get_issues(self):
-        return self.jira_graph.issues
+        return self.jira_graph.issues or {}
 
     def get_edges(self):
         return self.jira_graph.edges
@@ -94,6 +99,26 @@ class Jira_Graph_Jql:
 
     def get_nodes_count(self):
         return len(self.get_nodes())
+
+    def issue(self, issue_id):
+        return self.get_issues().get(issue_id)
+
+    def issue__linked_issues(self, issue_id, link_type=None):
+        linked_issues = self.issue(issue_id).get('Issue Links')
+        if link_type:
+            return linked_issues.get(link_type)
+        return linked_issues
+
+    def issues(self, issues_ids):
+        issues_data = {}
+        for issue_id in issues_ids:
+            issues_data[issue_id] = self.issue(issue_id)
+        return issues_data
+
+    def show_links(self, show_links_as_notes=True, show_existing_edges_in_notes=False, show_summary_in_notes=False):
+        self.set_show_links_as_notes         (show_links_as_notes         )
+        self.set_show_existing_edges_in_notes(show_existing_edges_in_notes)
+        self.set_show_summary_in_notes       (show_summary_in_notes       )
 
     def set_arrow_font_size(self, value):
         return self.set_skin_param('ArrowFontSize', value)
@@ -172,6 +197,18 @@ class Jira_Graph_Jql:
         self.show_link_types_legend = value
         return self
 
+    def set_show_links_as_notes(self, value=True):
+        self.show_link_types_as_notes = value
+        return self
+
+    def set_show_summary_in_notes(self, value=True):
+        self.show_summary_in_notes = value
+        return self
+
+    def set_show_existing_edges_in_notes(self, value=True):
+        self.show_existing_edges_in_notes = value
+        return self
+
     def set_show_project_icons(self, value=True):
         self.show_project_icons = value
         return self
@@ -198,8 +235,9 @@ class Jira_Graph_Jql:
         self.set_skin_param('TitleFontColor', 'darkblue')
         return self
 
-    def set_title_and_footer(self, title, footer=None):
-        self.set_title(title)
+    def set_title_and_footer(self, title=None, footer=None):
+        if title:
+            self.set_title(title)
         if footer:
             self.set_footer(footer)
         return self
@@ -236,18 +274,64 @@ class Jira_Graph_Jql:
         self.jira_graph.filter().only_with_field_equal_to('Status', self.status_to_show)
         return self
 
+    def add_link_types_as_notes(self):
+        issues = self.get_issues()
+        edges  = self.jira_graph.edges
+        if self.show_link_types_as_notes:
+            self.jira_graph.notes.clear()  # removes previous notes
+            for link_key, node in self.jira_graph.get_nodes_issues().items():
+                key_id           = link_key.replace('-', '_')    # fix key to PlantUml ID
+                issue_links      = node.get('Issue Links')
+                notes_text = ""
+                for link_type, keys in issue_links.items():
+                    link_type_text = ""
+                    for key in keys:
+                        if self.show_existing_edges_in_notes is False:
+                            edge = (link_key, link_type, key)
+                            if edge in edges:
+                                continue
+                        link_type_text += f"\t- {key}"
+                        if self.show_summary_in_notes:
+                            issue = issues.get(key,{})
+                            summary = issue.get('Summary','')
+                            link_type_text += f" - {summary}"
+                        link_type_text += "\n"
+                    if link_type_text != "":
+                        notes_text += f"\n={link_type}\n{link_type_text}\n"
+                if notes_text != "":
+                    self.jira_graph.notes.append((self.link_types_as_notes_position, key_id, notes_text))
+
     def add_link_types_legend(self):
         if self.show_link_types_legend:
-            all_link_types = []
-            for from_id, link_type, to_id in self.jira_graph.edges:
-                all_link_types.append(link_type)
+            link_types_in_edges = []
+            link_types_not_used = []
 
-            unique_link_types = unique(all_link_types)
-            legend_text = "\tlegend top left\n" + \
-                          f"\t\t={len(unique_link_types)} unique links types in Graph\n\n"
-            for link_type in unique_link_types:
+            legend_text = "\tlegend top left\n"
+
+            #link_types_in_edges
+            for _, link_type, _ in self.jira_graph.edges:
+                link_types_in_edges.append(link_type)
+            link_types_in_edges = unique(link_types_in_edges)
+
+            legend_text += f"\t\t={len(link_types_in_edges)} link types used\n\n"
+
+            for link_type in unique(link_types_in_edges):
                 legend_text += f"\t\t\t {link_type}\n"
-            legend_text += "\tendlegend"
+
+            #link_types_not_used
+            for key, node in self.jira_graph.get_nodes_issues().items():
+                for issue_link in node.get('Issue Links'):
+                    if issue_link not in link_types_in_edges:
+                        link_types_not_used.append(issue_link)
+
+            link_types_not_used = unique(link_types_not_used)
+
+            legend_text += f"\n\t\t={len(link_types_not_used)} link types NOT used\n\n"
+
+            for link_type in unique(link_types_not_used):
+                legend_text += f"\t\t\t {link_type}\n"
+
+            legend_text += "\tendlegend\n"
             self.jira_graph.extra_puml_lines += legend_text
         return self
 
@@ -266,7 +350,8 @@ class Jira_Graph_Jql:
                     .graph_expand(self.depth)
                     .filter_projects_to_show()
                     .filter_status_to_show()
-                    .add_link_types_legend())
+                    .add_link_types_legend()
+                    .add_link_types_as_notes())
 
 
     def render_and_create_png(self, create_png=True):
@@ -296,9 +381,29 @@ class Jira_Graph_Jql:
         return self
 
 
+    def puml_code(self):
+        return self.jira_graph.get_puml()
+
     def use_cache(self, value=True):
         if value:
             cached_issues = Jira_Local_Cache().all_issues(index_by='Key')
             self.set_issues(cached_issues)
         return self
 
+    # def export_to_csv(self, root_key):
+    #     edges    = self.query().edges_from_id(root_key)
+    #     headers  = ['key']
+    #     headers.extend(list_set(edges))
+    #     cells    = []
+    #     csv_data = [headers, cells]
+    #     for link_type, values in edges.items():
+    #         row = {'key': root_key }
+    #         for value in values:
+    #             row[link_type] = value
+    #         #print(row)
+    #
+    #     import csv
+    #     from osbot_utils.utils.Csv import load_csv_from_iterable
+    #     return load_csv_from_iterable(cells)
+    #     csv_reader = csv.DictReader(csv_data, delimiter=',')
+    #     return csv_reader

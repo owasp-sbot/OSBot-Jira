@@ -1,6 +1,5 @@
 from osbot_jira.api.graph.Jira_Graph import Jira_Graph
 from osbot_utils.utils import Misc
-from osbot_utils.utils.Dev import pprint
 from osbot_utils.utils.Misc import list_set, unique
 
 

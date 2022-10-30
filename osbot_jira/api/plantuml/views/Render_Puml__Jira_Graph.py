@@ -161,11 +161,13 @@ class Render_Puml__Jira_Graph:
         if issue_type == 'QUESTION'             : return 'Azure'
         if issue_type == 'SLACK'                : return 'MintCream'
         if issue_type == 'DATE'                 : return 'LightBlue'
-        if issue_type == 'PCIDSS'               : return 'MintCream'
+        if issue_type == 'PCIDSS'               : return 'MintCream' # duplicated
+        if issue_type == 'EVIDENCE'             : return 'lightblue'
+        if issue_type == 'RELEASE'              : return 'LightBlue' # duplicated
 
         # 'Aquamarine'
         # if issue_type == '': return 'LightSalmon'
-        # if issue_type == '':  return 'lightblue'
+        # if issue_type == '':  return ''
 
         print(f'[Render_Puml__Jira_Graph]no card color for: {issue_type}')
         return 'white'
