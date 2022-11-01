@@ -73,7 +73,7 @@ class Plotly_ICicle:
         def get_color(jira_id):
             if self.on_add_color:
                 issue = issues.get(jira_id, {})
-                return self.on_add_color(jira_id, issue)
+                return self.on_add_color(issue)
             return self.marker_color
 
         issues = jira_graph.issues or {}

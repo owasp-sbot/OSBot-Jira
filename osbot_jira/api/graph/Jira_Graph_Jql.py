@@ -85,8 +85,16 @@ class Jira_Graph_Jql:
     def get_jira_graph(self):
         return self.jira_graph
 
-    def get_issues(self):
+    def get_issues(self, just_nodes_issues=True):
+        if just_nodes_issues:
+            return self.jira_graph.get_nodes_issues()
         return self.jira_graph.issues or {}
+
+    def get_issue(self, issue_id, just_nodes_issues=True):
+        if just_nodes_issues:
+            if issue_id not in self.get_nodes():
+                return {}
+        return self.jira_graph.issues.get(issue_id, {})
 
     def get_edges(self):
         return self.jira_graph.edges
@@ -101,7 +109,7 @@ class Jira_Graph_Jql:
         return len(self.get_nodes())
 
     def issue(self, issue_id):
-        return self.get_issues().get(issue_id)
+        return self.get_issue(issue_id)
 
     def issue__linked_issues(self, issue_id, link_type=None):
         linked_issues = self.issue(issue_id).get('Issue Links')
@@ -275,7 +283,7 @@ class Jira_Graph_Jql:
         return self
 
     def add_link_types_as_notes(self):
-        issues = self.get_issues()
+        issues = self.get_issues(just_nodes_issues=False)
         edges  = self.jira_graph.edges
         if self.show_link_types_as_notes:
             self.jira_graph.notes.clear()  # removes previous notes

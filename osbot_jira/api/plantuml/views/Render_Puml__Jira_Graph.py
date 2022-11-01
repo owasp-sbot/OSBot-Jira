@@ -164,6 +164,7 @@ class Render_Puml__Jira_Graph:
         if issue_type == 'PCIDSS'               : return 'MintCream' # duplicated
         if issue_type == 'EVIDENCE'             : return 'lightblue'
         if issue_type == 'RELEASE'              : return 'LightBlue' # duplicated
+        if issue_type == 'APPROVAL'              : return 'Ivory'    # duplicated
 
         # 'Aquamarine'
         # if issue_type == '': return 'LightSalmon'

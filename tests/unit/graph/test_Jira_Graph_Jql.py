@@ -64,7 +64,7 @@ class test_Jira_Graph_Jql(TestCase):
     #     self.jira_graph_jql.use_cache(True)
     #     self.jira_graph_jql.add_node(key)
     #     self.jira_graph_jql.graph_expand(2)
-    # 
+    #
     #     #self.jira_graph_jql.render_png()
     #     result = self.jira_graph_jql.export_to_csv(root_key=key)
     #     pprint(result)

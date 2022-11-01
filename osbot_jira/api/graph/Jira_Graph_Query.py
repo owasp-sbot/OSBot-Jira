@@ -24,6 +24,16 @@ class Jira_Graph_Query:
     def edges(self):
         return self.jira_graph.edges
 
+    def edges_by_link_type(self, link_type=None):
+        result = {}
+        for (from_id, edge_link_type, to_id) in self.edges():
+            if result.get(edge_link_type) is None:
+                result[edge_link_type] = []
+            result[edge_link_type].append((from_id, to_id ))
+        if link_type:
+            return result.get(link_type,[])
+        return result
+
     def edges_from_id(self, id):
         result = {}
         for (from_id, link_type, to_id) in self.edges():

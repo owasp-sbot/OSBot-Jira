@@ -80,8 +80,8 @@ class Jira_Graph_Filters:
     #             self.jira_graph.edges.remove(edge_to_remove)
     #     return self
 
-    def delete_nodes(self, nodes_id,delete_edges=False, delete_from_nodes=False, delete_to_nodes=False):       # todo: refactor into more efficient deletion
-        for node_id in nodes_id:
+    def delete_nodes(self, nodes_ids,delete_edges=False, delete_from_nodes=False, delete_to_nodes=False):       # todo: refactor into more efficient deletion
+        for node_id in nodes_ids:
             self.delete_node(node_id, delete_edges=delete_edges, delete_from_nodes=delete_from_nodes,delete_to_nodes=delete_to_nodes)
         return self
 
