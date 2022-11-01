@@ -4,6 +4,8 @@ from osbot_aws.helpers.Test_Helper import Test_Helper
 from osbot_jira.api.jira_server.API_Jira_Rest import API_Jira_Rest
 
 #todo: refactor to remove hard coded fields
+from osbot_utils.utils.Files import folder_create, file_exists, folder_exists
+
 
 class Test_API_Jira_Rest(Test_Helper):
 
@@ -43,10 +45,29 @@ class Test_API_Jira_Rest(Test_Helper):
         assert set(result) == {'id', 'self', 'key', 'expand'}
 
     def test_issue(self):
-        issue_id= 'RISK-1'
+        issue_id= 'TASK-1'
         result = self.api.issue(issue_id)
         assert 'Key' in set(result)
-        #assert set(result) == { 'Assignee', 'Created', 'Creator', 'Description', 'Issue Type', 'Key', 'Labels', 'Last Viewed', 'Priority', 'Project', 'Reporter', 'Risk Description', 'Risk Owner', 'Risk Rating', 'Risk Title', 'Status', 'Summary', 'Updated', 'Work Ratio'}
+
+    def test_issue_attachment(self):
+        attachment_id = '10144'
+        result = self.api.issue_attachment_download(attachment_id=attachment_id)
+        assert file_exists  (result.get('file_issue'))
+        assert file_exists  (result.get('file_issue_raw'))
+        assert folder_exists(result.get('folder_issue'))
+
+    def test_issue_attachments(self):
+        issue_id = 'Task-1'
+        issue = self.api.issue_attachments(issue_id)
+        pprint(issue)
+
+    def test_issue_download_to_folder(self):
+        issue_id = 'Task-1'
+        target_folder = '/tmp/issues_download'
+        folder_create(target_folder)
+        result= self.api.issue_download_to_folder(issue_id=issue_id, target_folder=target_folder)
+        pprint(result)
+
 
     def test_issues(self):
         issues_ids = ['ENTITY-1','ENTITY-2','ENTITY-3','ENTITY-4']

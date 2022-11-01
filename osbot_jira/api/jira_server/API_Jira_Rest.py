@@ -8,9 +8,10 @@ from osbot_utils.decorators.lists.index_by import index_by
 from osbot_utils.decorators.methods.cache_on_self import cache_on_self
 from osbot_utils.testing.Duration import Duration
 from osbot_utils.utils.Dev import Dev, pprint
-from osbot_utils.utils.Json import json_dumps
+from osbot_utils.utils.Files import path_combine, create_folder, file_create_bytes
+from osbot_utils.utils.Json import json_dumps, file_create_json
 from osbot_utils.utils.Lists import list_chunks
-from osbot_utils.utils.Misc import env_vars, list_set, date_time_now_less_time_delta
+from osbot_utils.utils.Misc import env_vars, list_set, date_time_now_less_time_delta, upper
 
 
 class API_Jira_Rest:
@@ -48,13 +49,13 @@ class API_Jira_Rest:
 
     # request helpers
 
-    def request_get(self,path):
-        return self.request_method('GET', path)
+    def request_get(self,path,always_return_content=False):
+        return self.request_method('GET', path, always_return_content=always_return_content)
 
     def request_delete(self,path):
         return self.request_method('DELETE', path)
 
-    def request_method(self,method, path, data=None):
+    def request_method(self,method, path, data=None, always_return_content=False):
         (server, username, password)= self.config()
         if server is None:
             return None
@@ -86,6 +87,8 @@ class API_Jira_Rest:
             log_error(f'[Error][request_get][404] for path {path}: {response.text}')
             return response.text
         if response.status_code >= 200 or response.status_code < 300:
+            if always_return_content:
+                return response.content
             if 'image/' in response.headers.get('content-type'):
                 return response.content
             if response.headers.get('Content-Type') == 'application/json;charset=UTF-8':
@@ -143,6 +146,47 @@ class API_Jira_Rest:
                                                 "outwardIssue":{ "key":target_id }}}]}}
         return self.request_put(path=path, put_data=put_data)
 
+    def issue_download_to_folder(self, issue_id, target_folder):
+        folder_issue       = path_combine(target_folder, issue_id         )
+        file_issue         = path_combine(folder_issue , f'issue.json'    )
+        file_issue_raw     = path_combine(folder_issue , f'issue_raw.json')
+        file_attachments   = []
+        create_folder(folder_issue)
+
+        issue_raw_data   = self.issue_raw(issue_id)
+        if type(issue_raw_data) is str:                     # happens when  ["Issue does not exist or you do not have permission to see it."]:
+            issue_data = {}
+        else:
+            issue_data = self.convert_issue(issue_raw_data)
+
+
+        file_create_json(python_object=issue_data    , path=file_issue)
+        file_create_json(python_object=issue_raw_data, path=file_issue_raw)
+        for attachment in issue_data.get('Attachments', []):
+            attachment_id   = attachment.get('id')
+            attachment_data = self.issue_attachment_download(attachment_id)
+            file_attachment = path_combine(folder_issue, attachment_id)
+            file_create_bytes(bytes=attachment_data, path=file_attachment)
+            file_attachments.append(file_attachment)
+
+        return {'folder_issue'     : folder_issue     ,
+                'file_issue'       : file_issue       ,
+                'file_issue_raw'   : file_issue_raw   ,
+                'file_attachments' : file_attachments }
+
+    def issue_attachment_download(self, attachment_id):
+        path = f'attachment/content/{attachment_id}'
+        return self.request_get(path, always_return_content=True)
+
+    def issue_attachments(self, issue_id):
+        result = []
+        attachments = self.issue(issue_id).get('Attachments', [])
+        for attachment in attachments:
+            attachment_id      = attachment.get('id')
+            attachment_content = self.issue_attachment_download(attachment_id=attachment_id)
+            result.append({'metadata': attachment, 'content': len(attachment_content)})
+        return result
+
     def issue_delete(self, issue_id):
         if issue_id:
             path = f'issue/{issue_id}'
@@ -150,7 +194,7 @@ class API_Jira_Rest:
 
     def issue_raw(self,issue_id,fields='*all'):
         if issue_id:
-            path = 'issue/{0}?fields={1}'.format(issue_id,fields)
+            path = 'issue/{0}?fields={1}'.format(upper(issue_id),fields)
             return self.request_get(path)
 
     def map_issue_links(self, issue, issue_links_raw):
@@ -169,6 +213,18 @@ class API_Jira_Rest:
 
         issue['Issue Links'] = issue_links                  # todo: see what is the side effect of not including this by default
         return self
+
+    def convert_attachments(self, data):
+        attachments = []
+        if type(data) is list:
+            for item in data:
+                attachment = {"created": item.get('created' ),
+                              "name"   : item.get('filename'),
+                              "id"     : item.get('id'      ),
+                              "type"   : item.get('mimeType'),
+                              "size"   : item.get('size'    )}
+                attachments.append(attachment)
+        return attachments
 
     def convert_issue(self, issue_raw):
         if issue_raw:
@@ -194,8 +250,11 @@ class API_Jira_Rest:
                             if field_id == 'parent':
                                 issue['Parent'] = fields_values.get('parent').get('key')
                                 continue
-                            field = fields.get(field_id)
+                            if field_id == 'attachment':
+                                issue['Attachments'] = self.convert_attachments(value)
+                                continue
 
+                            field = fields.get(field_id)
                             issue_type = field.get('schema').get('type')
 
                             if issue_type not in skip_types:
