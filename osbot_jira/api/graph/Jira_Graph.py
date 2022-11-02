@@ -379,7 +379,7 @@ class Jira_Graph:
     def save(self, path=None):
         if path is None: path = Files.temp_file('graph.json')
         data = { 'nodes': self.nodes, 'edges': self.edges }
-        return Json.save_file_pretty(path, data)
+        return Json.save_file_pretty(python_object=data, path=path)
 
     def render_and_save_to_elk(self, graph_name=None, graph_type=None, channel= None, user = None):      # might need to move this to a Lambda function
         from osbot_jira.api.graph.Lambda_Graph import Lambda_Graph                                       # todo: find out why this needs to be here of it fail to load the dependency (could be caused by a cyclic dependency)

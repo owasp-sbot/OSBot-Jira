@@ -49,6 +49,24 @@ class API_Jira_Rest:
 
     # request helpers
 
+    def request_target(self, path):
+        (server, username, password) = self.config()
+        if server is None:
+            return None
+        if path.startswith('http') is False:
+            if server.endswith('/') is False:
+                server += '/'
+            path = '{0}rest/api/2/{1}'.format(server, path)
+        target = path
+        return (target, username, password)
+
+    def request_get_redirect(self, path):
+        (target, username, password) = self.request_target(path)
+        print(target)
+        response  = requests.get(target, auth=(username, password),allow_redirects=False)
+        return response.text
+        return response.headers.get('Location')
+
     def request_get(self,path,always_return_content=False):
         return self.request_method('GET', path, always_return_content=always_return_content)
 
@@ -56,35 +74,29 @@ class API_Jira_Rest:
         return self.request_method('DELETE', path)
 
     def request_method(self,method, path, data=None, always_return_content=False):
-        (server, username, password)= self.config()
-        if server is None:
-            return None
-        if path.startswith('http') is False:
-            if server.endswith('/') is False:
-                server +='/'
-            path = '{0}rest/api/2/{1}'.format(server, path)
+        (target, username, password) = self.request_target(path)
         if self.log_requests:
-            print('jira_rest_api_path:',method, path)
+            print('jira_rest_api_path:',method, target)
         if username and password:
             if method =='GET':
-                response = requests.get(path, auth=(username, password))
+                response = requests.get(target, auth=(username, password))
             elif method == 'POST':
                 json_data = json_dumps(data or {})
                 headers   = {'Content-Type': 'application/json'}
-                response = requests.post(path, json_data, headers=headers, auth=(username, password))
+                response = requests.post(target, json_data, headers=headers, auth=(username, password))
             elif method == 'PUT':
                 json_data = json_dumps(data or {})
                 headers   = {'Content-Type': 'application/json'}
-                response = requests.put(path, json_data, headers=headers, auth=(username, password))
+                response = requests.put(target, json_data, headers=headers, auth=(username, password))
             elif method == 'DELETE':
-                response = requests.delete(path, auth=(username, password))
+                response = requests.delete(target, auth=(username, password))
             else:
-                log_error(f'[Error][request_method]: unsupported method {method} for path: {path}')
+                log_error(f'[Error][request_method]: unsupported method {method} for target: {target}')
                 return None
         else:
-            response = requests.get(path)
+            response = requests.get(target)
         if response.status_code >= 404:
-            log_error(f'[Error][request_get][404] for path {path}: {response.text}')
+            log_error(f'[Error][request_get][404] for target {target}: {response.text}')
             return response.text
         if response.status_code >= 200 or response.status_code < 300:
             if always_return_content:
@@ -97,7 +109,7 @@ class API_Jira_Rest:
                 return response.json()
             return response.text
         else:
-            log_error(f'[Error][request_get] for path {path}: {response.text}')
+            log_error(f'[Error][request_get] for target {target}: {response.text}')
         return None
 
     def request_post(self,path, data):
@@ -146,7 +158,7 @@ class API_Jira_Rest:
                                                 "outwardIssue":{ "key":target_id }}}]}}
         return self.request_put(path=path, put_data=put_data)
 
-    def issue_download_to_folder(self, issue_id, target_folder):
+    def issue_download_to_folder(self, issue_id, target_folder, download_thumbnails=False):
         folder_issue       = path_combine(target_folder, issue_id         )
         file_issue         = path_combine(folder_issue , f'issue.json'    )
         file_issue_raw     = path_combine(folder_issue , f'issue_raw.json')
@@ -168,6 +180,11 @@ class API_Jira_Rest:
             file_attachment = path_combine(folder_issue, attachment_id)
             file_create_bytes(bytes=attachment_data, path=file_attachment)
             file_attachments.append(file_attachment)
+            if download_thumbnails:
+                attachment_thumbnail_data = self.issue_attachment_thumbnail_download(attachment_id)
+                file_thumbnail_attachment = path_combine(folder_issue, f'{attachment_id}_thumbnail.png')  # todo: this extension is not 100% since I've seen jpegs here (but at the moment the issue_attachment_thumbnail_download just returns the data and no clue of what the thumbnail file type is)
+                file_create_bytes(bytes=attachment_thumbnail_data, path=file_thumbnail_attachment)
+
 
         return {'folder_issue'     : folder_issue     ,
                 'file_issue'       : file_issue       ,
@@ -178,6 +195,10 @@ class API_Jira_Rest:
         path = f'attachment/content/{attachment_id}'
         return self.request_get(path, always_return_content=True)
 
+    def issue_attachment_thumbnail_download(self, attachment_id):
+        path = f'attachment/thumbnail/{attachment_id}'
+        return self.request_get(path, always_return_content=True)
+
     def issue_attachments(self, issue_id):
         result = []
         attachments = self.issue(issue_id).get('Attachments', [])
@@ -185,6 +206,7 @@ class API_Jira_Rest:
             attachment_id      = attachment.get('id')
             attachment_content = self.issue_attachment_download(attachment_id=attachment_id)
             result.append({'metadata': attachment, 'content': len(attachment_content)})
+            break
         return result
 
     def issue_delete(self, issue_id):
