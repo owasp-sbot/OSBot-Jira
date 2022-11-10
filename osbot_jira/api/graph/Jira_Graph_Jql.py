@@ -108,19 +108,20 @@ class Jira_Graph_Jql:
     def get_nodes_count(self):
         return len(self.get_nodes())
 
-    def issue(self, issue_id):
-        return self.get_issue(issue_id)
+    def issue(self, issue_id, just_nodes_issues=True):
+        return self.get_issue(issue_id, just_nodes_issues=just_nodes_issues)
 
-    def issue__linked_issues(self, issue_id, link_type=None):
-        linked_issues = self.issue(issue_id).get('Issue Links')
+    def issue__linked_issues(self, issue_id, link_type=None,just_nodes_issues=True):
+        linked_issues = self.issue(issue_id,just_nodes_issues=just_nodes_issues).get('Issue Links', {})
         if link_type:
             return linked_issues.get(link_type)
         return linked_issues
 
-    def issues(self, issues_ids):
+    def issues(self, issues_ids, just_nodes_issues=True):
         issues_data = {}
-        for issue_id in issues_ids:
-            issues_data[issue_id] = self.issue(issue_id)
+        if issues_ids:
+            for issue_id in issues_ids:
+                issues_data[issue_id] = self.issue(issue_id,just_nodes_issues=just_nodes_issues)
         return issues_data
 
     def show_links(self, show_links_as_notes=True, show_existing_edges_in_notes=False, show_summary_in_notes=False):
