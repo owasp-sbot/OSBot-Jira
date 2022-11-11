@@ -8,7 +8,7 @@ from osbot_utils.decorators.lists.index_by import index_by
 from osbot_utils.decorators.methods.cache_on_self import cache_on_self
 from osbot_utils.testing.Duration import Duration
 from osbot_utils.utils.Dev import Dev, pprint
-from osbot_utils.utils.Files import path_combine, create_folder, file_create_bytes
+from osbot_utils.utils.Files import path_combine, create_folder, file_create_bytes, file_not_exists
 from osbot_utils.utils.Json import json_dumps, file_create_json
 from osbot_utils.utils.Lists import list_chunks
 from osbot_utils.utils.Misc import env_vars, list_set, date_time_now_less_time_delta, upper
@@ -176,14 +176,16 @@ class API_Jira_Rest:
         file_create_json(python_object=issue_raw_data, path=file_issue_raw)
         for attachment in issue_data.get('Attachments', []):
             attachment_id   = attachment.get('id')
-            attachment_data = self.issue_attachment_download(attachment_id)
             file_attachment = path_combine(folder_issue, attachment_id)
-            file_create_bytes(bytes=attachment_data, path=file_attachment)
+            if file_not_exists(file_attachment):
+                attachment_data = self.issue_attachment_download(attachment_id)
+                file_create_bytes(bytes=attachment_data, path=file_attachment)
             file_attachments.append(file_attachment)
             if download_thumbnails:
-                attachment_thumbnail_data = self.issue_attachment_thumbnail_download(attachment_id)
                 file_thumbnail_attachment = path_combine(folder_issue, f'{attachment_id}_thumbnail.png')  # todo: this extension is not 100% since I've seen jpegs here (but at the moment the issue_attachment_thumbnail_download just returns the data and no clue of what the thumbnail file type is)
-                file_create_bytes(bytes=attachment_thumbnail_data, path=file_thumbnail_attachment)
+                if file_not_exists(file_thumbnail_attachment):
+                    attachment_thumbnail_data = self.issue_attachment_thumbnail_download(attachment_id)
+                    file_create_bytes(bytes=attachment_thumbnail_data, path=file_thumbnail_attachment)
 
 
         return {'folder_issue'     : folder_issue     ,
