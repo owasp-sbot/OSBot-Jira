@@ -95,7 +95,7 @@ class API_Jira_Rest:
                 return None
         else:
             response = requests.get(target)
-        if response.status_code >= 404:
+        if response.status_code >= 400:
             log_error(f'[Error][request_get][404] for target {target}: {response.text}')
             return response.text
         if response.status_code >= 200 or response.status_code < 300:
@@ -353,7 +353,7 @@ class API_Jira_Rest:
         data = { "update" : {}}
         fields_by_name = self.fields_by_name()
         for key,value in fields.items():
-            if key == 'Rating': key = 'Risk Rating'     # move to special resolver method (needed because 'Risk Rating' was mapped as 'Rating' in ELK)
+            #if key == 'Rating': key = 'Risk Rating'     # move to special resolver method (needed because 'Risk Rating' was mapped as 'Rating' in ELK)
             field = fields_by_name.get(key)
             if field:
                 field_id    = field.get('id')
@@ -369,7 +369,7 @@ class API_Jira_Rest:
         if len(set(data)) == 0:
             return False
             #Dev.pprint(data)
-        return self.request_put(path, data) is not None
+        return self.request_put(path, data)
 
     def issue_status_available(self, issue_id):
         items = {}
