@@ -140,7 +140,7 @@ class Render_Puml__Jira_Graph:
         if issue_type == 'TEAM'                 : return 'LightSkyBlue'
         if issue_type == 'ROLE'                 : return 'LightSteelBlue'
         if issue_type == 'BUSINESS APPLICATION' : return 'LightYellow'
-        if issue_type == 'OBJECTIVE'            : return 'OldLace'
+        if issue_type == 'OBJECTIVE'            : return 'LightYellow' #'OldLace'
         if issue_type == 'TASK'                 : return 'PowderBlue'
         if issue_type == 'PROGRAMME'            : return 'SeaShell'
         if issue_type == 'INCIDENT'             : return 'LavenderBlush'

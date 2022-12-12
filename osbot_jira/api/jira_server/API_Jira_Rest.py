@@ -408,7 +408,7 @@ class API_Jira_Rest:
             path  = f'search?jql={jql}&startAt={start_at}&maxResults={max_results}&fields={fields}'
 
             data  = self.request_get(path)
-            if data is None:
+            if data is None or type(data) is str:
                 return results
             if data:
                 issues = data.get('issues', [])
