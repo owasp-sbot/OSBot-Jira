@@ -19,6 +19,7 @@ class Jira_Graph:
                                         'node-text-value'     : "Summary",
                                         'link-types-to-add'   : []       ,
                                         'link-types-to-ignore': []       ,
+                                        'keys-to-ignore'      : []       ,
                                         'only-from-projects'  : []       ,
                                         'projects-to-ignore'  : []       ,
                                         'left-to-right'       : True     ,
@@ -73,19 +74,24 @@ class Jira_Graph:
         if keys is None:
             keys = []
         edges_from = []
-        link_types_to_add    = self.puml_options['link-types-to-add'   ]                                  # get mapping of link types to add
-        link_types_to_ignore = self.puml_options['link-types-to-ignore']
-        only_from_projects   = self.puml_options['only-from-projects'  ]
-        projects_to_ignore   = self.puml_options['projects-to-ignore'  ]
+        link_types_to_add    = self.puml_options.get('link-types-to-add'   ) or []                                  # get mapping of link types to add
+        link_types_to_ignore = self.puml_options.get('link-types-to-ignore') or []
+        keys_to_ignore       = self.puml_options.get('keys-to-ignore'      ) or []
+        only_from_projects   = self.puml_options.get('only-from-projects'  ) or []
+        projects_to_ignore   = self.puml_options.get('projects-to-ignore'  ) or []
 
         self.add_nodes(keys)                                                                            # add extra nodes provided in method param (to the nodes that already exist in the graph)
         for i in range(0,depth):                                                                        # loop the amount defined in depth
             link_types_per_key = self.jira_get_link_types_for_existing_nodes()
             for key in list(self.nodes):                                                                # for each key in the current nodes
+                if key in keys_to_ignore:
+                    pass
                 data = link_types_per_key.get(key)                                                      # get the
                 if data:
                     for issue_type, items in data.items():
                         for item in items:
+                            if item in keys_to_ignore:
+                                continue
                             project_key = item.split('-').pop(0)
                             if projects_to_ignore   and project_key     in projects_to_ignore  : continue
                             if only_from_projects   and project_key not in only_from_projects  : continue
@@ -450,6 +456,7 @@ class Jira_Graph:
     def set_puml_node_text_value     (self,value        ): self.puml_options['node-text-value'     ] = value             ; return self
     def set_puml_link_types_to_add   (self,value        ): self.puml_options['link-types-to-add'   ] = value             ; return self
     def set_puml_link_types_to_ignore(self,value        ): self.puml_options['link-types-to-ignore'] = value             ; return self
+    def set_puml_keys_to_ignore      (self,value        ): self.puml_options['keys-to-ignore'      ] = value             ; return self
     def set_puml_left_to_right       (self,value        ): self.puml_options['left-to-right'       ] = value             ; return self
     def set_puml_direction_top_down  (self              ): self.puml_options['left-to-right'       ] = False             ; return self
     def set_puml_only_from_projects  (self,value        ): self.puml_options['only-from-projects'  ] = value             ; return self

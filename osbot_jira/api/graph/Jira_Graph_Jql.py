@@ -23,6 +23,7 @@ class Jira_Graph_Jql:
         self.summary_wrap_at              = 50
         self.link_types                   = None
         self.link_types_to_ignore         = None
+        self.keys_to_ignore               = None
         self.on_resolve_card_color        = None
         self.on_resolve_card_text         = None
         self.title                        = ''
@@ -177,6 +178,11 @@ class Jira_Graph_Jql:
         self.jira_graph.set_puml_link_types_to_ignore(link_types)
         return self
 
+    def set_keys_to_ignore(self, keys_to_ignore):
+        self.keys_to_ignore = keys_to_ignore
+        self.jira_graph.set_puml_keys_to_ignore(keys_to_ignore)
+        return self
+
     def set_png_dpi(self, dpi):
         return self.set_skin_param('dpi', dpi)
 
@@ -263,13 +269,20 @@ class Jira_Graph_Jql:
             if self.jql:
                 footer = f"JQL: <b>{self.jql}</b>  |  "
             if self.link_types:
-                footer += f"Link types to follow: <b>{self.link_types}</b>  |  "
+                footer += f"Link types to follow: "
+                for chunk in list_chunks(self.link_types, 12):
+                    #print(chunk)
+                    footer += f"<b>{chunk}</b> \\n"
+
+                #footer += f"Link types to follow: <b>{self.link_types}</b>  |  "
             if self.link_types_to_ignore:
                 footer += f"Link types to Ignore: "
                 for chunk in list_chunks(self.link_types_to_ignore, 3):
-                    print(chunk)
+                    #print(chunk)
                     footer += f"<b>{chunk}</b> \\n"
                 footer += ' | '
+            if self.keys_to_ignore:
+                footer += f"Keys to ignore: <b>{self.keys_to_ignore}</b>  \\n  "
             footer += f"depth: <b>{self.depth}</b> | # nodes: <b>{len(self.jira_graph.nodes)}</b>  | # edges: <b>{len(self.jira_graph.edges)}</b> | created at: <b>{date_time_now()}</b>"
             self.set_footer(footer)
         return self
