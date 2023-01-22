@@ -55,6 +55,9 @@ class Jira_Graph_Jql:
         self.jira_graph.delete_node(key, delete_edges=delete_edges, delete_from_nodes=delete_from_nodes, delete_to_nodes=delete_to_nodes)
         return self
 
+    def disable_jira_requests(self):
+        self.api_jira.disable_requests()
+        return self
     def execute_jql(self):
         if self.jql:
             self.jql_keys = self.api_jira.search__return_keys(jql=self.jql)

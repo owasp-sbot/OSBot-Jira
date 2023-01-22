@@ -1,13 +1,12 @@
 from osbot_jira.api.plantuml.API_Plant_UML import API_Plant_UML
+from osbot_jira.api.plantuml.Puml_Base import Puml_Base
 from osbot_utils.utils import Misc
 from osbot_utils.utils.Files            import Files
 
 
-class Puml:
+class Puml(Puml_Base):
     def __init__(self):
-        self.puml        = ""
-        self.api_plantuml = API_Plant_UML()
-
+        super().__init__()
         self.available_elements   = ["actor"   , "agent"    , "artifact"  ,"boundary" , "card"      , "cloud"   , "component" ,
                                      "control" , "database" , "entity"    , "file"    , "folder"    , "frame"   , "interface" ,
                                      "node"    , "package"  , "queue"     , "stack"   , "rectangle" , "storage" , "usecase"   ]
@@ -70,22 +69,7 @@ class Puml:
         if id:
             return id.replace(' ','_').replace('-','_').replace(':','_').replace('/','_').replace('(','_').replace(')','_')
 
-    def png(self, path = None, use_lambda=True):
-        if path:
-            self.api_plantuml.tmp_png_file = path
-        self.api_plantuml.puml_to_png(puml=self.puml, use_lambda=use_lambda)
-        return self
 
-    def save(self, path):
-        Files.write(path,self.puml)
-        return self
-
-    def save_tmp(self, use_lambda=True):
-        tmp_path_png = '/tmp/jira_graph.png'
-        tmp_path_puml = '/tmp/jira_graph.puml'
-        ( self.png (path=tmp_path_png, use_lambda=use_lambda)
-              .save(path=tmp_path_puml                      ))
-        return tmp_path_png,tmp_path_puml
 
     def set_on_add_node(self, callback): self.on_add_node = callback ; return self
     def set_on_add_edge(self, callback): self.on_add_edge = callback ; return self

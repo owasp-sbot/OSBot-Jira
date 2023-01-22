@@ -21,6 +21,7 @@ class API_Jira_Rest:
         self._config             = None
         self._fields             = None               # cache this value per request (since it is expensive and data doesn't change that much)
         self.log_requests        = False
+        self.allow_requests      = True
 
     def config(self):
         if self._config is None:
@@ -42,6 +43,10 @@ class API_Jira_Rest:
         password = vars.get('JIRA_API_TOKEN')
         server   = vars.get('JIRA_API_SERVER')
         return (server, username, password)
+
+    def disable_requests(self):
+        self.allow_requests = False
+        return self
 
     def set_public_jira(self, server):
         self._config = (server, "", "")
@@ -74,6 +79,8 @@ class API_Jira_Rest:
         return self.request_method('DELETE', path)
 
     def request_method(self,method, path, data=None, always_return_content=False):
+        if self.allow_requests is False:
+            return None
         (target, username, password) = self.request_target(path)
         if self.log_requests:
             print('jira_rest_api_path:',method, target)

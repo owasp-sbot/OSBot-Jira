@@ -396,7 +396,7 @@ class Jira_Graph:
         return None
 
 
-    def render_puml(self,using_jira_nodes=True):
+    def render_puml(self, using_jira_nodes=True):
         self.reset_puml()
         self.puml.add_line('skin rose')              # todo add ability to overwrite this or move into another location (since this is applied to all graphs)
         #self.jira_get_issues()                      # ensure that all issues are reloaded
