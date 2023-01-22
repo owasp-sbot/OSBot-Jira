@@ -1,4 +1,4 @@
-from hb_security_jupyter.network_graphs.Network_Graph_For_Jira_Graph import Network_Graph_For_Jira_Graph
+from osbot_plotly.network_graphs.Network_Graph_For_Jira_Graph import Network_Graph_For_Jira_Graph
 from osbot_jira.api.graph.Jira_Graph_Jql import Jira_Graph_Jql
 from osbot_jira.api.jira_server.local.Jira_Local_Cache import Jira_Local_Cache
 
