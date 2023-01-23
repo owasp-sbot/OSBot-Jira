@@ -128,7 +128,7 @@ class Render_Puml__Jira_Graph:
     def resolve_card_color(self, issue):
         if self.on_resolve_card_color:
             return self.on_resolve_card_color(issue)
-        issue_type = upper(issue.get('Issue Type'))
+        issue_type = upper(issue.get('Issue Type'))                      # see all colors at https://plantuml.com/color or https://github.com/qywx/PlantUML-colors
         if issue_type == 'PERSON'               : return 'azure'
         if issue_type == 'CONTROL'              : return 'lightgreen'
         if issue_type == 'PENTEST'              : return 'MistyRose'
@@ -166,6 +166,9 @@ class Render_Puml__Jira_Graph:
         if issue_type == 'RELEASE'              : return 'LightBlue' # duplicated
         if issue_type == 'APPROVAL'             : return 'Ivory'    # duplicated
         if issue_type == 'TRAINING'             : return 'White'    # duplicated
+        if issue_type == 'SPRINT'               : return 'AquaMarine'
+        if issue_type == 'KEY RESULT'           : return 'Aqua'
+
 
         # 'Aquamarine'
         # if issue_type == '': return 'LightSalmon'
