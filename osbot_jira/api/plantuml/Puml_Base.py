@@ -8,6 +8,10 @@ class Puml_Base:
         self.puml = ""
         self.api_plantuml = API_Plant_UML()
 
+    def add_line(self, line):
+        self.puml +=f"\t{line}\n"
+        return self
+
     def png(self, path = None, use_lambda=True):
         if path:
             self.api_plantuml.tmp_png_file = path

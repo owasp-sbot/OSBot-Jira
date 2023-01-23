@@ -39,9 +39,7 @@ class Puml(Puml_Base):
         self.puml += '\t{0} -{2}-> {1} : "{3}" \n'.format(self.fix_id(from_id), self.fix_id(to_id), direction ,label)
         return self
 
-    def add_line(self, line):
-        self.puml += "\t{0}\n".format(line)
-        return self
+
 
     def add_title(self, title):
         if title:
