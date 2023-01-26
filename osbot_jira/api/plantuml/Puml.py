@@ -13,7 +13,7 @@ class Puml(Puml_Base):
         self.available_directions = ['up', 'down','left','right']
         self.on_add_node           = None
         self.on_add_edge           = None
-        self.max_title             = 200
+        #self.max_title             = 250
 
     def add_card     (self, title, id = None) : return self.add_node("card", title, id)
     def add_cloud    (self, title, id = None) : return self.add_node("cloud", title, id)
@@ -22,7 +22,7 @@ class Puml(Puml_Base):
 
     def add_node(self, element, title, id = None):
 
-        title = Misc.word_wrap(title, self.max_title)
+        #title = Misc.word_wrap(title, self.max_title)      # this was causing errors with large titles that broke plantuml
 
         if self.on_add_node:                                                      # if self.on_add_element is set, then use it for the node render bit
             puml_to_add = self.on_add_node(element,title,self.fix_id(id),id)
