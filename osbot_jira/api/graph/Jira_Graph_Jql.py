@@ -425,7 +425,7 @@ class Jira_Graph_Jql:
                  .create_jira_graph_png())
         return self
 
-    def create_jira_graph_png(self):
+    def render_puml_from_jira_graph(self):
         self.render_puml__jira_graph = (Render_Puml__Jira_Graph(self.jira_graph))
         (self.render_puml__jira_graph.set_skin_params(self.skin_params)
                                      .set_on_resolve_card_color(self.on_resolve_card_color)
@@ -434,8 +434,13 @@ class Jira_Graph_Jql:
                                      .set_summary_wrap_at(self.summary_wrap_at)
                                      .set_title(self.title)
                                      .set_footer(self.footer)
-                                     .render()
-                                     .save_as_png())
+                                     .render())
+        return self
+
+    def create_jira_graph_png(self, create_png=True):
+        self.render_puml_from_jira_graph()
+        if create_png:
+            self.render_puml__jira_graph.save_as_png()
         return self
 
     def print_nodes_edges_count(self):
