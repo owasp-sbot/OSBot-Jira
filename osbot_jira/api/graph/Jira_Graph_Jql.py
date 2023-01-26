@@ -36,6 +36,7 @@ class Jira_Graph_Jql:
         self.link_types_as_notes_position = 'bottom'  # bottom, top, left, right
         self.footer_font_size             = 35
         self.title_font_size              = 75
+        self.footer_split_link_types_by   = 8
         # if root_node:
         #     self.jira_graph.add_node(root_node)
         # if initial_nodes:
@@ -51,6 +52,14 @@ class Jira_Graph_Jql:
             self.jira_graph.add_node(key)
         return self
 
+    def add_project(self, project):                 # this will add nodes for every issue in this project (usually from the local cache)
+        if project:
+            issues = self.get_issues_in_project(project)
+            for issue in issues:
+                issue_key = issue.get('Key')
+                self.add_node(issue_key)
+        return self
+
     def delete_node(self, key, delete_edges=False, delete_from_nodes=False, delete_to_nodes=False):
         self.jira_graph.delete_node(key, delete_edges=delete_edges, delete_from_nodes=delete_from_nodes, delete_to_nodes=delete_to_nodes)
         return self
@@ -58,6 +67,7 @@ class Jira_Graph_Jql:
     def disable_jira_requests(self):
         self.api_jira.disable_requests()
         return self
+
     def execute_jql(self):
         if self.jql:
             self.jql_keys = self.api_jira.search__return_keys(jql=self.jql)
@@ -82,7 +92,7 @@ class Jira_Graph_Jql:
         jira_graph_view = Jira_Graph_View(jira_graph=self.jira_graph)
         schema_graph = jira_graph_view.create_schema_graph()
         schema_graph.set_skin_param('linetype', 'polyline')  # ortho
-        schema_graph.render_puml_and_save_tmp(use_lambda=False)
+        schema_graph.render_puml_and_save_tmp(use_lambda=False, using_jira_nodes=False)
         return schema_graph
 
 
@@ -93,6 +103,29 @@ class Jira_Graph_Jql:
         if just_nodes_issues:
             return self.jira_graph.get_nodes_issues()
         return self.jira_graph.issues or {}
+
+    def get_issues_ids_that_match(self, key, value):
+        return (issue.get('Key') for issue in self.get_issues_that_match(key, value))
+
+    def get_issues_in_project(self, project_name):
+        return self.get_issues_that_match('Project', project_name)
+
+    def get_issues_that_match(self, key, value):
+        issues = []
+        #print(key)
+        if key is not None and value is not None:
+            jira_issues = self.get_issues(just_nodes_issues=False)
+            for issue_id, issue_data in jira_issues.items():
+                #print(issue_data.get(key), value)
+                issue_value = issue_data.get(key)
+                if type(issue_value) is dict:
+                    if value in issue_value:
+                        issues.append(issue_data)
+                else:
+                    if issue_data.get(key) == value:
+                        issues.append(issue_data)
+        return issues
+
 
     def get_issue(self, issue_id, just_nodes_issues=True):
         if just_nodes_issues:
@@ -164,7 +197,8 @@ class Jira_Graph_Jql:
         return self
 
     def set_jql(self, jql):
-        self.jql = jql
+        if jql:
+            self.jql = jql
         return self
 
     def set_jira_graph(self, jira_graph):
@@ -188,6 +222,10 @@ class Jira_Graph_Jql:
 
     def set_png_dpi(self, dpi):
         return self.set_skin_param('dpi', dpi)
+
+    def set_projects_to_include(self, projects_to_include):
+        self.jira_graph.set_puml_only_from_projects(projects_to_include)
+        return self
 
     def set_projects_to_ignore(self,projects_to_ignore):
         self.jira_graph.set_puml_projects_to_ignore(projects_to_ignore)
@@ -273,7 +311,7 @@ class Jira_Graph_Jql:
                 footer = f"JQL: <b>{self.jql}</b>  |  "
             if self.link_types:
                 footer += f"Link types to follow: "
-                for chunk in list_chunks(self.link_types, 12):
+                for chunk in list_chunks(self.link_types, self.footer_split_link_types_by):
                     #print(chunk)
                     footer += f"<b>{chunk}</b> \\n"
 

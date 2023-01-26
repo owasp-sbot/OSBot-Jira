@@ -165,6 +165,36 @@ class API_Jira_Rest:
                                                 "outwardIssue":{ "key":target_id }}}]}}
         return self.request_put(path=path, put_data=put_data)
 
+    def issue_attachment_download(self, attachment_id):
+        path = f'attachment/content/{attachment_id}'
+        return self.request_get(path, always_return_content=True)
+
+    def issue_attachment_thumbnail_download(self, attachment_id):
+        path = f'attachment/thumbnail/{attachment_id}'
+        return self.request_get(path, always_return_content=True)
+
+    def issue_attachments(self, issue_id):
+        result = []
+        attachments = self.issue(issue_id).get('Attachments', [])
+        for attachment in attachments:
+            attachment_id      = attachment.get('id')
+            attachment_content = self.issue_attachment_download(attachment_id=attachment_id)
+            result.append({'metadata': attachment, 'content': len(attachment_content)})
+            break
+        return result
+
+    def issue_delete(self, issue_id):
+        if issue_id:
+            path = f'issue/{issue_id}'
+            return self.request_delete(path)
+
+    def issue_delete_link(self, link_id):
+        if link_id:
+            path = f'issueLink/{link_id}'
+            if self.request_delete(path) == {}:
+                return True
+        return False
+
     def issue_download_to_folder(self, issue_id, target_folder, download_thumbnails=False):
         folder_issue       = path_combine(target_folder, issue_id         )
         file_issue         = path_combine(folder_issue , f'issue.json'    )
@@ -200,28 +230,29 @@ class API_Jira_Rest:
                 'file_issue_raw'   : file_issue_raw   ,
                 'file_attachments' : file_attachments }
 
-    def issue_attachment_download(self, attachment_id):
-        path = f'attachment/content/{attachment_id}'
-        return self.request_get(path, always_return_content=True)
+    def issue_links_ids(self, source_id):
+        links_ids = {}
+        path     = f'issue/{source_id}?fields=issuelinks'
+        raw_data = self.request_get(path)
+        issues_links = raw_data.get('fields', {}).get('issuelinks', [])
+        for issue_link in issues_links:
+            link_id   = issue_link.get('id')
+            if issue_link.get('outwardIssue'):
+                target_id =  issue_link.get('outwardIssue', {}).get('key')
+                link_type =  issue_link.get('type', {}).get('outward')
+            else:
+                target_id = issue_link.get('inwardIssue', {}).get('key')
+                link_type = issue_link.get('type', {}).get('inward')
+            #pprint(issues_links)
+            edge = (source_id, link_type,target_id)
+            links_ids[edge] = link_id
+        return links_ids
 
-    def issue_attachment_thumbnail_download(self, attachment_id):
-        path = f'attachment/thumbnail/{attachment_id}'
-        return self.request_get(path, always_return_content=True)
 
-    def issue_attachments(self, issue_id):
-        result = []
-        attachments = self.issue(issue_id).get('Attachments', [])
-        for attachment in attachments:
-            attachment_id      = attachment.get('id')
-            attachment_content = self.issue_attachment_download(attachment_id=attachment_id)
-            result.append({'metadata': attachment, 'content': len(attachment_content)})
-            break
-        return result
-
-    def issue_delete(self, issue_id):
-        if issue_id:
-            path = f'issue/{issue_id}'
-            return self.request_delete(path)
+    def issue_link_id(self, source_id, target_id, link_type):
+        links_ids = self.issue_links_ids(source_id=source_id)
+        edge     = (source_id, link_type, target_id)
+        return links_ids.get(edge)
 
     def issue_raw(self,issue_id,fields='*all'):
         if issue_id:

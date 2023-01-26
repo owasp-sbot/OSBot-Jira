@@ -18,7 +18,7 @@ class Render_Puml__Jira_Graph:
         self.summary_wrap_at           = 50
         self.title                     = ''
         self.footer                    = ''
-        self.save_png_copy_using_title = True
+        self.save_png_copy_using_title = False
         self.folder_pngs_by_title    = '/tmp/pngs_by_title'
         # self.skin_params =  [('CardBorderColor'      , 'gray'    ),
         #                      ('CardBackgroundColor'  , 'white'   ),
@@ -140,7 +140,7 @@ class Render_Puml__Jira_Graph:
         if issue_type == 'TEAM'                 : return 'LightSkyBlue'
         if issue_type == 'ROLE'                 : return 'LightSteelBlue'
         if issue_type == 'BUSINESS APPLICATION' : return 'LightYellow'
-        if issue_type == 'OBJECTIVE'            : return 'LightYellow' #'OldLace'
+        if issue_type == 'OBJECTIVE'            : return 'LightYellow'
         if issue_type == 'TASK'                 : return 'PowderBlue'
         if issue_type == 'PROGRAMME'            : return 'SeaShell'
         if issue_type == 'INCIDENT'             : return 'LavenderBlush'
@@ -159,7 +159,7 @@ class Render_Puml__Jira_Graph:
         if issue_type == 'DECISION'             : return 'Moccasin'
         if issue_type == 'RACI'                 : return 'LightSeaGreen'
         if issue_type == 'QUESTION'             : return 'Azure'
-        if issue_type == 'SLACK'                : return 'MintCream'
+        if issue_type == 'SLACK'                : return 'MintCream' # duplicated
         if issue_type == 'DATE'                 : return 'LightBlue'
         if issue_type == 'PCIDSS'               : return 'MintCream' # duplicated
         if issue_type == 'EVIDENCE'             : return 'lightblue'
@@ -168,6 +168,8 @@ class Render_Puml__Jira_Graph:
         if issue_type == 'TRAINING'             : return 'White'    # duplicated
         if issue_type == 'SPRINT'               : return 'AquaMarine'
         if issue_type == 'KEY RESULT'           : return 'Aqua'
+        if issue_type == 'ACTIVITY'             : return 'OldLace'
+
 
 
         # 'Aquamarine'

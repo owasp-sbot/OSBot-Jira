@@ -81,6 +81,18 @@ class Test_API_Jira_Rest(Test_Helper):
         #result = self.api.search(jql=jql, fields=fields)
         #pprint(result)
 
+    def test_issue_delete_link(self):
+        from hb_security_jupyter.HB_Setup import HB_Setup
+        HB_Setup()
+        source_id  = 'TASK-182' # test task
+        target_id  = 'VULN-46' # test vuln
+        link_type  = 'delivers'
+        #source_id = 'ENTITY-5'
+        self.api.issue_add_link(source_id=source_id, target_id=target_id, link_type=link_type)
+        link_id = self.api.issue_link_id(source_id=source_id, target_id=target_id, link_type=link_type)
+        result  = self.api.issue_delete_link(link_id = link_id)
+        pprint(result)
+
     def test_issue_update_field(self):
         issue_id = 'RISK-12'
         summary = 'updated via a rest put request.....'

@@ -1,7 +1,8 @@
 import osbot_jira
 from osbot_utils.decorators.lists.index_by import index_by
 from osbot_utils.utils.Dev import pprint
-from osbot_utils.utils.Files import path_combine, files_list, sub_folders, folders_names, folder_create, parent_folder
+from osbot_utils.utils.Files import path_combine, files_list, sub_folders, folders_names, folder_create, parent_folder, \
+    file_name, file_extension
 from osbot_utils.utils.Json import json_load_file, json_save_file
 
 DEFAULT_JIRA_LOCATION       = '../_jira_backup'
@@ -51,8 +52,12 @@ class Jira_Local_Cache:
     def load_all_issues(self):
         issues = []
         for path_issue_file in self.paths_issue_file():
-            issue = json_load_file(path_issue_file)
-            issues.append(issue)
+            try:
+                if file_extension(path_issue_file) == ".json":
+                    issue = json_load_file(path_issue_file)
+                    issues.append(issue)
+            except UnicodeDecodeError as error:
+                print(f"[Jira_Local_Cache][load_all_issues] Failed to open file: {path_issue_file}")
         return issues
 
     @index_by

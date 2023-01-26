@@ -1,5 +1,6 @@
 from osbot_jira.api.graph.Jira_Graph import Jira_Graph
 from osbot_utils.utils import Misc
+from osbot_utils.utils.Dev import pprint
 from osbot_utils.utils.Misc import list_set, unique
 
 
@@ -39,6 +40,14 @@ class Jira_Graph_Filters:
         nodes_to = self.jira_graph.nodes_to(key)
         for key in nodes_to:
             self.colapse_node(key)
+        return self
+
+    def delete_edge(self, edge):
+        self.jira_graph.delete_edge(edge)
+        return self
+
+    def delete_edges(self, edges):
+        self.jira_graph.delete_edges(edges)
         return self
 
     def delete_node(self,key, delete_edges=False, delete_from_nodes=False, delete_to_nodes=False):
@@ -338,6 +347,25 @@ class Jira_Graph_Filters:
                         if key in self.jira_graph.nodes and target in self.jira_graph.nodes:
                             self.jira_graph.add_edge(key, issue_link, target)
         return self
+
+
+    def refactor_link_to_child_links(self, refactor_issue_link, child_issue_link):
+        issues = self.jira_graph.get_nodes_issues().items()
+        for key, issue in issues:
+            if issue:
+                issue_links = issue.get('Issue Links')  # get all links for issue
+                for issue_link__refactor, targets__refactor in issue_links.items():
+                    if refactor_issue_link == issue_link__refactor:
+                        for target__refactor in targets__refactor:
+                            for issue_link__child, targets__child in issue_links.items():
+                                if issue_link__child == child_issue_link:
+                                    for target__child in targets__child:
+                                        self.jira_graph.add_edge(from_key=target__child, link_type=issue_link__child, to_key=target__refactor)
+
+                            edge_to_delete = (key, refactor_issue_link, target__refactor)
+                            self.jira_graph.delete_edge(edge_to_delete)
+        return self
+
 
 
     def remove_field_equal_to(self,field_name, issue_types):

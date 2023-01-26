@@ -144,6 +144,7 @@ class API_Jira:
     def issue_add_comment(self, key, comment):
         self.jira().add_comment(key,comment)
         return self
+
     def issue_comments(self, key):
         comments = []
         for comment in self.jira().comments(key):

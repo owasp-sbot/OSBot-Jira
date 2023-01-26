@@ -53,11 +53,12 @@ class Jira_Graph:
         return self
 
     def add_nodes(self, keys):
-        if type(keys) is str:                       # if case a string was sent instead of an array
-            self.add_node(keys)
-        else:
-            for key in keys:
-                self.add_node(key)
+        if keys:
+            if type(keys) is str:                       # if case a string was sent instead of an array
+                self.add_node(keys)
+            else:
+                for key in keys:
+                    self.add_node(key)
         return self
 
     def add_edge(self, from_key, link_type, to_key):
@@ -93,6 +94,7 @@ class Jira_Graph:
                             if item in keys_to_ignore:
                                 continue
                             project_key = item.split('-').pop(0)
+
                             if projects_to_ignore   and project_key     in projects_to_ignore  : continue
                             if only_from_projects   and project_key not in only_from_projects  : continue
                             if link_types_to_add    and issue_type  not in link_types_to_add   : continue
