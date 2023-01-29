@@ -1,11 +1,13 @@
+from osbot_jira.api.graph.Jira_Graph import Jira_Graph
 from osbot_jira.api.jira_server.API_Jira_Rest import API_Jira_Rest
+from osbot_jira.api.jira_server.local.Jira_Local_Cache import Jira_Local_Cache
 from osbot_utils.testing.Duration import Duration
 from osbot_utils.utils.Dev import pprint
 from osbot_utils.utils.Files import path_combine, create_folder, folder_exists, folder_delete_all, \
     folder_delete_recursively, folder_create
 from osbot_utils.utils.Json import json_save_file, json_load_file
 from osbot_utils.utils.Misc import date_time_now, date_time_now_less_time_delta, date_time_less_time_delta, \
-    str_to_date_time, list_set, list_index_by
+    str_to_date_time, list_set, list_index_by, unique
 
 DEFAULT_BACKUP_LOCATION = '../../../../../_jira_backup'
 FILE_NAME_STATS         = 'backup_stats.json'
@@ -16,7 +18,7 @@ FOLDER_NAME_METADATA    = 'metadata'
 class Backup_Jira_to_Local_Folder:
 
     def __init__(self):
-        self.api_jira_rest = API_Jira_Rest()
+        self.api_jira_rest   = API_Jira_Rest()
         self.target_folder   = path_combine(__file__, DEFAULT_BACKUP_LOCATION)
         self.issues_folder   = path_combine(self.target_folder, FOLDER_NAME_ISSUES)
         self.metadata_folder = path_combine(self.target_folder, FOLDER_NAME_METADATA)
@@ -40,7 +42,7 @@ class Backup_Jira_to_Local_Folder:
 
     # save methods
     def save_as_json(self, data, target_file):
-        json_save_file(python_object=data, path=target_file, pretty=True, sort_keys=True)
+        return json_save_file(python_object=data, path=target_file, pretty=True, sort_keys=True)
 
     def save_stats(self, duration_seconds=-1):
         stats_data = { "date_backup_created": date_time_now(return_str=True),
@@ -67,9 +69,21 @@ class Backup_Jira_to_Local_Folder:
         self.issues = self.api_jira_rest.search(jql="", max_to_fetch=-1)        # only do this for all issues
         self.save_issues(self.issues)
 
+    def save_issues_with_ids(self, issues_ids):
+        issues = self.api_jira_rest.issues(issues_ids)
+        return self.save_issues(issues.values())
+
+
     def save_issues(self, issues):
+        result = []
         for issue in issues:
-            self.save_issue(issue)
+            result.append(self.save_issue(issue))
+        return result
+
+    def save_issue_with_id(self, issue_id):
+        issue = self.api_jira_rest.issue(issue_id)
+        if issue:
+            return self.save_issue(issue)
 
     def save_issue(self, issue):
         project_name   = issue.get('Project')
@@ -77,7 +91,7 @@ class Backup_Jira_to_Local_Folder:
         project_folder = path_combine(self.issues_folder, project_name)
         file_issue     = path_combine(project_folder, f"{issue_key}.json")
         folder_create(project_folder)               # make sure folder exists
-        self.save_as_json(data=issue, target_file=file_issue)
+        return self.save_as_json(data=issue, target_file=file_issue)
 
     # todo: add support for incremental backup using changes since last sync (like what happens with the Elastic sync)
     #       the model below actually downloads ALL files which is not effective (only good when wanting to do a full backup)
@@ -114,3 +128,49 @@ class Backup_Jira_to_Local_Folder:
             file_last_update = path_combine(self.target_folder, FILE_NAME_LAST_UPDATE)      # todo refactor to separate method
             self.save_as_json(data=update_data, target_file=file_last_update)
         return update_data
+
+    def find_local_issues_that_dont_exist_in_jira(self):
+        jira_local_cache = Jira_Local_Cache()
+
+        all_issues_ids__in_jira  = self.api_jira_rest.issues_get_all_ids()
+        all_issues_ids__in_cache = jira_local_cache.all_issues_ids()
+
+        issues_ids_not_in_cache = []
+        for issue_id in all_issues_ids__in_cache:
+            if issue_id not in all_issues_ids__in_jira:
+                issues_ids_not_in_cache.append(issue_id)
+
+        return issues_ids_not_in_cache
+
+    def find_local_issues_links_that_dont_exist_in_jira(self):
+        jira_local_cache                       = Jira_Local_Cache()
+        cached_issues                          = jira_local_cache.all_issues(index_by='Key')
+        graph                                  = Jira_Graph()
+        graph.issues                           = cached_issues
+        issues_ids__in_jira                    = self.api_jira_rest.issues_get_all_ids()
+        issues_ids__in_cache_indexed_by_to_key = graph.jira_get_issue_link_types_per_key_for_issues__indexed_by_to_key()
+        issues_ids_with_missing_ids            = []
+        detected_missing_ids                   = []
+        for issue_id, mappings in issues_ids__in_cache_indexed_by_to_key.items():
+            if issue_id not in issues_ids__in_jira:
+                detected_missing_ids.append(issue_id)
+                for link_type, issue_ids in mappings.items():
+                    issues_ids_with_missing_ids.extend(issue_ids)
+        issues_ids_with_missing_ids = unique(issues_ids_with_missing_ids)
+
+        return {"detected_missing_ids":detected_missing_ids,
+                "issues_ids_with_missing_ids": issues_ids_with_missing_ids}
+
+    def update_cache_of_issues_with_missing_ids(self):
+        # get mapings
+        mappings                    = self.find_local_issues_links_that_dont_exist_in_jira()
+
+        # update issues_ids_with_missing_ids (i.e make the call to Jira REST API and save it locally
+        issues_ids_with_missing_ids = mappings.get('issues_ids_with_missing_ids')
+        self.save_issues_with_ids(issues_ids_with_missing_ids)
+
+        # update cache
+        jira_local_cache = Jira_Local_Cache()
+        jira_local_cache.cache_create_all_issues()
+        return mappings
+

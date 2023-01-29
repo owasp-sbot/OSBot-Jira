@@ -6,6 +6,7 @@ from osbot_aws.helpers.Lambda_Helpers import log_error
 from osbot_aws.apis.Secrets import Secrets                                  # todo: refactor this out of this class (so that we don't have a dependency in AWS
 from osbot_utils.decorators.lists.index_by import index_by
 from osbot_utils.decorators.methods.cache_on_self import cache_on_self
+from osbot_utils.decorators.methods.cache_on_tmp import cache_on_tmp
 from osbot_utils.testing.Duration import Duration
 from osbot_utils.utils.Dev import Dev, pprint
 from osbot_utils.utils.Files import path_combine, create_folder, file_create_bytes, file_not_exists
@@ -373,6 +374,11 @@ class API_Jira_Rest:
         #        issues[issue_id] = issue
         #return issues
 
+    # this is fast because (in a Jira Cloud with 6k issues) it will execute in one request
+    #@cache_on_tmp()
+    def issues_get_all_ids(self):
+        return self.search__return_keys(jql="")
+
     def issue_create(self, project, issue_type, summary, description=None, extra_fields=None):
         path     = 'issue'
         fields   = {  "project"    : { "key": project }   ,
@@ -436,10 +442,10 @@ class API_Jira_Rest:
 
     @index_by
     def search(self, jql='', fetch_all=True, fields='*all', start_at=0, max_to_fetch=-1):
-        if -1 < max_to_fetch < 100:                 # todo improve logic of max_to_fetch since at the moment it will fetch 300 for values of 200, 210,250, 290
-            max_results = max_to_fetch              # in case the max_to_fetch is between 0 and 100 (this part is working)
+        if -1 < max_to_fetch:                 # todo improve logic of max_to_fetch since at the moment it will fetch 300 for values of 200, 210,250, 290 (should we return that value even though the issues data have been fetched)
+            max_results = max_to_fetch        # in case the max_to_fetch is between 0 and 100 (this part is working)
         else:
-            max_results = 100                       # 100 seems to be the current limit of Jira cloud
+            max_results = -1                 # the behaviour (in Jan 2023) seems to be that for a smaller number of fields (like 'key') Jira will return all values in one request, but when more fields are specified it will happen in batches of 100
         results = []
         start_at = start_at
         while True:
@@ -473,8 +479,8 @@ class API_Jira_Rest:
         jql = f'updated >= "{query_date}"'
         return self.search(jql=jql)
 
-    def search__return_keys(self, jql):
-        result = self.search(jql=jql, fields = 'key', index_by='Key')
+    def search__return_keys(self, jql, max_to_fetch=-1):
+        result = self.search(jql=jql, fields = 'key', index_by='Key', max_to_fetch=max_to_fetch)
         return list_set(result)
 
     def webhook_failed(self):

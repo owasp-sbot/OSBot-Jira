@@ -40,6 +40,12 @@ class Jira_Graph:
         self.title                 = None
         self.footer                = None
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
+
     def add_issue(self, key, issue):
         if issue is not None:
             if self.issues is None:
@@ -83,7 +89,7 @@ class Jira_Graph:
 
         self.add_nodes(keys)                                                                            # add extra nodes provided in method param (to the nodes that already exist in the graph)
         for i in range(0,depth):                                                                        # loop the amount defined in depth
-            link_types_per_key = self.jira_get_link_types_for_existing_nodes()
+            link_types_per_key = self.jira_get_link_types_per_key_for_issues()
             for key in list(self.nodes):                                                                # for each key in the current nodes
                 if key in keys_to_ignore:
                     pass
@@ -228,7 +234,7 @@ class Jira_Graph:
     def issues__issue_types(self):
         return self.issues__values_by_field('Issue Type')
 
-    def jira_get_link_types_for_existing_nodes(self, reload=False):              # in most calls of this method there are new nodes, and we want to make sure that we get the missing nodes
+    def jira_get_link_types_per_key_for_issues(self, reload=False):              # in most calls of this method there are new nodes, and we want to make sure that we get the missing nodes
         issues_links = {}
         jira_issues_links = self.jira_get_issues(reload=reload, fields='issuelinks,summary,issuetype,status')
 
@@ -237,6 +243,25 @@ class Jira_Graph:
             issue_links = issue.get('Issue Links')
             issues_links[key] = issue_links
         return issues_links
+
+    # note that in this method the link types are the wrong way around
+    def jira_get_issue_link_types_per_key_for_issues__indexed_by_to_key(self, reload=False):
+        link_types_per_key = self.jira_get_link_types_per_key_for_issues()
+        result = {}
+        no_links = 0
+        for from_key, item in link_types_per_key.items():
+            if len(item) == 0:
+                no_links += 1
+
+            for link_type, to_keys in item.items():
+                for to_key in to_keys:
+                    if to_key not in result:
+                        result[to_key] = {}
+                    if link_type not in result[to_key]:
+                        result[to_key][link_type] = []
+                    if from_key not in result[to_key][link_type]:
+                        result[to_key][link_type].append(from_key)
+        return result
 
     # def set_link_types_from_issues(self, issues):
     #     self._link_types = self.api_issues.link_types_from_issues(issues.values(),issues.keys())

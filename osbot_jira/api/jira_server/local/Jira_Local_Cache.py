@@ -4,6 +4,7 @@ from osbot_utils.utils.Dev import pprint
 from osbot_utils.utils.Files import path_combine, files_list, sub_folders, folders_names, folder_create, parent_folder, \
     file_name, file_extension
 from osbot_utils.utils.Json import json_load_file, json_save_file
+from osbot_utils.utils.Misc import list_set
 
 DEFAULT_JIRA_LOCATION       = '../_jira_backup'
 FOLDER_NAME_ISSUES          = 'issues'
@@ -63,3 +64,6 @@ class Jira_Local_Cache:
     @index_by
     def all_issues(self):
         return self.cache_get_all_issues()
+
+    def all_issues_ids(self):
+        return list_set(self.all_issues(index_by='Key'))

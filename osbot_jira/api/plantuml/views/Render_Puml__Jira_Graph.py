@@ -169,6 +169,14 @@ class Render_Puml__Jira_Graph:
         if issue_type == 'SPRINT'               : return 'AquaMarine'
         if issue_type == 'KEY RESULT'           : return 'Aqua'
         if issue_type == 'ACTIVITY'             : return 'OldLace'
+        # if issue_type == ''             : return 'OldLace'
+        # if issue_type == '': return 'OldLace'
+        # if issue_type == '': return 'OldLace'
+        # if issue_type == '': return 'OldLace'
+        # if issue_type == '': return 'OldLace'
+        # if issue_type == '': return 'OldLace'
+        # if issue_type == '': return 'OldLace'
+        # if issue_type == '': return 'OldLace'
 
 
 

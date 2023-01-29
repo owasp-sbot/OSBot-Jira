@@ -10,7 +10,7 @@ class Test_GS_Graph(TestCase):
     def setUp(self):
         self.graph  = Jira_Graph()
 
-        self.root_node = 'NISTCSF-38'
+        self.root_node = 'CSF-38'
         #self.result = None
 
     # def tearDown(self):
@@ -77,8 +77,13 @@ class Test_GS_Graph(TestCase):
                                  {'key': 'bbb', 'label': 'bbb'}]
         assert graph.edges() == [{'from': 'aaa', 'label': 'test_link', 'to': 'bbb'}]
 
-    def test_jira_get_link_types_for_existing_nodes(self):
+    def test_jira_get_link_types_per_key_for_issues(self):
         # self.create_test_graph()               # todo: once this is working refactor code to use test data
         self.graph.add_node(self.root_node)
-        result = self.graph.jira_get_link_types_for_existing_nodes()
+        result = self.graph.jira_get_link_types_per_key_for_issues()
         assert list_set(result.get(self.root_node)) == ['has NIST category', 'is NIST category of']
+
+    def test_jira__jira_get_issue_link_types_per_key_for_issues__indexed_by_to_key(self):
+        self.graph.add_node(self.root_node)
+        result = self.graph.jira_get_issue_link_types_per_key_for_issues__indexed_by_to_key()
+        assert result.get('CSF-1') == {'has NIST CSF category': [self.root_node]}

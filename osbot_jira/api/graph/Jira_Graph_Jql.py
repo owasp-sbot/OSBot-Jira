@@ -14,6 +14,8 @@ class Jira_Graph_Jql:
         self.render_puml__jira_graph      = None
         self.api_jira                     = self.jira_graph.api_jira
         self.issue_fields                 = None                         # issues fields data are only reloaded when this value is set
+        self.cache_enabled                = False
+        self.enable_jira_logs             = False
         self.jql                          = jql
         self.jql_keys                     = []
         self.projects_to_show             = None
@@ -37,15 +39,28 @@ class Jira_Graph_Jql:
         self.footer_font_size             = 35
         self.title_font_size              = 75
         self.footer_split_link_types_by   = 8
-        # if root_node:
-        #     self.jira_graph.add_node(root_node)
-        # if initial_nodes:
-        #     self.jira_graph.add_nodes(initial_nodes)
-        # if issue_links:
-        #     self.jira_graph.set_puml_link_types_to_add(issue_links)
-        # if skin_params:
-        #     self.jira_graph.set_skin_params(issue_links)
-        self.jira_graph.api_jira.log_requests = True
+
+        self.log_requests()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
+
+    def add_linked_issues_for_node_and_link_type(self, issue_id, link_type, depth=1):
+        with self.jira_graph as _:
+            _.add_node(issue_id)
+            _.set_puml_link_types_to_add(link_type)
+            _.add_all_linked_issues(depth=depth)
+        return self
+
+    def add_linked_issues_for_nodes_and_link_types(self, issue_ids, link_types, depth=1):
+        with self.jira_graph as _:
+            _.add_nodes(issue_ids)
+            _.set_puml_link_types_to_add(link_types)
+            _.add_all_linked_issues(depth=depth)
+        return self
 
     def add_node(self, key):
         if key:
@@ -54,7 +69,7 @@ class Jira_Graph_Jql:
 
     def add_project(self, project):                 # this will add nodes for every issue in this project (usually from the local cache)
         if project:
-            issues = self.get_issues_in_project(project)
+            issues = self.get_issues_from_project(project)
             for issue in issues:
                 issue_key = issue.get('Key')
                 self.add_node(issue_key)
@@ -63,6 +78,10 @@ class Jira_Graph_Jql:
     def delete_node(self, key, delete_edges=False, delete_from_nodes=False, delete_to_nodes=False):
         self.jira_graph.delete_node(key, delete_edges=delete_edges, delete_from_nodes=delete_from_nodes, delete_to_nodes=delete_to_nodes)
         return self
+
+    def delete_nodes(self, issues_ids, **kwargs):
+        for issue_id in issues_ids:
+            self.delete_node(issue_id, **kwargs)
 
     def disable_jira_requests(self):
         self.api_jira.disable_requests()
@@ -85,6 +104,12 @@ class Jira_Graph_Jql:
         self.jira_graph.get_nodes_issues()                 # see if we need to do this
         return self
 
+    def log_requests(self, value=True):                # this is used to log the requests to the jira server
+        self.enable_jira_logs = value
+        self.jira_graph.api_jira.log_requests = value
+        self.api_jira.log_requests = value
+        return self
+
     def render_png(self):
         return self.jira_graph.render_puml_and_save_tmp(use_lambda=False)
 
@@ -104,17 +129,30 @@ class Jira_Graph_Jql:
             return self.jira_graph.get_nodes_issues()
         return self.jira_graph.issues or {}
 
-    def get_issues_ids_that_match(self, key, value):
-        return (issue.get('Key') for issue in self.get_issues_that_match(key, value))
+    def get_issues_from_projects(self, projects, just_nodes_issues=False):
+        issues = []
+        for project in projects:
+            issues.extend(self.get_issues_from_project(project, just_nodes_issues=just_nodes_issues))
+        return issues
 
-    def get_issues_in_project(self, project_name):
-        return self.get_issues_that_match('Project', project_name)
+    def get_issues_ids_from_projects(self, projects, just_nodes_issues=False):
+        return list(issue.get('Key') for issue in self.get_issues_from_projects(projects, just_nodes_issues=just_nodes_issues))
 
-    def get_issues_that_match(self, key, value):
+    def get_issues_ids_that_match(self, key, value, just_nodes_issues=False):
+        return list(issue.get('Key') for issue in self.get_issues_that_match(key, value,just_nodes_issues=just_nodes_issues))
+
+    def get_issues_from_project(self, project_name, just_nodes_issues=False):
+        return self.get_issues_that_match('Project', project_name, just_nodes_issues=just_nodes_issues)
+
+    def get_issues_ids_from_project(self, project_name, just_nodes_issues=False):
+        return self.get_issues_ids_that_match('Project', project_name, just_nodes_issues=just_nodes_issues)
+
+
+    def get_issues_that_match(self, key, value, just_nodes_issues=False):
         issues = []
         #print(key)
         if key is not None and value is not None:
-            jira_issues = self.get_issues(just_nodes_issues=False)
+            jira_issues = self.get_issues(just_nodes_issues=just_nodes_issues)
             for issue_id, issue_data in jira_issues.items():
                 #print(issue_data.get(key), value)
                 issue_value = issue_data.get(key)
@@ -131,7 +169,10 @@ class Jira_Graph_Jql:
         if just_nodes_issues:
             if issue_id not in self.get_nodes():
                 return {}
-        return self.jira_graph.issues.get(issue_id, {})
+        if self.jira_graph.issues:
+            return self.jira_graph.issues.get(issue_id, {})
+        return self.jira_graph.api_jira.issue(issue_id)
+
 
     def get_edges(self):
         return self.jira_graph.edges
@@ -160,6 +201,12 @@ class Jira_Graph_Jql:
             for issue_id in issues_ids:
                 issues_data[issue_id] = self.issue(issue_id,just_nodes_issues=just_nodes_issues)
         return issues_data
+
+    def reset_jira_graph(self):
+        self.jira_graph = Jira_Graph()
+        self.use_cache   (self.cache_enabled)
+        self.log_requests(self.enable_jira_logs)
+        return self
 
     def show_links(self, show_links_as_notes=True, show_existing_edges_in_notes=False, show_summary_in_notes=False):
         self.set_show_links_as_notes         (show_links_as_notes         )
@@ -453,6 +500,7 @@ class Jira_Graph_Jql:
         return self.jira_graph.get_puml()
 
     def use_cache(self, value=True):
+        self.cache_enabled = value
         if value:
             cached_issues = Jira_Local_Cache().all_issues(index_by='Key')
             self.set_issues(cached_issues)

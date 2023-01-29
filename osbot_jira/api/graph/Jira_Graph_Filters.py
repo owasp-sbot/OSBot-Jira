@@ -322,6 +322,19 @@ class Jira_Graph_Filters:
             #self.only_edges_with_both_nodes()    # remove edges that don't have both links
         return self
 
+    def only_nodes_with_no_edges(self):
+        nodes_with_edges    = []
+        nodes_with_no_edges = []
+        for edge in list(self.jira_graph.edges):
+            nodes_with_edges.append(edge[0])
+            nodes_with_edges.append(edge[2])
+        nodes_with_edges = unique(nodes_with_edges)
+        for node in self.jira_graph.nodes:
+            if node not in nodes_with_edges:
+                nodes_with_no_edges.append(node)
+        self.jira_graph.nodes = nodes_with_no_edges
+        self.jira_graph.edges = []
+        return self
 
     def only_edges_with_both_nodes(self):
         new_edges = []
