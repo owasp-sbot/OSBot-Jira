@@ -1,5 +1,6 @@
 import json
 from osbot_jira.api.jira_server.API_Jira_Rest import API_Jira_Rest
+from osbot_utils.decorators.lists.group_by import group_by
 from osbot_utils.decorators.lists.index_by import index_by
 
 from osbot_jira.api.graph.GS_Graph_Puml import GS_Graph_Puml
@@ -25,13 +26,13 @@ class Jira_Graph:
                                         'left-to-right'       : True     ,
                                         'show-key-in-text'    : True     ,
                                         'show-edge-labels'    : True     ,
+                                        'only-link-if-issue'  : False    ,
                                         'width'               : None     ,
                                         'height'              : None
                                       }
         self.nodes                 = []
         self.edges                 = []
         self.issues                = None
-        self._link_types           = None
         self.use_cache             = False
         self.notes                 = []
         self.node_type             = {}
@@ -80,12 +81,14 @@ class Jira_Graph:
     def add_all_linked_issues(self, keys=None, depth = 1, add_back_links=False):
         if keys is None:
             keys = []
-        edges_from = []
+        edges_from           = []
+        issues               = self.get_issues()
         link_types_to_add    = self.puml_options.get('link-types-to-add'   ) or []                                  # get mapping of link types to add
         link_types_to_ignore = self.puml_options.get('link-types-to-ignore') or []
         keys_to_ignore       = self.puml_options.get('keys-to-ignore'      ) or []
         only_from_projects   = self.puml_options.get('only-from-projects'  ) or []
         projects_to_ignore   = self.puml_options.get('projects-to-ignore'  ) or []
+        only_link_if_issue   = self.puml_options.get('only-link-if-issue'  )
 
         self.add_nodes(keys)                                                                            # add extra nodes provided in method param (to the nodes that already exist in the graph)
         for i in range(0,depth):                                                                        # loop the amount defined in depth
@@ -109,6 +112,9 @@ class Jira_Graph:
                             if not link_types_to_add and item in edges_from:
                                 if add_back_links is False:
                                     continue
+
+                            if only_link_if_issue and issues.get(item) is None:
+                               continue
 
                             self.add_edge(key, issue_type, item)
                             self.add_node(item)
@@ -187,6 +193,13 @@ class Jira_Graph:
         return { "nodes": self.jira_get_nodes_issues(True),
                  "edges" : self.edges}
 
+    def get_issues(self):
+        return self.issues
+
+    @group_by
+    def get_issues_values(self):
+        return self.get_issues().values()
+
     def get_nodes_issues(self,reload=False,fields=None):
         self.jira_get_issues(reload=reload, fields=fields, index_by='Key')
         nodes_issues = {}
@@ -262,10 +275,6 @@ class Jira_Graph:
                     if from_key not in result[to_key][link_type]:
                         result[to_key][link_type].append(from_key)
         return result
-
-    # def set_link_types_from_issues(self, issues):
-    #     self._link_types = self.api_issues.link_types_from_issues(issues.values(),issues.keys())
-    #     return self
 
     def load(self, path):
         data = Json.load_file(path)
@@ -479,6 +488,9 @@ class Jira_Graph:
         self.issues = data.get('issues')
         return self
 
+    def set_issues(self, issues):
+        self.issues = issues
+        return self
 
     def set_puml_node_text_value     (self,value        ): self.puml_options['node-text-value'     ] = value             ; return self
     def set_puml_link_types_to_add   (self,value        ): self.puml_options['link-types-to-add'   ] = value             ; return self
@@ -487,6 +499,7 @@ class Jira_Graph:
     def set_puml_left_to_right       (self,value        ): self.puml_options['left-to-right'       ] = value             ; return self
     def set_puml_direction_top_down  (self              ): self.puml_options['left-to-right'       ] = False             ; return self
     def set_puml_only_from_projects  (self,value        ): self.puml_options['only-from-projects'  ] = value             ; return self
+    def set_puml_only_link_if_issue  (self,value        ): self.puml_options['only-link-if-issue'  ] = value             ; return self
     def set_puml_projects_to_ignore  (self,value        ): self.puml_options['projects-to-ignore'  ] = value             ; return self
     def set_puml_show_key_in_text    (self,value        ): self.puml_options['show-key-in-text'    ] = value             ; return self
     def set_puml_show_edge_labels    (self,value        ): self.puml_options['show-edge-labels'    ] = value             ; return self

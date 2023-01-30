@@ -67,3 +67,8 @@ class Jira_Local_Cache:
 
     def all_issues_ids(self):
         return list_set(self.all_issues(index_by='Key'))
+
+    def add_issues_to_jira_graph(self,jira_graph):
+        cached_issues = self.all_issues(index_by='Key')
+        jira_graph.set_issues(cached_issues)
+        return self

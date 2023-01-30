@@ -1,4 +1,5 @@
 from osbot_jira.api.graph.Jira_Graph import Jira_Graph
+from osbot_utils.utils.Str import str_safe
 
 
 class Jira_Graph_View:
@@ -39,9 +40,16 @@ class Jira_Graph_View:
             schema_graph.add_edge(item.get('from_issue_type'), item.get('link_name'),item.get('to_issue_type'))
 
         return schema_graph
-        #self.jira_graph = new_graph
-        #self.jira_graph.render_puml()
-        #return self.puml()
+
+    def create_issues_stats_graph(self):
+        stats_graph = Jira_Graph()
+
+        issues_by_project = self.jira_graph.get_issues_values(group_by="Project")
+        for project, issues in issues_by_project.items():
+            node_text =  f"{str_safe(project)} - {len(issues)}"
+            #node_text += f"\\n\\n\\t # issues: {len(issues)} " # was causing puml error
+            stats_graph.add_node(node_text)
+        return stats_graph
 
     def puml(self):
         return self.jira_graph.puml.puml

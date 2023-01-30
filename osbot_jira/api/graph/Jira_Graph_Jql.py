@@ -1,4 +1,5 @@
 from osbot_jira.api.graph.Jira_Graph import Jira_Graph
+from osbot_jira.api.graph.Jira_Graph_Subset import Jira_Graph_Subset
 from osbot_jira.api.graph.Jira_Graph_View import Jira_Graph_View
 from osbot_jira.api.jira_server.local.Jira_Local_Cache import Jira_Local_Cache
 from osbot_jira.api.plantuml.views.Render_Puml__Jira_Graph import Render_Puml__Jira_Graph
@@ -16,6 +17,7 @@ class Jira_Graph_Jql:
         self.issue_fields                 = None                         # issues fields data are only reloaded when this value is set
         self.cache_enabled                = False
         self.enable_jira_logs             = False
+        self.enable_jira_calls            = False
         self.jql                          = jql
         self.jql_keys                     = []
         self.projects_to_show             = None
@@ -48,18 +50,25 @@ class Jira_Graph_Jql:
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
 
-    def add_linked_issues_for_node_and_link_type(self, issue_id, link_type, depth=1):
+    def allow_jira_requests(self, value):
+        self.api_jira.allow_requests = value
+        self.jira_graph.api_jira.allow_requests = value
+
+    def add_linked_issues_for_node_and_link_types(self, issue_id, link_types, depth=1):
         with self.jira_graph as _:
             _.add_node(issue_id)
-            _.set_puml_link_types_to_add(link_type)
+            _.set_puml_link_types_to_add(link_types)
             _.add_all_linked_issues(depth=depth)
         return self
 
-    def add_linked_issues_for_nodes_and_link_types(self, issue_ids, link_types, depth=1):
-        with self.jira_graph as _:
-            _.add_nodes(issue_ids)
-            _.set_puml_link_types_to_add(link_types)
-            _.add_all_linked_issues(depth=depth)
+    def add_linked_issues_for_nodes_and_link_types(self, issues_ids, link_types, depth=1):
+        self.add_nodes(issues_ids)
+        self.set_link_types(link_types)
+        self.add_all_linked_issues(depth=depth)
+        # with self.jira_graph as _:
+        #     _.add_nodes(issues_ids)
+        #     _.set_puml_link_types_to_add(link_types)
+        #     _.add_all_linked_issues(depth=depth)
         return self
 
     def add_node(self, key):
@@ -75,6 +84,9 @@ class Jira_Graph_Jql:
                 self.add_node(issue_key)
         return self
 
+    def create_jira_graph_subset(self):
+        return Jira_Graph_Subset(self.jira_graph)
+
     def delete_node(self, key, delete_edges=False, delete_from_nodes=False, delete_to_nodes=False):
         self.jira_graph.delete_node(key, delete_edges=delete_edges, delete_from_nodes=delete_from_nodes, delete_to_nodes=delete_to_nodes)
         return self
@@ -84,7 +96,7 @@ class Jira_Graph_Jql:
             self.delete_node(issue_id, **kwargs)
 
     def disable_jira_requests(self):
-        self.api_jira.disable_requests()
+        self.allow_jira_requests(False)
         return self
 
     def execute_jql(self):
@@ -110,6 +122,7 @@ class Jira_Graph_Jql:
         self.api_jira.log_requests = value
         return self
 
+
     def render_png(self):
         return self.jira_graph.render_puml_and_save_tmp(use_lambda=False)
 
@@ -117,6 +130,12 @@ class Jira_Graph_Jql:
         jira_graph_view = Jira_Graph_View(jira_graph=self.jira_graph)
         schema_graph = jira_graph_view.create_schema_graph()
         schema_graph.set_skin_param('linetype', 'polyline')  # ortho
+        schema_graph.render_puml_and_save_tmp(use_lambda=False, using_jira_nodes=False)
+        return schema_graph
+
+    def render_png__issues_stats(self):
+        jira_graph_view = Jira_Graph_View(jira_graph=self.jira_graph)
+        schema_graph = jira_graph_view.create_issues_stats_graph()
         schema_graph.render_puml_and_save_tmp(use_lambda=False, using_jira_nodes=False)
         return schema_graph
 
@@ -222,6 +241,11 @@ class Jira_Graph_Jql:
     def set_edge_font_size(self, value):
         return self.set_skin_param('ArrowFontSize', value)
 
+    def set_enable_jira_calls(self, value):
+        self.enable_jira_calls = value
+        self.allow_jira_requests(value)
+        return self
+
     def set_footer_font_size(self, value):
         self.footer_font_size = value
         return self
@@ -265,6 +289,10 @@ class Jira_Graph_Jql:
     def set_keys_to_ignore(self, keys_to_ignore):
         self.keys_to_ignore = keys_to_ignore
         self.jira_graph.set_puml_keys_to_ignore(keys_to_ignore)
+        return self
+
+    def set_only_link_if_issue(self, value=False):
+        self.jira_graph.set_puml_only_link_if_issue(value)
         return self
 
     def set_png_dpi(self, dpi):
@@ -329,7 +357,7 @@ class Jira_Graph_Jql:
         return self
 
     def set_issues(self, issues):
-        self.jira_graph.issues = issues
+        self.jira_graph.set_issues(issues)
         return self
 
     def set_title(self, value):
@@ -383,6 +411,9 @@ class Jira_Graph_Jql:
     def filter_status_to_show(self):
         self.jira_graph.filter().only_with_field_equal_to('Status', self.status_to_show)
         return self
+
+    def add_all_linked_issues(self, depth=1):
+        self.jira_graph.add_all_linked_issues(depth=depth)
 
     def add_link_types_as_notes(self):
         issues = self.get_issues(just_nodes_issues=False)
