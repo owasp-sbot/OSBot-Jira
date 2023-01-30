@@ -16,8 +16,9 @@ class Jira_Graph_Subset:
             _.set_only_link_if_issue(True        )
         return self
 
-    def render(self, root_key, depth=1):
+    def render(self, root_key, link_types=None, depth=1):
         with self.jira_graph_jql as _:
+            _.set_link_types   (link_types)
             _.set_depth        (depth   )
             _.add_node         (root_key)
             _.render_jira_graph()
@@ -27,7 +28,7 @@ class Jira_Graph_Subset:
         self.jira_graph_jql.create_jira_graph_png()
         return self
 
-    def render_and_create_png(self, root_key, depth=1):
-        self.render(root_key=root_key, depth=depth)
+    def render_and_create_png(self, root_key, link_types=None,depth=1):
+        self.render(root_key=root_key, link_types=link_types, depth=depth)
         self.create_png()
         return self

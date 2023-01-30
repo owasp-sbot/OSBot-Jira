@@ -85,7 +85,7 @@ class Jira_Graph_Jql:
         return self
 
     def create_jira_graph_subset(self):
-        return Jira_Graph_Subset(self.jira_graph)
+        return Jira_Graph_Subset(self.jira_graph).create()
 
     def delete_node(self, key, delete_edges=False, delete_from_nodes=False, delete_to_nodes=False):
         self.jira_graph.delete_node(key, delete_edges=delete_edges, delete_from_nodes=delete_from_nodes, delete_to_nodes=delete_to_nodes)
