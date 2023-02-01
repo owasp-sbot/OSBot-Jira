@@ -295,6 +295,9 @@ class Jira_Graph_Jql:
         self.jira_graph.set_puml_only_link_if_issue(value)
         return self
 
+    def set_png_background_color(self, color):
+        return self.set_skin_param('backgroundcolor', color)
+
     def set_png_dpi(self, dpi):
         return self.set_skin_param('dpi', dpi)
 

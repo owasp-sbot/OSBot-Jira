@@ -250,6 +250,9 @@ class Jira_Graph_Filters:
                     graph.add_edge(value, '', node)
         return self
 
+    def only_nodes_with_edges(self):
+        return self.delete_nodes_with_no_edges()
+
     def only_with_issue_types(self, issue_types):
         if issue_types:
             new_nodes = []
