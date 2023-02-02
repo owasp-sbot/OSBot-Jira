@@ -2,6 +2,7 @@ from osbot_jira.api.plantuml.API_Plant_UML import API_Plant_UML
 from osbot_jira.api.plantuml.Puml_Base import Puml_Base
 from osbot_utils.utils import Misc
 from osbot_utils.utils.Files            import Files
+from osbot_utils.utils.Str import str_safe
 
 
 class Puml(Puml_Base):
@@ -64,8 +65,9 @@ class Puml(Puml_Base):
         return self
 
     def fix_id(self, id):
-        if id:
-            return id.replace(' ','_').replace('-','_').replace(':','_').replace('/','_').replace('(','_').replace(')','_')
+        return str_safe(id)
+        #if id:
+        #    return id.replace(' ','_').replace('-','_').replace(':','_').replace('/','_').replace('(','_').replace(')','_')
 
 
 

@@ -364,9 +364,10 @@ class Jira_Graph_Jql:
         return self
 
     def set_title(self, value):
-        self.title = f"\\n{value}\\n"
-        self.set_skin_param('TitleFontSize', self.title_font_size)
-        self.set_skin_param('TitleFontColor', 'darkblue')
+        if value:
+            self.title = f"\\n{value}\\n"
+            self.set_skin_param('TitleFontSize', self.title_font_size)
+            self.set_skin_param('TitleFontColor', 'darkblue')
         return self
 
     def set_title_and_footer(self, title=None, footer=None):
