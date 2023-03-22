@@ -16,6 +16,7 @@ from osbot_utils.utils.Misc import env_vars, list_set, date_time_now_less_time_d
 
 
 class API_Jira_Rest:
+
     def __init__(self):
         self.secrets_id          = 'GS_BOT_GS_JIRA'
         self.jira_env_vars       = {'JIRA_API_EMAIL', 'JIRA_API_TOKEN', 'JIRA_API_SERVER'}
@@ -51,6 +52,10 @@ class API_Jira_Rest:
 
     def set_public_jira(self, server):
         self._config = (server, "", "")
+        return self
+
+    def set_log_requests(self, value=True):
+        self.log_requests = value
         return self
 
     # request helpers
