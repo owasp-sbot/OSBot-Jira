@@ -54,6 +54,10 @@ class Jira_Graph_Jql:
         self.api_jira.allow_requests = value
         self.jira_graph.api_jira.allow_requests = value
 
+    def add_edge(self, from_key, link_type, to_key):
+        self.jira_graph.add_edge(from_key, link_type, to_key)
+        return self
+
     def add_linked_issues_for_node_and_link_types(self, issue_id, link_types, depth=1):
         with self.jira_graph as _:
             _.add_node(issue_id)
@@ -416,6 +420,9 @@ class Jira_Graph_Jql:
         self.jira_graph.filter().only_with_field_equal_to('Status', self.status_to_show)
         return self
 
+    def add_edges(self, edges):
+        self.jira_graph.add_edges(edges)
+        return self
     def add_all_linked_issues(self, depth=1):
         self.jira_graph.add_all_linked_issues(depth=depth)
 

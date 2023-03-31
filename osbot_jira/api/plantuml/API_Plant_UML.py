@@ -8,10 +8,10 @@ from osbot_utils.utils.Files import Files
 
 class API_Plant_UML:
 
-    def __init__(self):
+    def __init__(self, tmp_png_file=None):
         #self.path_plantuml       = abspath(join(__file__,'../../../_lambda_dependencies/plantuml/plantuml.jar'))
         self.url_plantuml_server = 'http://localhost:8080/form'
-        self.tmp_png_file        = Files.temp_file('.png')
+        self.tmp_png_file        = tmp_png_file
 
     # def exec_jar_plantuml(self, params):
     #     base_params = ['java', '-jar', self.path_plantuml] + params
@@ -26,6 +26,8 @@ class API_Plant_UML:
 
     def puml_to_png_via_local_server(self, puml,target_file = None):
         if target_file is None:
+            if self.tmp_png_file is None:
+                self.tmp_png_file = Files.temp_file('.png')
             target_file = self.tmp_png_file
         data         = { "text"    :  puml }
         url          = requests.post(self.url_plantuml_server, data = data).url
@@ -37,14 +39,11 @@ class API_Plant_UML:
             f.write(response.content)
         return target_file
 
-        response = requests.get(url)
-        if response.status_code == 200:
-            with open(tmp_png_file, 'wb') as f:
-                f.write(response.content)
-        return tmp_png_file
-
     def puml_to_png_using_lambda_function(self,puml, target_file = None):
-        if target_file is None : target_file = self.tmp_png_file
+        if target_file is None:
+            if self.tmp_png_file is None:
+                self.tmp_png_file = Files.temp_file('.png')
+            target_file = self.tmp_png_file
         puml_to_png  = Lambda('gw_bot.lambdas.puml_to_png').invoke
         result       = puml_to_png({"puml": puml})
         if result.get('png_base64'):

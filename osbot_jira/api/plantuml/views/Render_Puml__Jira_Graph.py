@@ -58,7 +58,6 @@ class Render_Puml__Jira_Graph:
                 card_text = f"<img:data:image/png;base64,{img_base64}>  \\n{card_text}"
 
         puml_card = f'{element} "{card_text}" as {id_plant_uml} #{card_color}'#.format(element, card_text, id_plant_uml)
-        #print(puml_card)
         return puml_card
 
     def set_skin_params(self, skin_params):
@@ -198,7 +197,7 @@ class Render_Puml__Jira_Graph:
             card_text = self.on_resolve_card_text(issue)
             if card_text is not None:                         # if on_resolve_card_text returns None, return the default card_text
                 return card_text
-        id_jira         = issue.get('Key')
+        id_jira         = issue.get('Key'   )
         status          = issue.get('Status')
         status_color    = self.resolve_status_color(status)
         summary_raw     = issue.get('Summary')
