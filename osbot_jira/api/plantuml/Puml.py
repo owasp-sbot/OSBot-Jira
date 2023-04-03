@@ -25,8 +25,10 @@ class Puml(Puml_Base):
 
         #title = Misc.word_wrap(title, self.max_title)      # this was causing errors with large titles that broke plantuml
 
-        if self.on_add_node:                                                      # if self.on_add_element is set, then use it for the node render bit
-            puml_to_add = self.on_add_node(element,title,self.fix_id(id),id)
+        if self.on_add_node:                                # if self.on_add_node is set, then use it for the node render bit
+            id_fixed    = self.fix_id(id)
+            puml_to_add = self.on_add_node(element, title, id_fixed, id)
+            #print(puml_to_add)
             if puml_to_add:
                 self.puml += "\t{0} \n".format(puml_to_add)
         else:

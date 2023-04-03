@@ -44,6 +44,12 @@ class Render_Puml__Jira_Graph:
                  'linetype'             : 'polyline'   } #polyline | ortho
         # skinparam dpi 10
         #           handwritten True
+
+    def fix_card_text(self, card_text):
+        if card_text:
+            return card_text.replace('\n', "\\n")       # make sure there are no 'new lines' in the card text (since that will break plantUml)
+        return card_text
+
     def on_add_node(self, element, card_text, id_plant_uml, id_jira):
         issue           = self.jira_graph.issues.get(id_jira)
         card_color      = 'white'
@@ -52,13 +58,13 @@ class Render_Puml__Jira_Graph:
             card_color      = self.resolve_card_color(issue)
             png_file        = path_combine(__file__, f"../../../../../../../modules/OSBot-Browser/osbot_browser/web_root/vivagraph/icons/{issue_type}.png")
             card_text       = self.resolve_card_text(issue)
-
+            card_text       = self.fix_card_text(card_text)
             if self.show_project_icons and file_exists(png_file):
                 img_base64 = bytes_to_base64(file_contents_as_bytes(png_file))
                 card_text = f"<img:data:image/png;base64,{img_base64}>  \\n{card_text}"
-
         puml_card = f'{element} "{card_text}" as {id_plant_uml} #{card_color}'#.format(element, card_text, id_plant_uml)
         return puml_card
+
 
     def set_skin_params(self, skin_params):
         self.skin_params.update(skin_params)
