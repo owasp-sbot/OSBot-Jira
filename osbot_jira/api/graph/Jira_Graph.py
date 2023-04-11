@@ -9,6 +9,8 @@ from osbot_jira.osbot_graph.Graph import Graph
 from osbot_utils.utils.Files import Files
 from osbot_utils.utils.Json import Json
 
+DEFAULT_NODE_TEXT_VALUE = "Summary"
+
 # this is very similar to the GS_Graph class, but loads data directly from Jira instead of ElasticSearch
 class Jira_Graph:
     def __init__(self):
@@ -17,17 +19,17 @@ class Jira_Graph:
         self.initial_puml_code     = "@startuml\n"
         self.extra_puml_lines      = ""
         self.puml_options          = {
-                                        'node-text-value'     : "Summary",
-                                        'link-types-to-add'   : []       ,
-                                        'link-types-to-ignore': []       ,
-                                        'keys-to-ignore'      : []       ,
-                                        'only-from-projects'  : []       ,
-                                        'projects-to-ignore'  : []       ,
-                                        'left-to-right'       : True     ,
-                                        'show-key-in-text'    : True     ,
-                                        'show-edge-labels'    : True     ,
-                                        'only-link-if-issue'  : False    ,
-                                        'width'               : None     ,
+                                        'node-text-value'     : DEFAULT_NODE_TEXT_VALUE ,
+                                        'link-types-to-add'   : []                      ,
+                                        'link-types-to-ignore': []                      ,
+                                        'keys-to-ignore'      : []                      ,
+                                        'only-from-projects'  : []                      ,
+                                        'projects-to-ignore'  : []                      ,
+                                        'left-to-right'       : True                    ,
+                                        'show-key-in-text'    : True                    ,
+                                        'show-edge-labels'    : True                    ,
+                                        'only-link-if-issue'  : False                   ,
+                                        'width'               : None                    ,
                                         'height'              : None
                                       }
         self.nodes                 = []
@@ -66,6 +68,10 @@ class Jira_Graph:
             else:
                 for key in keys:
                     self.add_node(key)
+        return self
+
+    def add_note(self, key, value, position='right'):
+        self.notes.append((position, key, value))
         return self
 
     def add_edge(self, from_key, link_type, to_key):
@@ -491,6 +497,8 @@ class Jira_Graph:
     def set_issues(self, issues):
         self.issues = issues
         return self
+
+    def get_puml_node_text_value     (self) : return self.puml_options['node-text-value']
 
     def set_puml_node_text_value     (self,value        ): self.puml_options['node-text-value'     ] = value             ; return self
     def set_puml_link_types_to_add   (self,value        ): self.puml_options['link-types-to-add'   ] = value             ; return self

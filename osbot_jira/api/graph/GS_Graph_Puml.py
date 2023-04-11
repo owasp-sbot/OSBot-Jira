@@ -37,7 +37,7 @@ class GS_Graph_Puml:
                 self.puml.add_card(key, key)
             else:
                 issue = self.issues.get(key)
-                if issue:
+                if issue and type(issue) is dict:
                     key_text = issue.get(node_text_value)
                     if self.puml_options['show-key-in-text']:
                         line = f"={key_text}\\n<color:grey><size:10><i>{key}</i></size></color>"        # note: if getting weird formating errors take a look at Puml.max_title
@@ -64,9 +64,9 @@ class GS_Graph_Puml:
 
         for note in self.notes:
             position = note[0]
-            key      = note[1]
+            key      = self.puml.fix_id(note[1])
             text     = note[2]
-            line     = "\n\n\t note {0} of {1} \n {2} \n end note".format(position, key, text)
+            line     = f'\n\n\t note {position} of "{key}" \n {text} \n end note'
             self.puml.add_line(line)
 
         self.puml.enduml()

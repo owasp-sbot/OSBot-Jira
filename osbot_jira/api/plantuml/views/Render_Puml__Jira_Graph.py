@@ -53,7 +53,7 @@ class Render_Puml__Jira_Graph:
     def on_add_node(self, element, card_text, id_plant_uml, id_jira):
         issue           = self.jira_graph.issues.get(id_jira)
         card_color      = 'white'
-        if issue:
+        if issue and type(issue) is dict:
             issue_type      = upper(issue.get('Issue Type'))
             card_color      = self.resolve_card_color(issue)
             png_file        = path_combine(__file__, f"../../../../../../../modules/OSBot-Browser/osbot_browser/web_root/vivagraph/icons/{issue_type}.png")
@@ -194,8 +194,8 @@ class Render_Puml__Jira_Graph:
         # 'Aquamarine'
         # if issue_type == '': return 'LightSalmon'
         # if issue_type == '':  return ''
-
-        print(f'[Render_Puml__Jira_Graph]no card color for: {issue_type}')
+        if issue_type:
+            print(f'[Render_Puml__Jira_Graph]no card color for: {issue_type}')
         return 'white'
 
     def resolve_card_text(self, issue):
@@ -203,10 +203,11 @@ class Render_Puml__Jira_Graph:
             card_text = self.on_resolve_card_text(issue)
             if card_text is not None:                         # if on_resolve_card_text returns None, return the default card_text
                 return card_text
+        node_text_value = self.jira_graph.get_puml_node_text_value()
         id_jira         = issue.get('Key'   )
         status          = issue.get('Status')
         status_color    = self.resolve_status_color(status)
-        summary_raw     = issue.get('Summary')
+        summary_raw     = issue.get(node_text_value)
         if summary_raw:
             summary_wrapped = '\\n='.join(textwrap.wrap(summary_raw, self.summary_wrap_at))
             summary_wrapped = f"={summary_wrapped}\\n"

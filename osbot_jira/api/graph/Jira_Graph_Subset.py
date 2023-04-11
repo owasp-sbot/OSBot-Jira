@@ -28,11 +28,20 @@ class Jira_Graph_Subset:
         nodes_issues        = self.jira_graph.get_nodes_issues()
         self.jira_graph_jql = Jira_Graph_Jql()
         with self.jira_graph_jql as _:
-            #_.only_with_note_issues ()
             _.set_issues            (nodes_issues)
             _.set_enable_jira_calls (False       )
             _.set_only_link_if_issue(True        )
         return self
+
+    def create_png(self):
+        self.jira_graph_jql.create_jira_graph_png()
+        return self
+
+    def issues(self, just_nodes_issues=False):
+        return self.jira_graph_jql.get_issues(just_nodes_issues=just_nodes_issues)
+
+    def nodes(self):
+        return self.jira_graph_jql.get_nodes()
 
     def render(self, title=None, key=None, keys=None, project=None, link_types=None, depth=1):
         with self.jira_graph_jql as _:
@@ -49,9 +58,6 @@ class Jira_Graph_Subset:
         self.jira_graph_jql.set_only_link_if_issue(not value)
         return self
 
-    def create_png(self):
-        self.jira_graph_jql.create_jira_graph_png()
-        return self
 
     def render_and_create_png(self, **kwargs):
         self.render(**kwargs)

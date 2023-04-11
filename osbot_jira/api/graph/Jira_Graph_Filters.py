@@ -121,6 +121,21 @@ class Jira_Graph_Filters:
             self.jira_graph.nodes.remove(node_to_delete)
         return self
 
+    # double check if this is working as expected
+    # def delete_edges_with_no_issues(self):
+    #     edges_to_delete = []
+    #     issues = self.jira_graph.issues
+    #     pprint(len(self.jira_graph.edges))
+    #     for edge in self.jira_graph.edges:
+    #         (from_node, type, to_node) = edge
+    #
+    #         if issues.get(from_node) is None and issues.get(to_node) is None:
+    #             edges_to_delete.append(edge)
+    #             #print(from_node)
+    #     self.delete_edges(edges_to_delete)
+    #     pprint(len(self.jira_graph.edges))
+    #     return self
+
     def expand_edges_with_same__to_id(self, depth = 10):
         for i in range(0,depth):
             graph = self.jira_graph

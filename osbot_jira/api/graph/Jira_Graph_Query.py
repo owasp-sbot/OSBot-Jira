@@ -7,20 +7,6 @@ class Jira_Graph_Query:
         self.jira_graph = jira_graph
 
 
-    def nodes(self):
-        return self.jira_graph.nodes
-
-    def nodes_issues(self):
-        return self.jira_graph.get_nodes_issues()
-
-    def nodes_from_project(self, value, field='Project'):
-        matches = []
-        for node, issue in self.nodes_issues().items():
-            project = issue.get(field)
-            if project == value:
-                matches.append(node)
-        return matches
-
     def edges(self):
         return self.jira_graph.edges
 
@@ -43,6 +29,9 @@ class Jira_Graph_Query:
                 result[link_type].append(to_id)
         return result
 
+    def nodes(self):
+        return self.jira_graph.nodes
+
     def nodes_adjacent_to_ids(self):
         result = {}
         for (from_id, _, to_id) in self.edges():
@@ -52,6 +41,30 @@ class Jira_Graph_Query:
                 result[to_id] = []
             result[from_id].append(to_id)
         return result
+
+    def nodes_issues(self):
+        return self.jira_graph.get_nodes_issues()
+
+    def nodes_find(self, queries):
+        result = {}
+        for node, issue in self.nodes_issues().items():
+            match = False
+            for key,value in queries.items():
+                if (type(value) is list and issue.get(key) in value) or issue.get(key) == value:
+                    match = True
+                else:
+                    match = False
+                    break
+            if match:
+                result[node] = issue
+        return result
+    def nodes_from_project(self, value, field='Project'):
+        matches = []
+        for node, issue in self.nodes_issues().items():
+            project = issue.get(field)
+            if project == value:
+                matches.append(node)
+        return matches
 
     def nodes_with_no_adjacent_to_ids(self):
         result = []

@@ -58,6 +58,12 @@ class Jira_Graph_Jql:
         self.jira_graph.add_edge(from_key, link_type, to_key)
         return self
 
+    def add_linked_issues(self, link_types, depth=1):
+        with self.jira_graph as _:
+            _.set_puml_link_types_to_add(link_types)
+            _.add_all_linked_issues(depth=depth)
+        return self
+
     def add_linked_issues_for_node_and_link_types(self, issue_id, link_types, depth=1):
         with self.jira_graph as _:
             _.add_node(issue_id)
@@ -115,8 +121,8 @@ class Jira_Graph_Jql:
     def query(self):
         return self.jira_graph.query()
 
-    def graph_expand(self, depth=1):
-        self.jira_graph.add_all_linked_issues(depth=depth)
+    def graph_expand(self, depth=1, add_back_links=False, keys=None):
+        self.jira_graph.add_all_linked_issues(keys=keys, depth=depth, add_back_links=add_back_links)
         self.jira_graph.get_nodes_issues()                 # see if we need to do this
         return self
 
@@ -529,8 +535,11 @@ class Jira_Graph_Jql:
     def create_jira_graph_png(self, create_png=True):
         self.render_puml_from_jira_graph()
         if create_png:
-            self.render_puml__jira_graph.save_as_png()
+            self.save_as_png()
         return self
+
+    def save_as_png(self):
+        self.render_puml__jira_graph.save_as_png()
 
     def print_nodes_edges_count(self):
         print("******* Nodes and Edges count for current Jira Graph *********")
