@@ -50,15 +50,21 @@ class Jira_Graph:
         pass
 
     def add_issue(self, key, issue):
-        if issue is not None:
-            if self.issues is None:
-                self.issues = {}
-            self.issues[key] = issue
+        if key is not None:
+            if type(key) is not str:
+                key = f'{key}'
+            if issue is not None:
+                if self.issues is None:
+                    self.issues = {}
+                self.issues[key] = issue
 
     def add_node(self, key,issue=None):
-        if key not in self.nodes:
-            self.nodes.append(key)
-            self.add_issue(key,issue)
+        if key is not None and key != '':
+            if type(key) is not str:
+                key = f'{key}'
+            if key not in self.nodes:
+                self.nodes.append(key)
+                self.add_issue(key,issue)
         return self
 
     def add_nodes(self, keys):

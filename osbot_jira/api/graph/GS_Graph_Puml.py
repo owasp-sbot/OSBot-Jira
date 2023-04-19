@@ -66,8 +66,9 @@ class GS_Graph_Puml:
             position = note[0]
             key      = self.puml.fix_id(note[1])
             text     = note[2]
-            line     = f'\n\n\t note {position} of "{key}" \n {text} \n end note'
-            self.puml.add_line(line)
+            if key:
+                line     = f'\n\n\t note {position} of "{key}" \n {text} \n end note'
+                self.puml.add_line(line)
 
         self.puml.enduml()
         self.graph.puml = self.puml
