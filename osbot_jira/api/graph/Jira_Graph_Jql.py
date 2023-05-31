@@ -542,7 +542,7 @@ class Jira_Graph_Jql:
         self.render_puml__jira_graph.save_as_png()
 
     def print_nodes_edges_count(self):
-        print("******* Nodes and Edges count for current Jira Graph *********")
+        print("\n******* Nodes and Edges count for current Graph *********")
         print(f"{self.get_nodes_count()} nodes | {self.get_edges_count()} edges")
         return self
 
