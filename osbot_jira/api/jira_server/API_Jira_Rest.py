@@ -285,7 +285,7 @@ class API_Jira_Rest:
                                   'Summary'   : summary    }
                     if issue_links.get(link_type) is None:
                         issue_links[link_type] = {}
-                        issue_links[link_type][link_key] = link_data
+                    issue_links[link_type][link_key] = link_data
                 else:
                     if issue_links.get(link_type) is None:
                         issue_links[link_type] = []
