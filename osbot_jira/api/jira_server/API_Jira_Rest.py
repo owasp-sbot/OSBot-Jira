@@ -3,7 +3,7 @@ from osbot_utils.decorators.lists.index_by        import index_by
 from osbot_utils.decorators.methods.cache_on_self import cache_on_self
 
 from osbot_utils.testing.Duration   import Duration
-from osbot_utils.utils.Dev          import Dev
+from osbot_utils.utils.Dev import Dev, pprint
 from osbot_utils.utils.Files        import path_combine, create_folder, file_create_bytes, file_not_exists
 from osbot_utils.utils.Json         import json_dumps, file_create_json
 from osbot_utils.utils.Lists        import list_chunks
@@ -72,7 +72,7 @@ class API_Jira_Rest:
         print(target)
         response  = requests.get(target, auth=(username, password),allow_redirects=False)
         return response.text
-        return response.headers.get('Location')
+        #return response.headers.get('Location')
 
     def request_get(self,path,always_return_content=False):
         return self.request_method('GET', path, always_return_content=always_return_content)
@@ -261,19 +261,35 @@ class API_Jira_Rest:
             path = 'issue/{0}?fields={1}'.format(upper(issue_id),fields)
             return self.request_get(path)
 
-    def map_issue_links(self, issue, issue_links_raw):
+    def map_issue_links(self, issue, issue_links_raw, expand_issue_links=False):
         issue_links = {}
         if issue_links_raw:
             for item in issue_links_raw:
                 if item.get('outwardIssue'):
+                    fields    = item.get('outwardIssue').get('fields')
                     link_key  = item.get('outwardIssue').get('key')
                     link_type = item.get('type').get('outward')
                 else:
+                    fields    = item.get('inwardIssue').get('fields')
                     link_key  = item.get('inwardIssue').get('key')
                     link_type = item.get('type').get('inward')
-                if issue_links.get(link_type) is None:
-                    issue_links[link_type] = []
-                issue_links[link_type].append(link_key)
+                if expand_issue_links:
+                    issue_type = fields.get('issuetype').get('name')
+                    priority   = fields.get('priority').get('name')
+                    status     = fields.get('status').get('name')
+                    summary    = fields.get('summary')
+                    link_data  = {'Key'       : link_key   ,
+                                  'Issue_Type': issue_type ,
+                                  'Priority'  : priority   ,
+                                  'Status'    : status     ,
+                                  'Summary'   : summary    }
+                    if issue_links.get(link_type) is None:
+                        issue_links[link_type] = {}
+                        issue_links[link_type][link_key] = link_data
+                else:
+                    if issue_links.get(link_type) is None:
+                        issue_links[link_type] = []
+                    issue_links[link_type].append(link_key)
 
         issue['Issue Links'] = issue_links                  # todo: see what is the side effect of not including this by default
         return self
@@ -290,7 +306,7 @@ class API_Jira_Rest:
                 attachments.append(attachment)
         return attachments
 
-    def convert_issue(self, issue_raw):
+    def convert_issue(self, issue_raw, expand_issue_links=False):
         if issue_raw:
             skip_fields    = [ 'workratio','lastViewed','issuerestriction','resolution', 'votes','worklog','watches','comment',
                                'iconUrl','fixVersions', 'customfield_14238',
@@ -307,7 +323,7 @@ class API_Jira_Rest:
                 issue    = { 'Key' : issue_key }                    # todo: see what is the side effects of not including the Jira internal issue ID (which is not really used anywhere)
                 fields   = self.fields_by_id()
                 fields_values = issue_raw.get('fields') or {}
-                self.map_issue_links(issue, fields_values.get('issuelinks'))
+                self.map_issue_links(issue, fields_values.get('issuelinks'), expand_issue_links=expand_issue_links)
                 if fields_values:
                     for field_id,value in fields_values.items():
                         if value and field_id not in skip_fields:
@@ -348,11 +364,11 @@ class API_Jira_Rest:
         return {}
 
 
-    def issue(self,issue_id,fields='*all'):
+    def issue(self,issue_id,fields='*all', expand_issue_links=False):
         issue_raw = self.issue_raw(issue_id,fields)
         if type(issue_raw) is str: # happens  ["Issue does not exist or you do not have permission to see it."]:
             return {}
-        return self.convert_issue(issue_raw)
+        return self.convert_issue(issue_raw,expand_issue_links=expand_issue_links)
 
     def issues(self,issues_ids,fields=None):
         with Duration(prefix="Fetch issues", print_result=False):
