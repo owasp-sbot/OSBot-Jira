@@ -1,18 +1,13 @@
-import json
-
 import requests
-
-from osbot_aws.helpers.Lambda_Helpers import log_error
-from osbot_aws.apis.Secrets import Secrets                                  # todo: refactor this out of this class (so that we don't have a dependency in AWS
-from osbot_utils.decorators.lists.index_by import index_by
+from osbot_utils.decorators.lists.index_by        import index_by
 from osbot_utils.decorators.methods.cache_on_self import cache_on_self
-from osbot_utils.decorators.methods.cache_on_tmp import cache_on_tmp
-from osbot_utils.testing.Duration import Duration
-from osbot_utils.utils.Dev import Dev, pprint
-from osbot_utils.utils.Files import path_combine, create_folder, file_create_bytes, file_not_exists
-from osbot_utils.utils.Json import json_dumps, file_create_json
-from osbot_utils.utils.Lists import list_chunks
-from osbot_utils.utils.Misc import env_vars, list_set, date_time_now_less_time_delta, upper
+
+from osbot_utils.testing.Duration   import Duration
+from osbot_utils.utils.Dev          import Dev
+from osbot_utils.utils.Files        import path_combine, create_folder, file_create_bytes, file_not_exists
+from osbot_utils.utils.Json         import json_dumps, file_create_json
+from osbot_utils.utils.Lists        import list_chunks
+from osbot_utils.utils.Misc         import env_vars, list_set, date_time_now_less_time_delta, upper
 
 
 class API_Jira_Rest:
@@ -35,6 +30,7 @@ class API_Jira_Rest:
         return self._config
 
     def config_using_aws_secrets(self):
+        from osbot_aws.apis.Secrets import Secrets                                  # todo: refactor this out of this class (so that we don't have a dependency in AWS
         data = Secrets(self.secrets_id).value_from_json_string() or {}
         return (data.get('server'), data.get('username'), data.get('password'))
 
@@ -104,12 +100,12 @@ class API_Jira_Rest:
             elif method == 'DELETE':
                 response = requests.delete(target, auth=(username, password))
             else:
-                log_error(f'[Error][request_method]: unsupported method {method} for target: {target}')
+                print(f'[Error][request_method]: unsupported method {method} for target: {target}')
                 return None
         else:
             response = requests.get(target)
         if response.status_code >= 400:
-            log_error(f'[Error][request_get][404] for target {target}: {response.text}')
+            print(f'[Error][request_get][404] for target {target}: {response.text}')
             return response.text
         if response.status_code >= 200 or response.status_code < 300:
             if always_return_content:
@@ -122,7 +118,7 @@ class API_Jira_Rest:
                 return response.json()
             return response.text
         else:
-            log_error(f'[Error][request_get] for target {target}: {response.text}')
+            print(f'[Error][request_get] for target {target}: {response.text}')
         return None
 
     def request_post(self,path, data):
