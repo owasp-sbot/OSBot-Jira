@@ -279,7 +279,7 @@ class API_Jira_Rest:
                     status     = fields.get('status').get('name')
                     summary    = fields.get('summary')
                     link_data  = {'Key'       : link_key   ,
-                                  'Issue_Type': issue_type ,
+                                  'Issue Type': issue_type ,
                                   'Priority'  : priority   ,
                                   'Status'    : status     ,
                                   'Summary'   : summary    }
