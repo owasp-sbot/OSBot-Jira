@@ -459,34 +459,34 @@ class API_Jira_Rest:
 
     @index_by
     def search(self, jql='', fetch_all=True, fields='*all', start_at=0, max_to_fetch=-1):
-        if -1 < max_to_fetch:                 # todo improve logic of max_to_fetch since at the moment it will fetch 300 for values of 200, 210,250, 290 (should we return that value even though the issues data have been fetched)
-            max_results = max_to_fetch        # in case the max_to_fetch is between 0 and 100 (this part is working)
+        if -1 < max_to_fetch:                                                                        # If max_to_fetch is within 0 and 100, sets max_results to max_to_fetch, limiting the fetched issues to that number. todo: ensure logic correctly handles numbers close to 300, e.g. 210, 250, 290.
+            max_results = max_to_fetch                                                               # Defines the max_results to limit the number of fetched results.
         else:
-            max_results = -1                 # the behaviour (in Jan 2023) seems to be that for a smaller number of fields (like 'key') Jira will return all values in one request, but when more fields are specified it will happen in batches of 100
+            max_results = -1                                                                         # Sets max_results to -1 to handle varying number of fields. If fewer fields like 'key' are specified, Jira returns all values in one request, otherwise, it batches them in 100.
         results = []
-        start_at = start_at
-        while True:
-            path  = f'search?jql={jql}&startAt={start_at}&maxResults={max_results}&fields={fields}'
-
-            data  = self.request_get(path)
-            if data is None or type(data) is str:
+        start_at = start_at                                                                          # Initializes start_at for pagination.
+        while True:                                                                                  # Initiates loop to continuously fetch issues until conditions to break are met.
+            path  = f'search?jql={jql}&startAt={start_at}&maxResults={max_results}&fields={fields}'  # Constructs the API path with query parameters.
+            data  = self.request_get(path)                                                           # Calls the request_get method to get the data from Jira.
+            if data is None or type(data) is str:                                                    # If the received data is None or a string, returns the results list, which may be empty.
                 return results
-            if data:
-                issues = data.get('issues', [])
-                for issue in issues:
-                    results.append(self.convert_issue(issue))
-                if len(results) == data.get('total'):
+            if data:                                                                                 # If there is valid data received:
+                issues = data.get('issues', [])                                                      # Extracts issues from the data, defaults to an empty list if 'issues' key is not present.
+                for issue in issues:                                                                 # Iterates over each issue.
+                    results.append(self.convert_issue(issue))                                        # Converts and appends each issue to the results list.
+                if len(results) == data.get('total'):                                                # If the length of results is equal to the total number of issues, breaks the loop.
                     break
-                if -1 < max_to_fetch <= len(results):
+                if -1 < max_to_fetch <= len(results):                                                # If max_to_fetch is defined and the length of results has reached this number, breaks the loop.
                     break
-                if fetch_all is False:
+                if fetch_all is False:                                                               # If fetch_all is False, breaks the loop after the first batch of issues.
                     break
-                if len(issues) == 0:
+                if len(issues) == 0:                                                                 # If there are no more issues left to fetch, breaks the loop.
                     break
-                start_at += len(issues)
+                start_at += len(issues)                                                              # Increments start_at by the number of issues fetched in the last request for pagination.
             else:
-                break
-        return results
+                break                                                                                # Breaks the loop if no data is received.
+        return results                                                                               # Returns the list of fetched and converted issues.
+
 
     def search_updated_since(self, days=0, hours=0, minutes=0):
         query_date = date_time_now_less_time_delta(days=days, hours=hours, minutes=minutes, date_time_format='%Y-%m-%d %H:%M')
