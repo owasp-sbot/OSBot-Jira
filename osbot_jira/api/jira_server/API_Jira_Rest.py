@@ -458,7 +458,7 @@ class API_Jira_Rest:
         return icons
 
     @index_by
-    def search(self, jql='', fetch_all=True, fields='*all', start_at=0, max_to_fetch=-1):
+    def search(self, jql='', fetch_all=True, fields='*all', start_at=0, max_to_fetch=-1, expand_issue_links=False):
         if -1 < max_to_fetch:                                                                        # If max_to_fetch is within 0 and 100, sets max_results to max_to_fetch, limiting the fetched issues to that number. todo: ensure logic correctly handles numbers close to 300, e.g. 210, 250, 290.
             max_results = max_to_fetch                                                               # Defines the max_results to limit the number of fetched results.
         else:
@@ -473,7 +473,7 @@ class API_Jira_Rest:
             if data:                                                                                 # If there is valid data received:
                 issues = data.get('issues', [])                                                      # Extracts issues from the data, defaults to an empty list if 'issues' key is not present.
                 for issue in issues:                                                                 # Iterates over each issue.
-                    results.append(self.convert_issue(issue))                                        # Converts and appends each issue to the results list.
+                    results.append(self.convert_issue(issue, expand_issue_links=expand_issue_links)) # Converts and appends each issue to the results list.
                 if len(results) == data.get('total'):                                                # If the length of results is equal to the total number of issues, breaks the loop.
                     break
                 if -1 < max_to_fetch <= len(results):                                                # If max_to_fetch is defined and the length of results has reached this number, breaks the loop.
