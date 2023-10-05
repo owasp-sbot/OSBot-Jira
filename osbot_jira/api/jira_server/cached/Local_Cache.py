@@ -14,7 +14,7 @@ class Local_Cache:
         self._data      = None
 
     def add(self, key, value):
-        self._data[key] = value
+        self.data()[key] = value
         self.save()
         return self
 
@@ -68,7 +68,7 @@ class Local_Cache:
 
     def remove(self, key):
         if key in self.keys():
-            del self._data[key]
+            del self.data()[key]
             self.save()
             return True
         return False

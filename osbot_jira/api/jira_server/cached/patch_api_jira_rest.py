@@ -4,7 +4,7 @@ from unittest.mock  import patch
 from osbot_jira.api.jira_server.cached.Jira_Cache import Jira_Cache
 
 
-def patch_api_jira_rest(original_class):
+def patch_api_jira_rest(original_class, caches_name=None):
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -12,7 +12,7 @@ def patch_api_jira_rest(original_class):
 
             def new_init(self, *args, **kwargs):
                 original_init(self, *args, **kwargs)
-                self.api_jira_rest = Jira_Cache()
+                self.api_jira_rest = Jira_Cache(caches_name=caches_name)
 
             with patch.object(original_class, '__init__', new_init):
                 return func(*args, **kwargs)
