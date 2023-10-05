@@ -9,7 +9,7 @@ from osbot_utils.utils.Files import current_temp_folder, path_combine, create_fo
 from osbot_utils.utils.Json import json_save_file, json_load_file
 from osbot_utils.utils.Misc import obj_info, random_text
 
-from isec_risk_alpha.utils._extra_osbot_methods import folder_delete
+from osbot_jira._extra_osbot_methods import folder_delete
 from osbot_jira.api.jira_server.cached.Local_Cache import Local_Cache
 
 
