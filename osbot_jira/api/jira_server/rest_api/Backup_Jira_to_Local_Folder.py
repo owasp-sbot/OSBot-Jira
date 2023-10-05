@@ -66,7 +66,7 @@ class Backup_Jira_to_Local_Folder:
         return self
 
     def save_all_issues(self):
-        self.issues = self.api_jira_rest.search(jql="", max_to_fetch=-1)        # only do this for all issues
+        self.issues = self.api_jira_rest.search(jql="ORDER BY created DESC", max_to_fetch=-1)        # only do this for all issues
         self.save_issues(self.issues)
 
     def save_issues_with_ids(self, issues_ids):

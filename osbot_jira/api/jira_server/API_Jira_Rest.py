@@ -1,4 +1,5 @@
 import requests
+from dotenv import load_dotenv
 from osbot_utils.decorators.lists.index_by        import index_by
 from osbot_utils.decorators.methods.cache_on_self import cache_on_self
 
@@ -22,6 +23,7 @@ class API_Jira_Rest:
 
     def config(self):
         if self._config is None:
+            load_dotenv()
             if set(self.jira_env_vars).issubset(set(env_vars())):
                 self._config = self.config_using_env_vars()
             else:
@@ -69,7 +71,7 @@ class API_Jira_Rest:
 
     def request_get_redirect(self, path):
         (target, username, password) = self.request_target(path)
-        print(target)
+        #print(target)
         response  = requests.get(target, auth=(username, password),allow_redirects=False)
         return response.text
         #return response.headers.get('Location')
@@ -394,7 +396,7 @@ class API_Jira_Rest:
     # this is fast because (in a Jira Cloud with 6k issues) it will execute in one request
     #@cache_on_tmp()
     def issues_get_all_ids(self):
-        return self.search__return_keys(jql="")
+        return self.search__return_keys(jql="ORDER BY created DESC")
 
     def issue_create(self, project, issue_type, summary, description=None, extra_fields=None):
         path     = 'issue'
@@ -458,7 +460,9 @@ class API_Jira_Rest:
         return icons
 
     @index_by
-    def search(self, jql='', fetch_all=True, fields='*all', start_at=0, max_to_fetch=-1, expand_issue_links=False):
+    def search(self, jql, fetch_all=True, fields='*all', start_at=0, max_to_fetch=-1, expand_issue_links=False):
+        if jql == '':
+            return []                                                                                # don't allow empty queries since this is most likely a mistake (and the way this method is designed it will fetch all data from Jira)
         if -1 < max_to_fetch:                                                                        # If max_to_fetch is within 0 and 100, sets max_results to max_to_fetch, limiting the fetched issues to that number. todo: ensure logic correctly handles numbers close to 300, e.g. 210, 250, 290.
             max_results = max_to_fetch                                                               # Defines the max_results to limit the number of fetched results.
         else:
