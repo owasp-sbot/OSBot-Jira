@@ -22,6 +22,8 @@ class Jira_Cache:
 
     def jira_issue(self,issue_id, **kwargs):
         issue = self.api_jira_rest.issue(issue_id,**kwargs)
+        if issue == {}:
+            return {'Key': issue_id}
         if self.randomise_issue:
             return self.randomize(issue)
         return issue
