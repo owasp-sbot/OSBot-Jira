@@ -5,7 +5,7 @@ from osbot_jira.api.jira_server.cached.Local_Caches import Local_Caches
 
 class Jira_Cache:
 
-    FIELDS_TO_PRESERVE = ['Created', 'Environment', 'Issue Links', 'Issue Type',
+    FIELDS_TO_PRESERVE = ['Created', 'Environment', 'Issue Links', 'Issue Type', 'Impact' ,
                           'Key', 'Likelihood', 'Priority', 'Project',
                           'Status', 'Updated', 'created', 'id', 'type', 'size']
 

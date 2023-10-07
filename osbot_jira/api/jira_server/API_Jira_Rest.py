@@ -260,7 +260,7 @@ class API_Jira_Rest:
 
     def issue_raw(self,issue_id,fields='*all'):
         if issue_id:
-            path = 'issue/{0}?fields={1}'.format(upper(issue_id),fields)
+            path = 'issue/{0}?fields={1}'.format(upper(str(issue_id)),fields)
             return self.request_get(path)
 
     def map_issue_links(self, issue, issue_links_raw, expand_issue_links=False):
