@@ -71,17 +71,17 @@ class Jira_Cache:
 
     def issue_create(self, project, issue_type, summary, description=None, extra_fields=None):
         key    = f"{upper(project)}-{random_number()}"
-        issue  = { "Key"         :  key        ,
-                   "Project"     : project     ,
-                   "Summary"     : summary     ,
-                   "Description" : description ,
-                   "Issue Type"  : issue_type  }
+        issue  = { "Key"         :  key         ,
+                   "Project"     :  project     ,
+                   "Summary"     :  summary     ,
+                   "Description" :  description ,
+                   "Issue Type"  :  issue_type  }
         if extra_fields:
             issue.update(extra_fields)
         if self.randomise_issue:
             self.randomize(issue)
         self.cached_issues.add(key, issue)
-        return issue
+        return {"key": key }                                # make it match the return value of API_Jira_Rest.issue_create
 
     def issue_exists(self, issue_id):
         return self.cached_issues.has_key(issue_id)
