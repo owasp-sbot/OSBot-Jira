@@ -91,7 +91,7 @@ class Jira_Cache:
         for key, value in fields.items():
             issue[key] = value
         self.issue_save(issue_id, issue)
-        return issue
+        return {}                           # this replicates the behaviour of the API_Jira_Rest.issue_update_fields when the update works
 
     def issue_save(self,issue_id, issue):
         self.cached_issues.add(issue_id,issue)
