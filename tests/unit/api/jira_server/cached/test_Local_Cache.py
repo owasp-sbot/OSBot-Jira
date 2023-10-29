@@ -1,5 +1,6 @@
 from unittest import TestCase
-from osbot_utils.utils.Files import folder_exists, parent_folder, current_temp_folder, file_name, file_exists
+from osbot_utils.utils.Files import folder_exists, parent_folder, current_temp_folder, file_name, file_exists, \
+    folder_name
 
 from osbot_jira.api.jira_server.cached.Local_Cache import Local_Cache
 
@@ -27,7 +28,7 @@ class test_Local_Cache(TestCase):
         root_folder = self.cache.path_root_folder()
         assert folder_exists(root_folder)
         assert parent_folder(root_folder) == current_temp_folder()
-        assert file_name    (root_folder) == Local_Cache.DEFAULT_CACHES_NAME
+        assert folder_name  (root_folder) == Local_Cache.DEFAULT_CACHES_NAME
 
     def test_path_cache_file(self):
         path_cache_file = self.cache.path_cache_file()

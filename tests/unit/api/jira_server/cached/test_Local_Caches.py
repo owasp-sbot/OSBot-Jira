@@ -1,5 +1,5 @@
 from unittest                   import TestCase
-from osbot_utils.utils.Files    import folder_exists, parent_folder, current_temp_folder, file_name
+from osbot_utils.utils.Files import folder_exists, parent_folder, current_temp_folder, file_name, folder_name
 from osbot_utils.utils.Misc     import random_text
 
 from osbot_jira.api.jira_server.cached.Local_Caches import Local_Caches
@@ -40,4 +40,4 @@ class test_Local_Caches(TestCase):
         path_local_caches = self.caches.path_local_caches()
         assert folder_exists(path_local_caches)
         assert parent_folder(path_local_caches) == current_temp_folder()
-        assert file_name    (path_local_caches) == self.caches_name
+        assert folder_name  (path_local_caches) == self.caches_name
