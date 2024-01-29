@@ -1,7 +1,8 @@
+from osbot_utils.helpers.Local_Caches import Local_Caches
 from osbot_utils.utils.Misc import random_text, random_number, upper
 
 from osbot_jira.api.jira_server.API_Jira_Rest import API_Jira_Rest
-from osbot_jira.api.jira_server.cached.Local_Caches import Local_Caches
+
 
 class Jira_Cache:
 
