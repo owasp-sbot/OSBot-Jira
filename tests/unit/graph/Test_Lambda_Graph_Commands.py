@@ -1,7 +1,6 @@
 import json
 import unittest
 
-from gw_bot.Deploy import Deploy
 from osbot_aws.helpers.Test_Helper import Test_Helper
 
 from osbot_jira.api.graph.Lambda_Graph_Commands import Lambda_Graph_Commands

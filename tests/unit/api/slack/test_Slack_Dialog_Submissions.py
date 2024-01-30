@@ -1,6 +1,5 @@
 from unittest import TestCase
 
-from gw_bot.Deploy import Deploy
 from osbot_utils.utils.Dev import Dev
 
 from osbot_jira.api.slack.Slack_Dialog_Submissions import Slack_Dialog_Submissions

@@ -1,8 +1,8 @@
-from gw_bot.api.slack.API_Slack_Dialog import API_Slack_Dialog
+#from gw_bot.api.slack.API_Slack_Dialog import API_Slack_Dialog
 
 
-class Jira_Create_Issue(API_Slack_Dialog):
-
+#class Jira_Create_Issue(API_Slack_Dialog):
+class Jira_Create_Issue:  # todo fix this class
     def __init__(self, project='SEC', issue_type='Task', summary='New issue', description=''):
         self.project = project
         self.issue_type = issue_type

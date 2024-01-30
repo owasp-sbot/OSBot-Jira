@@ -4,11 +4,12 @@ from osbot_utils.decorators.lists.index_by        import index_by
 from osbot_utils.decorators.methods.cache_on_self import cache_on_self
 
 from osbot_utils.testing.Duration   import Duration
-from osbot_utils.utils.Dev import Dev, pprint
+from osbot_utils.utils.Dev          import Dev
 from osbot_utils.utils.Files        import path_combine, create_folder, file_create_bytes, file_not_exists
 from osbot_utils.utils.Json         import json_dumps, file_create_json
 from osbot_utils.utils.Lists        import list_chunks
-from osbot_utils.utils.Misc         import env_vars, list_set, date_time_now_less_time_delta, upper
+from osbot_utils.utils.Misc         import  list_set, date_time_now_less_time_delta, upper
+from osbot_utils.utils.Objects import env_vars
 
 
 class API_Jira_Rest:
@@ -379,7 +380,7 @@ class API_Jira_Rest:
             if fields is None:
                 fields = '*all'
 
-            for chuck in list_chunks(list=issues_ids,split_by=chunk_size):
+            for chuck in list_chunks(items=issues_ids,split=chunk_size):
                 jql = f"key in {chuck}".replace('[', '(').replace(']', ')')
                 result = self.search(jql=jql, fields=fields)
                 for issue in result:

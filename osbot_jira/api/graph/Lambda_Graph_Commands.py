@@ -1,7 +1,6 @@
 import json
 import pprint
 
-from gw_bot.api.slack.API_Slack_Attachment import API_Slack_Attachment
 from osbot_aws.apis.S3 import S3
 from osbot_aws.apis.Lambda           import Lambda
 
@@ -11,7 +10,9 @@ from osbot_jira.api.graph.Graph_Commands.Commands_Helper import Commands_Helper
 from osbot_jira.api.graph.Graph_Commands.Graph_Filters import Graph_Filters
 from osbot_jira.api.graph.Graph_Commands.Nodes import Nodes
 from osbot_jira.api.graph.Lambda_Graph import Lambda_Graph
+from osbot_jira.api.slack.API_Slack_Attachment import API_Slack_Attachment
 from osbot_utils.utils import Misc
+from osbot_utils.utils.Lists import array_pop
 
 Lambda_Graph_Commands_version = "v0.35 (GW)"
 
@@ -194,14 +195,14 @@ class Lambda_Graph_Commands:
             slack_message(text,[], channel, team_id)
             return
 
-        graph_name = Misc.array_pop(params,0)
+        graph_name = array_pop(params,0)
         graph = Lambda_Graph().get_gs_graph___by_name(graph_name)
         if graph is None:
             text = ':red_circle: Graph with name `{0}` not found'.format(graph_name)
             slack_message(text, [], channel, team_id)
         else:
             default_engine = 'viva_graph'
-            engines = Misc.array_pop(params,0)
+            engines = array_pop(params,0)
             if engines is None: engines = default_engine
 
             if engines != default_engine:                     # only show in case there is more than one engine

@@ -1,7 +1,7 @@
 from functools import lru_cache
 
 from osbot_aws.helpers.Lambda_Helpers import log_to_elk
-from osbot_elastic.Elastic_Search import Elastic_Search
+
 
 from osbot_jira.api.jira_server.API_Jira_Rest import API_Jira_Rest
 
@@ -17,6 +17,7 @@ class API_Jira_To_Elastic:
 
     @lru_cache(maxsize=None)
     def elastic(self):
+        from osbot_elastic.Elastic_Search import Elastic_Search
         return Elastic_Search(self.index_id, self.secrets_id)
 
     # handle methods

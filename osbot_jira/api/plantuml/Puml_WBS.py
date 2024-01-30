@@ -1,6 +1,5 @@
 from osbot_jira.api.plantuml.Puml_Base import Puml_Base
 from osbot_jira.api.plantuml.Puml_Style import Puml_Style
-from osbot_utils.utils.Dev import pprint
 from osbot_utils.utils.Int import int_is_even
 
 DEFAULT_BOX_COLOR = 'WhiteSmoke'

@@ -1,7 +1,6 @@
 
 import unittest
 
-from gw_bot.Deploy import Deploy
 from osbot_aws.helpers.Lambda_Helpers import slack_message
 from osbot_aws.helpers.Test_Helper import Test_Helper
 from osbot_utils.utils.Dev import Dev

@@ -1,6 +1,5 @@
 from osbot_utils.utils.Dev import Dev
 
-from gw_bot.Deploy import Deploy
 from osbot_aws.helpers.Test_Helper import Test_Helper
 from osbot_jira.api.slack.views.Jira_View_Issue import Jira_View_Issue
 

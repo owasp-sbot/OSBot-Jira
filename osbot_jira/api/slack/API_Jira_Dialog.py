@@ -1,7 +1,7 @@
-from gw_bot.api.slack.API_Slack_Attachment import API_Slack_Attachment
-from gw_bot.api.slack.API_Slack_Dialog import API_Slack_Dialog
 from osbot_aws.helpers.Lambda_Helpers import slack_message, log_to_elk
 from osbot_aws.apis.Lambda import Lambda
+from osbot_jira.api.slack.API_Slack_Attachment import API_Slack_Attachment
+from osbot_jira.api.slack.API_Slack_Dialog import API_Slack_Dialog
 
 
 #todo: add unit tests and fix old PBX lambda references (those lambdas don't exist any more)

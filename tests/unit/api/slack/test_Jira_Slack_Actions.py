@@ -1,6 +1,5 @@
 from unittest import TestCase
 
-from gw_bot.Deploy import Deploy
 from osbot_aws.apis.Lambda import Lambda
 from osbot_utils.utils.Dev import Dev
 from osbot_aws.helpers.Lambda_Helpers import slack_message

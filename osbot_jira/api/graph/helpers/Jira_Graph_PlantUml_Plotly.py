@@ -5,7 +5,7 @@ from osbot_jira.api.jira_server.local.Jira_Local_Cache import Jira_Local_Cache
 
 class Jira_Graph_PlantUml_Plotly:
 
-    def __init__(self, on_init=False, key=None, jql=None, link_types=None, depth=None, title=None, nx_iterations=None, nx_show_text= False, create_png=True):
+    def __init__(self, on_init=None, key=None, jql=None, link_types=None, depth=None, title=None, nx_iterations=None, nx_show_text= False, create_png=True):
         self.jira_graph_jql = Jira_Graph_Jql()
         self.plotly_graph   = Network_Graph_For_Jira_Graph(jira_graph_jql=self.jira_graph_jql)
         self.key            = key

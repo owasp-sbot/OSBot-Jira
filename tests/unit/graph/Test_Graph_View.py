@@ -84,5 +84,5 @@ class Test_Graph_View(TestCase):
                          .view_colors()
                          .graph.puml.save_tmp())
 
-        Dev.print(self.graph_views.graph.puml.puml)
+        print(self.graph_views.graph.puml.puml)
 

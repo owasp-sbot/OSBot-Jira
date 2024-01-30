@@ -2,8 +2,7 @@ from unittest import TestCase
 from unittest.mock import patch
 
 from osbot_utils.testing.Duration import Duration
-from osbot_utils.utils.Dev import pprint
-from osbot_utils.utils.Misc import list_set, random_text, obj_info
+from osbot_utils.utils.Misc import list_set, random_text
 
 from osbot_jira.api.jira_server.API_Jira_Rest import API_Jira_Rest
 from osbot_jira.api.jira_server.cached.Jira_Cache import Jira_Cache

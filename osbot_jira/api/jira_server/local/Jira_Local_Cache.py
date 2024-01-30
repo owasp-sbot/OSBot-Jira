@@ -1,8 +1,6 @@
 import osbot_jira
 from osbot_utils.decorators.lists.index_by import index_by
-from osbot_utils.utils.Dev import pprint
-from osbot_utils.utils.Files import path_combine, files_list, sub_folders, folders_names, folder_create, parent_folder, \
-    file_name, file_extension
+from osbot_utils.utils.Files import path_combine, files_list, sub_folders, folders_names, folder_create, parent_folder, file_extension
 from osbot_utils.utils.Json import json_load_file, json_save_file
 from osbot_utils.utils.Misc import list_set
 

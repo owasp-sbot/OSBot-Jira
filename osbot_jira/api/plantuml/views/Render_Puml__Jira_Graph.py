@@ -1,9 +1,8 @@
 import textwrap
 
 from osbot_jira.api.graph.Jira_Graph import Jira_Graph
-from osbot_utils.utils.Dev import pprint
 from osbot_utils.utils.Files import path_combine, file_exists, file_contents_as_bytes, create_folder, file_copy
-from osbot_utils.utils.Misc import upper, bytes_to_base64, word_wrap_escaped, trim
+from osbot_utils.utils.Misc import upper, bytes_to_base64
 
 URL_GITHUB_ISSUE_REPO = "http://localhost:8080/jira_project_icons/" #"https://raw.githubusercontent.com/owasp-sbot/OSBot-Browser/master/osbot_browser/web_root/vivagraph/icons/"
 class Render_Puml__Jira_Graph:

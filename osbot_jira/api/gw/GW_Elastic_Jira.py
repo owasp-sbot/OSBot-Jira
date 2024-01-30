@@ -2,7 +2,6 @@ import  datetime
 from    time import time, localtime, strftime
 
 from osbot_aws.helpers.Lambda_Helpers import log_info, log_error
-from osbot_elastic.Elastic_Search import Elastic_Search
 from osbot_utils.utils.Dev import Dev
 
 from osbot_jira.api.jira_server.API_Jira import API_Jira
@@ -32,6 +31,7 @@ class GW_Elastic_Jira:
 
     def setup(self):
         if self.elastic is None:
+            from osbot_elastic.Elastic_Search import Elastic_Search
             self.elastic = Elastic_Search(self.index_id,self.secrets_id)
         return self
 

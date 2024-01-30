@@ -5,7 +5,7 @@ from osbot_jira.api.jira_server.local.Jira_Local_Cache import Jira_Local_Cache
 from osbot_jira.api.plantuml.views.Render_Puml__Jira_Graph import Render_Puml__Jira_Graph
 from osbot_utils.utils.Json import json_dumps
 from osbot_utils.utils.Lists import list_chunks
-from osbot_utils.utils.Misc import unique, date_time_now, word_wrap_escaped, list_set
+from osbot_utils.utils.Misc import date_time_now
 
 
 class Jira_Graph_Jql:

@@ -3,7 +3,7 @@ from time import sleep
 
 from osbot_aws.apis.Lambda           import Lambda
 from osbot_aws.helpers.Lambda_Helpers import slack_message, log_to_elk
-from osbot_elastic.Save_To_ELK import Save_To_ELK
+
 
 from osbot_jira.api.graph.GS_Graph   import GS_Graph
 from osbot_jira.osbot_graph.Graph    import Graph
@@ -17,6 +17,7 @@ class Lambda_Graph():
         self.doc_type     = 'lambda_graph'
 
     def save_to_elk(self):
+        from osbot_elastic.Save_To_ELK import Save_To_ELK
         if self._save_to_elk is None:
             self._save_to_elk    = Save_To_ELK()
         return self._save_to_elk

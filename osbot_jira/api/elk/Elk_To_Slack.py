@@ -1,10 +1,11 @@
-from gw_bot.api.slack.API_Slack_Attachment import API_Slack_Attachment
 from osbot_aws.helpers.Lambda_Helpers import slack_message, log_to_elk
-from osbot_utils.utils.Lists import Lists
+
 
 from osbot_jira.api.API_Issues import API_Issues
 from osbot_jira.api.graph.GS_Graph import GS_Graph
 from osbot_jira.api.graph.Lambda_Graph import Lambda_Graph
+from osbot_jira.api.slack.API_Slack_Attachment import API_Slack_Attachment
+from osbot_utils.utils.Lists import list_first, list_empty
 
 
 class ELK_to_Slack:
@@ -48,7 +49,7 @@ class ELK_to_Slack:
         }
 
     def get_search_query(self,params):
-        search_type  = Lists.first(params,strip=True)
+        search_type  = list_first(params,strip=True)
         if search_type:
             query = self.get_search_mappings().get(search_type)
             if query:
@@ -84,7 +85,7 @@ class ELK_to_Slack:
         return text
 
     def cmd_search(self, params, user=None, team_id=None, channel=None):
-        if Lists.empty(params):
+        if list_empty(params):
             text = ':red_circle: for the `search` command, please provide the type of search you want to do. \nHere are the the options:'
             for name in sorted(list(set(self.get_search_mappings()))):
                 text +=  '\n\t\t • `{0}` '.format(name)

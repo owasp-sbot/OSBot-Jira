@@ -1,8 +1,6 @@
-from osbot_aws.helpers.Lambda_Helpers import log_error
-from osbot_elastic.Elastic_Search import Elastic_Search
-
 from osbot_jira.api.plantuml.Puml import Puml
 from osbot_jira.api.plantuml.Puml_Table import Puml_Table
+from osbot_utils.utils.Status import log_error
 
 
 class API_Issues:
@@ -13,6 +11,7 @@ class API_Issues:
 
     def elastic(self):
         if self._elastic is None:
+            from osbot_elastic.Elastic_Search import Elastic_Search
             #current_host_online()
             self._elastic = Elastic_Search(aws_secret_id=self.secrets_id, index=self.index)
         return self._elastic

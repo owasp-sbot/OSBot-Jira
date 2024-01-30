@@ -43,8 +43,8 @@ class Layout_Section:
         self.accessory = Layout_Actions(self.action_id, []).add_overflow(options, action_id, confirm).elements.pop()
         return self
 
-    def add_select(self, text, options=None, option_groups=None, action_id=None, initial_option=None, confirm=None):
-        self.accessory = Layout_Actions(self.action_id, []).add_select(text,options, option_groups,action_id, initial_option, confirm).elements.pop()
+    def add_select(self, text, options=None, option_groups=None, action_id=None, initial_option=None):
+        self.accessory = Layout_Actions(self.action_id, []).add_select(text,options, option_groups,action_id, initial_option).elements.pop()
         return self
 
     def add_select_users(self, text, action_id, initial_user=None, confirm=None):

@@ -1,7 +1,6 @@
 from osbot_aws.apis.Lambda import Lambda
 from osbot_aws.helpers.Lambda_Package import Lambda_Package
 
-from gw_bot.Deploy import Deploy
 from osbot_aws.helpers.Test_Helper import Test_Helper
 from osbot_utils.utils.Dev import Dev
 
@@ -78,16 +77,16 @@ class test_lambda_gsbot_graph(Test_Helper):
 
 
     def test_expand___abc(self):
-        Dev.print(self.invoke('expand abc'))
+        print(self.invoke('expand abc'))
 
     def test_raw_data(self):
         result = self.invoke('raw_data graph_J2O details')
-        Dev.print(result)
+        print(result)
 
     def test_raw_data__details(self):
         result = self.invoke('raw_data graph_MKF')
-        Dev.print(result)
+        print(result)
 
     def test_raw_data__issue_id(self):
         result = self.invoke('raw_data GSSP-111 details')
-        Dev.print(result)
+        print(result)

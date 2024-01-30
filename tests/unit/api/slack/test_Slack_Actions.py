@@ -1,6 +1,5 @@
 from osbot_utils.utils.Dev import Dev
 
-from gw_bot.Deploy import Deploy
 from osbot_aws.helpers.Lambda_Helpers import slack_message
 from osbot_aws.helpers.Test_Helper import Test_Helper
 from osbot_jira.api.slack.Slack_Actions import Slack_Actions

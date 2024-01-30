@@ -1,4 +1,4 @@
-from gw_bot.api.API_Slack import API_Slack
+from osbot_jira.api.slack.API_Slack import API_Slack
 from osbot_jira.api.slack.blocks.Layout_Actions import Layout_Actions
 from osbot_jira.api.slack.blocks.Layout_Context import Layout_Context
 from osbot_jira.api.slack.blocks.Layout_Image import Layout_Image
@@ -27,7 +27,8 @@ class API_Slack_Blocks:
 
     #NOT WORKING
     def send_message(self,channel=None, team_id=None):                      # needs to move to the main dedicated lambda function (since this version supports the Slack blocks feature)
-        api_slack = API_Slack(channel=channel, team_id=team_id)
+        bot_token = ""      #todo: add support for bot token
+        api_slack = API_Slack(bot_token)
         if  channel :                                            # to help with testing
             self.kwargs = {
                         #'channel'        : api_slack.channel   ,

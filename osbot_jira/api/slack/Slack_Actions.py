@@ -1,8 +1,8 @@
 import json
 
-from gw_bot.api.API_Slack import API_Slack
 from osbot_aws.apis.Lambda                          import Lambda
 from osbot_aws.helpers.Lambda_Helpers import slack_message, log_to_elk
+from osbot_jira.api.slack.API_Slack import API_Slack
 from osbot_utils.utils import Misc
 
 from osbot_jira.api.slack.views.Jira_Slack_Actions  import Jira_Slack_Actions
@@ -10,6 +10,8 @@ from osbot_jira.api.slack.Slack_Jira_Search         import Slack_Jira_Search
 from osbot_jira.api.slack.Slack_Message_Action      import Slack_Message_Action
 from osbot_jira.api.slack.dialogs.Jira_Create_Issue import Jira_Create_Issue
 from osbot_jira.api.slack.views.Jira_View_Issue import Jira_View_Issue
+from osbot_utils.utils.Lists import array_get
+from osbot_utils.utils.Objects import get_value
 
 
 class Slack_Actions:
@@ -18,7 +20,8 @@ class Slack_Actions:
         trigger_id = data.get('trigger_id')
         #slack_dialog = API_Slack_Dialog().test_render()
         slack_dialog = Jira_Create_Issue().setup().render()
-        API_Slack().slack.dialog_open(trigger_id=trigger_id, dialog=slack_dialog)
+        # todo: add support for bot_token in API_Slack
+        API_Slack("").slack.dialog_open(trigger_id=trigger_id, dialog=slack_dialog)
 
         return {"text": "Opening test dialog ...", "attachments": [], 'replace_original': False}
 
@@ -66,8 +69,8 @@ class Slack_Actions:
         return { 'text': text, 'attachments': [] , 'replace_original': replace_original }
 
     def handle_block_action(self,event):        # todo: refactor in to separate method handler (specially when adding the lambda capability)
-        channel  = Misc.get_value(Misc.get_value(event,'channel'),'id')
-        team_id  = Misc.get_value(Misc.get_value(event,'team'),'id')
+        channel  = get_value(get_value(event,'channel'),'id')
+        team_id  = get_value(get_value(event,'team'),'id')
         actions  = event.get('actions')
         handlers = { 'Jira_View_Issue': Jira_View_Issue}
         def send_message(message):
@@ -78,9 +81,9 @@ class Slack_Actions:
         try:
             for action in actions:
                 split_action  = action.get('action_id').split('::')
-                action_type   = Misc.array_get(split_action, 0)
-                action_class  = Misc.array_get(split_action, 1)
-                action_method = Misc.array_get(split_action, 2)
+                action_type   = array_get(split_action, 0)
+                action_class  = array_get(split_action, 1)
+                action_method = array_get(split_action, 2)
                 if action_type == 'class_method':
                     if action_class and action_method:
                         target = handlers.get(action_class)

@@ -3,8 +3,7 @@ from unittest import TestCase
 from dotenv import load_dotenv
 
 from osbot_jira.api.slack.API_Slack import API_Slack
-from osbot_utils.utils.Dev import pprint
-from osbot_utils.utils.Misc import env_vars
+from osbot_utils.utils.Objects import env_vars
 
 
 class test_API_Slack(TestCase):

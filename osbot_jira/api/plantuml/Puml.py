@@ -1,7 +1,4 @@
-from osbot_jira.api.plantuml.API_Plant_UML import API_Plant_UML
 from osbot_jira.api.plantuml.Puml_Base import Puml_Base
-from osbot_utils.utils import Misc
-from osbot_utils.utils.Files            import Files
 from osbot_utils.utils.Str import str_safe
 
 

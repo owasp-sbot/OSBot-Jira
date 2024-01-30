@@ -1,15 +1,16 @@
 import pprint
 
-from gw_bot.api.slack.API_Slack_Attachment import API_Slack_Attachment
 from osbot_aws.helpers.Lambda_Helpers import slack_message, log_to_elk
 from osbot_aws.apis.Lambda import Lambda
 from osbot_jira.api.API_Issues                              import API_Issues
 from osbot_jira.api.elk.Elk_To_Slack                        import ELK_to_Slack
 from osbot_jira.api.graph.Lambda_Graph                      import Lambda_Graph
+from osbot_jira.api.slack.API_Slack_Attachment import API_Slack_Attachment
 from osbot_jira.api.slack.views.Jira_Slack_Actions          import Jira_Slack_Actions
 from osbot_jira.api.slack.views.Jira_View_Issue             import Jira_View_Issue
 from osbot_utils.utils import Misc
-from osbot_utils.utils.Misc import array_get, to_int
+from osbot_utils.utils.Lists import array_get, array_pop
+from osbot_utils.utils.Misc import  to_int
 
 
 class GS_Bot_Jira:
@@ -171,9 +172,9 @@ class GS_Bot_Jira:
             params.pop(0) # remove 'issue' command
 
             issue_id = params.pop(0).upper()
-            width    = to_int(Misc.array_pop(params), None)
-            height   = to_int(Misc.array_pop(params), None)
-            delay    = to_int(Misc.array_pop(params), None)
+            width    = to_int(array_pop(params), None)
+            height   = to_int(array_pop(params), None)
+            delay    = to_int(array_pop(params), None)
 
             text = ':point_right: Getting screenshot for issue `{0}`'.format(issue_id)
             if width:

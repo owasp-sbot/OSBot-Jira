@@ -1,7 +1,7 @@
 from osbot_jira.api.graph.Jira_Graph import Jira_Graph
 from osbot_utils.utils import Misc
-from osbot_utils.utils.Dev import pprint
-from osbot_utils.utils.Misc import list_set, unique
+from osbot_utils.utils.Lists import unique
+from osbot_utils.utils.Objects import get_value
 
 
 class Jira_Graph_Filters:
@@ -247,8 +247,8 @@ class Jira_Graph_Filters:
             for edge in edges:
                 link_type = edge[1]
                 to_key    = edge[2]
-                to_issue = Misc.get_value(issues, to_key, {})
-                to_key   = Misc.get_value(to_issue, 'Key')
+                to_issue = get_value(issues, to_key, {})
+                to_key   = get_value(to_issue, 'Key')
                 graph.add_node(link_type)
                 graph.add_node(to_key)
                 graph.add_edge(root_node, '', link_type)

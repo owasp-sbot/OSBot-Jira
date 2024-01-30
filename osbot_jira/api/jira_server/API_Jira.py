@@ -9,7 +9,7 @@ from osbot_aws.apis.Secrets import Secrets
 #       users = jira._jira.search_users("%", maxResults = 1000)  # works in cloud server
 #       users = jira._jira.search_users(".", maxResults = 1000)  # works in hosted server
 from osbot_aws.helpers.Lambda_Helpers import log_info, log_error
-from osbot_utils.utils.Misc import env_vars
+from osbot_utils.utils.Objects import env_vars
 
 
 class API_Jira:
@@ -345,7 +345,7 @@ class API_Jira:
             #if len(data) < max_per_query:                                                                            # also end if we didn't received max_per_query items
             #    break
             if len(data) == total:
-                break;
+                break
         return issues
 
     def search_just_return_keys(self, jql, start_at = 0, max = -1):

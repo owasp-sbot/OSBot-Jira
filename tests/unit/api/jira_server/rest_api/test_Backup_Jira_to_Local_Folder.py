@@ -1,11 +1,9 @@
-from datetime import datetime, timedelta
 from unittest import TestCase
 
 
 from osbot_jira.api.jira_server.rest_api.Backup_Jira_to_Local_Folder import Backup_Jira_to_Local_Folder
 from osbot_utils.utils.Dev import pprint
-from osbot_utils.utils.Files import folder_exists, file_contents, file_exists
-from osbot_utils.utils.Misc import date_time_now, date_time_now_less_time_delta
+from osbot_utils.utils.Files import folder_exists
 
 
 class test_Backup_Jira_to_Local_Folder(TestCase):

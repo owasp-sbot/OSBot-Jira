@@ -1,6 +1,5 @@
 from    osbot_aws.apis.Lambda import Lambda
 
-from gw_bot.Deploy import Deploy
 from osbot_aws.helpers.Test_Helper import Test_Helper
 from osbot_jira.lambdas.elk_to_slack import run
 

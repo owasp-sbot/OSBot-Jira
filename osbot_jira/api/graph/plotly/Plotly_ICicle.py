@@ -1,7 +1,6 @@
-from plotly import graph_objects
-
 from osbot_utils.utils.Files import file_create_bytes
 
+# todo: move into project that has plotly dependency
 
 class Plotly_ICicle:
 
@@ -88,6 +87,7 @@ class Plotly_ICicle:
         return self
 
     def create_icicle(self):
+        from plotly import graph_objects
         # can replace graph_objects.Icicle with graph_objects.Treemap
         self.icicle = graph_objects.Icicle(ids      = self.ids      ,
                                            labels   = self.labels   ,
@@ -103,6 +103,7 @@ class Plotly_ICicle:
         return self
 
     def create_figure(self):
+        from plotly import graph_objects
         self.figure = graph_objects.Figure(self.icicle)
         self.figure.update_layout(margin=dict(t=self.pl_margin_top, l=self.pl_margin_left,  r=self.pl_margin_right, b=self.pl_margin_bottom))
         if self.text_minsize:

@@ -1,8 +1,10 @@
-from gw_bot.api.API_Slack import API_Slack
-from gw_bot.api.slack.API_Slack_Attachment import API_Slack_Attachment
+from osbot_jira.api.slack.API_Slack import API_Slack
+from osbot_jira.api.slack.API_Slack_Attachment import API_Slack_Attachment
 from osbot_jira.api.slack.Slack_Jira_Search import Slack_Jira_Search
 from osbot_jira.api.slack.dialogs.Jira_Create_Issue import Jira_Create_Issue
 from osbot_utils.utils import Misc
+from osbot_utils.utils.Lists import array_pop
+from osbot_utils.utils.Objects import get_value
 
 
 class Jira_Slack_Actions:
@@ -38,7 +40,7 @@ class Jira_Slack_Actions:
         return {"text": ':red_circle: Sorry, there was an error executing the requested action: {0}'.format(error), "attachments": [], 'replace_original': False}
 
     def handle_action(self,event):
-        action = Misc.get_value(Misc.array_pop(event.get('actions'),0), 'value')
+        action = get_value(array_pop(event.get('actions'),0), 'value')
         try:
             target = getattr(self,action)
         except:
@@ -50,12 +52,14 @@ class Jira_Slack_Actions:
             return self.message_execution_error(error)
 
 
+    # todo: NOT WORKING (need to refactor to new API)
     def create_issue(self, event):
         trigger_id = event.get('trigger_id')
         channel    = event.get('channel').get('id')
         team       = event.get('team'   ).get('id')
         slack_dialog = Jira_Create_Issue().setup().render()
-        API_Slack(channel,team).slack.dialog_open(trigger_id=trigger_id, dialog=slack_dialog)
+        bot_token = ""      #todo: add support for bot token
+        API_Slack(bot_token).slack.dialog_open(trigger_id=trigger_id, dialog=slack_dialog)
 
         return {"text": ":point_right: Opening `Create Issue` dialog".format(channel, team), "attachments": [], 'replace_original': False}
 

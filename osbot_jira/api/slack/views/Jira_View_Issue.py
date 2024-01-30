@@ -1,6 +1,7 @@
 import json
 
 from osbot_aws.apis.Lambda import Lambda
+from osbot_jira.api.slack.API_Slack import API_Slack
 from osbot_utils.utils import Misc
 
 from osbot_aws.helpers.Lambda_Helpers import slack_message
@@ -8,6 +9,8 @@ from osbot_jira.api.API_Issues import API_Issues
 from osbot_jira.api.jira_server.API_Jira import API_Jira
 from osbot_jira.api.slack.blocks.API_Slack_Blocks import API_Slack_Blocks
 from osbot_jira.api.slack.dialogs.Jira_Edit_Issue import Jira_Edit_Issue
+from osbot_utils.utils.Lists import array_pop
+from osbot_utils.utils.Objects import get_value
 
 
 class Jira_View_Issue():
@@ -31,8 +34,8 @@ class Jira_View_Issue():
 
     def handle_action(self,event):
         self.send_message('aaaa')
-        action       = Misc.array_pop(event.get('actions'), 0)
-        action_value = Misc.get_value(action,'value')
+        action       = array_pop(event.get('actions'), 0)
+        action_value = get_value(action,'value')
         try:
             target = getattr(self,action_value)
         except:
@@ -240,8 +243,9 @@ class Jira_View_Issue():
             issue_id        = action.get('action_id').split('::').pop(3)
             trigger_id      = self.event.get('trigger_id')
             slack_dialog = Jira_Edit_Issue(issue_id, field).setup().render()
-            from gw_bot.api.API_Slack import API_Slack
-            API_Slack(self.channel, self.team_id).slack.dialog_open(trigger_id=trigger_id, dialog=slack_dialog)
+            #todo: fix API_Slack bot token
+            API_Slack("").slack.dialog_open(trigger_id=trigger_id, dialog=slack_dialog)
+            #API_Slack(self.channel, self.team_id)
         except Exception as error:
             self.send_message(':red_circle: Error in edit_field: {0}'.format(error))
 
@@ -297,9 +301,9 @@ class Jira_View_Issue():
 
     def transition_to(self,action):
         value_split     = action.get('value').split('::')
-        issue_id        = Misc.array_pop(value_split,0)
-        transition_to   = Misc.array_pop(value_split,0)
-        transition_name = Misc.array_pop(value_split, 0)
+        issue_id        = array_pop(value_split,0)
+        transition_to   = array_pop(value_split,0)
+        transition_name = array_pop(value_split, 0)
         try:
             self.api_jira.issue_transition_to_id(issue_id, transition_to)
             self.send_message(':white_check_mark: Changed `{0}` status to: *{1}*. Here are the new transitions available '.format(issue_id, transition_name))

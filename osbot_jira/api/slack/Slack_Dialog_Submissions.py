@@ -1,13 +1,14 @@
 from osbot_aws.apis.Lambda import Lambda
 from osbot_aws.helpers.Lambda_Helpers import slack_message
 from osbot_utils.utils import Misc
+from osbot_utils.utils.Objects import get_value
 
 
 class Slack_Dialog_Submissions:
 
     def __init__(self, data, channel=None, team_id=None):
         self.data       = data
-        self.submission = Misc.get_value(data,'submission')
+        self.submission = get_value(data,'submission')
         self.channel    = channel
         self.team_id    = team_id
 

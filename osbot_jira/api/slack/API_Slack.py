@@ -1,16 +1,12 @@
 import base64
 import ssl
-
 import certifi
-
-from slack_sdk                  import WebClient
-
 from osbot_utils.utils.Files import Files
-from osbot_utils.utils.Misc import env_vars
 
 
 class API_Slack:
     def __init__(self, bot_token):
+        from slack_sdk import WebClient     # todo: refactor out of OSBot-Jira
         self.bot_token = bot_token
         ssl_context = ssl.create_default_context(cafile=certifi.where())
         #client = slack.WebClient(token=os.environ['SLACK_TOKEN'], ssl=ssl_context)

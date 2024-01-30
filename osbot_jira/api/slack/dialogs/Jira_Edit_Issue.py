@@ -1,9 +1,8 @@
-from gw_bot.api.slack.API_Slack_Dialog import API_Slack_Dialog
-
 from osbot_jira.api.API_Issues import API_Issues
 
 
-class Jira_Edit_Issue(API_Slack_Dialog):
+#class Jira_Edit_Issue(API_Slack_Dialog):
+class Jira_Edit_Issue:              # todo fix this class
 
     def __init__(self, issue_id, field):
         super().__init__()
