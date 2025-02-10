@@ -1,9 +1,8 @@
 import base64
 
 import requests
-
-from osbot_aws.apis.Lambda  import Lambda
-from osbot_utils.utils.Files import Files
+from osbot_aws.aws.lambda_.Lambda import Lambda
+from osbot_utils.utils.Files      import Files
 
 
 class API_Plant_UML:

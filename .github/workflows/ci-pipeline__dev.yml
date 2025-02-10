@@ -1,0 +1,32 @@
+name       : CI Pipeline - DEV
+on:
+  push:
+    branches:
+      - dev
+
+env:
+  GIT__BRANCH  : 'dev'
+  PACKAGE_NAME : 'osbot_jira'
+  RELEASE_TYPE : 'minor'
+
+jobs:
+
+  run-unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Unit Tests (using Pytest)
+        uses: owasp-sbot/OSBot-GitHub-Actions/.github/actions/pytest__run-tests@dev
+
+  increment-tag:
+    name: Increment Tag - DEV
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Increment Tag (for DEV)
+        uses: owasp-sbot/OSBot-GitHub-Actions/.github/actions/git__increment-tag@dev
+        with:
+          release_type: ${{env.RELEASE_TYPE}}
+    needs:
+      - run-unit-tests
+

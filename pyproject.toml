@@ -1,0 +1,18 @@
+[tool.poetry]
+name        = "osbot_jira"
+version     = "v0.0.1"
+description = "OWASP Security Bot - Jira"
+authors     = ["Dinis Cruz <dinis.cruz@owasp.org>"]
+license     = "Apache-2.0"
+readme      = "README.md"
+homepage    = "https://github.com/owasp-sbot/OSBot-Jira"
+repository  = "https://github.com/owasp-sbot/OSBot-Jira"
+
+[tool.poetry.dependencies]
+python          = "^3.9"
+osbot-utils     = "*"
+osbot-aws       = "*"
+
+[build-system]
+requires        = ["poetry-core>=1.0.0"]
+build-backend   = "poetry.core.masonry.api"

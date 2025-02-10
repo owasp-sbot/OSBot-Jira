@@ -64,7 +64,7 @@ class Puml(Puml_Base):
         return self
 
     def fix_id(self, id):
-        return str_safe(id)
+        return str_safe(id).replace('-', '_')
         #if id:
         #    return id.replace(' ','_').replace('-','_').replace(':','_').replace('/','_').replace('(','_').replace(')','_')
 
