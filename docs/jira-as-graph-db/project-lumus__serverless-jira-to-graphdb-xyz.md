@@ -1,5 +1,5 @@
 # Project Lumos | Serverless JIRA-to-GraphDB XYZ Connector | _Unlocking Hidden Insights from JIRA using GraphDB XYZ_
-_by Dinis Cruz and ChatGPT Deep Research, 13 Feb 2025_
+_by Dinis Cruz, ChatGPT Deep Research and Claude 3.5 Sonnet, 13 Feb 2025_
 
 #### **An Amazon Working Backwards Document**
 
